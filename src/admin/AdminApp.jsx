@@ -11,6 +11,7 @@ import AdminOrderDetails from "./pages/AdminOrderDetails";
 import AdminCustomers from "./pages/AdminCustomers";
 import AdminCustomerProfile from "./pages/AdminCustomerProfile";
 import Cursor from "../components/ui/Cursor";
+import AdminMarketing from "./pages/AdminMarketing";
 
 export default function AdminApp() {
   const [activePage, setActivePage] = useState("dashboard");
@@ -40,6 +41,9 @@ export default function AdminApp() {
 
       case "reports":
         return <AdminReports />;
+        
+      case "marketing":
+        return <AdminMarketing />;
 
       default:
         return (
