@@ -317,3 +317,84 @@ body {
 
 /* ─── Selection ─── */
 ::selection { background: var(--gold); color: var(--ink); }
+
+/* ─── Premium 3D Effects ─── */
+.product-card,
+.collection-card {
+  transform-style: preserve-3d;
+  perspective: 1200px;
+}
+
+.product-card {
+  transition:
+    transform 0.5s var(--ease-luxury),
+    box-shadow 0.5s var(--ease-luxury);
+}
+
+.product-card:hover {
+  transform: translateY(-12px) rotateX(3deg) rotateY(-3deg);
+  box-shadow: 0 35px 90px rgba(14, 12, 10, 0.22);
+}
+
+.product-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.18) 45%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.9s var(--ease-luxury);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.product-card:hover::before {
+  transform: translateX(120%);
+}
+
+.collection-card {
+  transition:
+    transform 0.6s var(--ease-luxury),
+    box-shadow 0.6s var(--ease-luxury);
+}
+
+.collection-card:hover {
+  transform: translateY(-10px) scale(1.015);
+  box-shadow: 0 40px 100px rgba(14, 12, 10, 0.25);
+}
+
+.btn-primary,
+.btn-ghost,
+.btn-ghost-light {
+  transform-style: preserve-3d;
+}
+
+.btn-primary:hover,
+.btn-ghost:hover,
+.btn-ghost-light:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(14, 12, 10, 0.22);
+}
+
+@media (hover: none) {
+  body {
+    cursor: auto;
+  }
+
+  .cursor,
+  .cursor-ring {
+    display: none;
+  }
+
+  .product-card,
+  .collection-card,
+  .btn-primary,
+  .btn-ghost,
+  .btn-ghost-light {
+    cursor: pointer;
+  }
+}
