@@ -1,7 +1,319 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design Tokens ─── */
+:root {
+  --ink:      #0e0c0a;
+  --parchment:#f5f0e8;
+  --warm:     #ede5d8;
+  --gold:     #c9a96e;
+  --gold-dark:#a07840;
+  --mist:     #8a8075;
+  --cream:    #faf7f2;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'Jost', sans-serif;
+  --ease-luxury:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ─── Reset & Base ─── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
 body {
   margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  cursor: none;
 }
+
+/* ─── Custom Cursor ─── */
+.cursor {
+  width: 10px; height: 10px;
+  background: var(--gold);
+  border-radius: 50%;
+  position: fixed; top: 0; left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s, width 0.3s var(--ease-luxury), height 0.3s var(--ease-luxury), background 0.3s;
+  mix-blend-mode: multiply;
+}
+.cursor-ring {
+  width: 36px; height: 36px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  position: fixed; top: 0; left: 0;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.18s var(--ease-luxury), width 0.4s var(--ease-luxury), height 0.4s var(--ease-luxury), opacity 0.3s;
+  opacity: 0.6;
+}
+.cursor-hover .cursor { width: 20px; height: 20px; }
+.cursor-hover .cursor-ring { width: 60px; height: 60px; opacity: 0.3; }
+
+/* ─── Typography ─── */
+.font-display { font-family: var(--font-display); }
+.font-body    { font-family: var(--font-body); }
+
+/* ─── Grain overlay ─── */
+.grain::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9997;
+  opacity: 0.45;
+}
+
+/* ─── Animations ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes revealLine {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes slowZoom {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); }
+}
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+.animate-fade-up      { animation: fadeUp 0.9s var(--ease-luxury) both; }
+.animate-fade-in      { animation: fadeIn 0.9s var(--ease-luxury) both; }
+.animate-marquee      { animation: marquee 24s linear infinite; }
+.animate-slow-zoom    { animation: slowZoom 8s var(--ease-luxury) both; }
+.animate-float        { animation: floatUp 4s ease-in-out infinite; }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+
+/* ─── Reveal line decorator ─── */
+.reveal-line {
+  display: block;
+  height: 1px;
+  background: var(--gold);
+  transform-origin: left;
+  animation: revealLine 0.9s var(--ease-luxury) 0.3s both;
+}
+
+/* ─── Nav ─── */
+.nav-link {
+  position: relative;
+  font-family: var(--font-body);
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--ink);
+  transition: color 0.3s;
+}
+.nav-link::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 0;
+  width: 100%; height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s var(--ease-luxury);
+}
+.nav-link:hover::after,
+.nav-link.active::after { transform: scaleX(1); transform-origin: left; }
+.nav-link:hover,
+.nav-link.active        { color: var(--gold-dark); }
+
+/* ─── Product Card ─── */
+.product-card {
+  position: relative;
+  overflow: hidden;
+  cursor: none;
+}
+.product-card .card-img {
+  transition: transform 0.9s var(--ease-luxury);
+}
+.product-card:hover .card-img { transform: scale(1.07); }
+
+.product-card .card-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(14,12,10,0.75) 0%, transparent 55%);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-luxury);
+}
+.product-card:hover .card-overlay { opacity: 1; }
+
+.product-card .card-cta {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 1.5rem;
+  transform: translateY(100%);
+  transition: transform 0.5s var(--ease-luxury);
+}
+.product-card:hover .card-cta { transform: translateY(0); }
+
+/* ─── Collection Card ─── */
+.collection-card img {
+  transition: transform 1.1s var(--ease-luxury);
+}
+.collection-card:hover img { transform: scale(1.08); }
+
+/* ─── Buttons ─── */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  background: var(--ink);
+  color: var(--parchment);
+  padding: 0.9rem 2.2rem;
+  font-family: var(--font-body);
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  border: 1px solid var(--ink);
+  transition: background 0.4s var(--ease-luxury), color 0.4s, border-color 0.4s;
+  cursor: none;
+}
+.btn-primary:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+}
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  background: transparent;
+  color: var(--ink);
+  padding: 0.9rem 2.2rem;
+  font-family: var(--font-body);
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  border: 1px solid var(--ink);
+  transition: background 0.4s var(--ease-luxury), color 0.4s;
+  cursor: none;
+}
+.btn-ghost:hover { background: var(--ink); color: var(--parchment); }
+
+.btn-ghost-light {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  background: transparent;
+  color: var(--parchment);
+  padding: 0.75rem 1.8rem;
+  font-family: var(--font-body);
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  border: 1px solid rgba(245,240,232,0.5);
+  transition: background 0.4s var(--ease-luxury), border-color 0.4s;
+  cursor: none;
+}
+.btn-ghost-light:hover {
+  background: rgba(245,240,232,0.12);
+  border-color: var(--parchment);
+}
+
+/* ─── Eyebrow label ─── */
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 400;
+  letter-spacing: 0.35em;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* ─── Section divider ─── */
+.divider {
+  width: 40px; height: 1px;
+  background: var(--gold);
+  margin: 1rem 0 1.5rem;
+}
+
+/* ─── Marquee strip ─── */
+.marquee-strip {
+  overflow: hidden;
+  border-top: 1px solid rgba(14,12,10,0.14);
+  border-bottom: 1px solid rgba(14,12,10,0.14);
+  background: var(--ink);
+}
+.marquee-track {
+  display: flex;
+  white-space: nowrap;
+}
+.marquee-item {
+  padding: 0 2.5rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.55);
+  font-style: italic;
+  font-weight: 300;
+}
+.marquee-item .marquee-dot {
+  color: var(--gold);
+  margin: 0 0.4rem;
+}
+
+/* ─── Cart Drawer ─── */
+.cart-drawer {
+  background: var(--cream);
+  border-left: 1px solid var(--warm);
+}
+
+/* ─── Cart input ─── */
+.cart-input {
+  width: 100%;
+  padding: 0.85rem 1.2rem;
+  background: #ece5d9;
+  border: 1px solid transparent;
+  border-bottom: 1px solid rgba(14,12,10,0.12);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 0.85rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.3s, background 0.3s;
+}
+.cart-input::placeholder {
+  color: rgba(14,12,10,0.4);
+  font-weight: 300;
+}
+.cart-input:focus {
+  border-color: var(--gold);
+  background: #e8dfd0;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--gold); }
+
+/* ─── Selection ─── */
+::selection { background: var(--gold); color: var(--ink); }
