@@ -8,6 +8,7 @@ import AdminOrders from "./pages/AdminOrders";
 import AdminReports from "./pages/AdminReports";
 import AdminProductForm from "./pages/AdminProductForm";
 import AdminOrderDetails from "./pages/AdminOrderDetails";
+import AdminCustomers from "./pages/AdminCustomers";
 
 export default function AdminApp() {
   const [activePage, setActivePage] = useState("dashboard");
@@ -30,6 +31,8 @@ export default function AdminApp() {
         return <AdminProductForm />;
       case "orderDetails":
         return <AdminOrderDetails />;
+      case "customers":
+        return <AdminCustomers />;
 
       default:
         return (

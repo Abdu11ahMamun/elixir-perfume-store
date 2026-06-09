@@ -12,6 +12,10 @@ const badgeStyles = {
   NEW: "bg-[#f5f0e8] text-[var(--gold-dark)]",
   LIMITED: "bg-[#b88545]/15 text-[#8f5f24]",
   PREMIUM: "bg-[#0b0805] text-[var(--gold)]",
+  PRIVATE_CLIENT: "bg-[#0b0805] text-[var(--gold)]",
+  GOLD_COLLECTOR: "bg-[var(--gold)]/20 text-[var(--gold-dark)]",
+  EMERALD_MEMBER: "bg-[#d8c7a6]/35 text-[#8f6a32]",
+  NEW_DISCOVERY: "bg-[var(--warm)] text-[var(--gold-dark)]",
 };
 
 export default function AdminBadge({ value }) {
