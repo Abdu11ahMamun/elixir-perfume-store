@@ -11,6 +11,7 @@ import ProductDetails from "./pages/ProductDetails";
 import BestSellers from "./pages/BestSellers";
 import About from "./pages/About";
 
+import AdminApp from "./admin/AdminApp";
 import { useCart } from "./hooks/useCart";
 
 export default function App() {
@@ -37,6 +38,10 @@ export default function App() {
     setActivePage("productDetails");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  if (activePage === "admin") {
+    return <AdminApp />;
+  }
 
   return (
     <div
@@ -94,43 +99,15 @@ export default function App() {
         {activePage === "about" && <About />}
       </div>
 
-      <Footer
-        openPage={openPage}
-        openProductsPage={openProductsPage}
-      />
+      <Footer openPage={openPage} openProductsPage={openProductsPage} />
 
       {cart.cartCount > 0 && (
         <button
           onClick={() => setIsCartOpen(true)}
-          className="
-            sticky-cart
-            bg-[var(--ink)]
-            text-white
-            rounded-full
-            px-6
-            py-4
-            flex
-            items-center
-            gap-3
-          "
+          className="sticky-cart bg-[var(--ink)] text-white rounded-full px-6 py-4 flex items-center gap-3"
         >
-          <span className="text-xs uppercase tracking-[0.2em]">
-            Cart
-          </span>
-
-          <span
-            className="
-              w-7
-              h-7
-              rounded-full
-              bg-[var(--gold)]
-              text-[var(--ink)]
-              flex
-              items-center
-              justify-center
-              text-xs
-            "
-          >
+          <span className="text-xs uppercase tracking-[0.2em]">Cart</span>
+          <span className="w-7 h-7 rounded-full bg-[var(--gold)] text-[var(--ink)] flex items-center justify-center text-xs">
             {cart.cartCount}
           </span>
         </button>

@@ -1,0 +1,157 @@
+export const adminStats = [
+  {
+    id: "totalRevenue",
+    label: "Total Revenue",
+    value: "$48,920",
+    change: "+12.4%",
+    trend: "up",
+    description: "Compared to last month",
+  },
+  {
+    id: "totalOrders",
+    label: "Total Orders",
+    value: "1,284",
+    change: "+8.2%",
+    trend: "up",
+    description: "Orders this month",
+  },
+  {
+    id: "pendingOrders",
+    label: "Pending Orders",
+    value: "76",
+    change: "-3.1%",
+    trend: "down",
+    description: "Awaiting confirmation",
+  },
+  {
+    id: "lowStock",
+    label: "Low Stock",
+    value: "14",
+    change: "+5",
+    trend: "warning",
+    description: "Products need restock",
+  },
+];
+
+export const salesChartData = [
+  { month: "Jan", revenue: 4200, orders: 120 },
+  { month: "Feb", revenue: 6800, orders: 180 },
+  { month: "Mar", revenue: 5200, orders: 140 },
+  { month: "Apr", revenue: 7900, orders: 210 },
+  { month: "May", revenue: 6100, orders: 166 },
+  { month: "Jun", revenue: 9400, orders: 260 },
+  { month: "Jul", revenue: 8700, orders: 244 },
+  { month: "Aug", revenue: 10200, orders: 288 },
+  { month: "Sep", revenue: 11800, orders: 320 },
+  { month: "Oct", revenue: 13200, orders: 360 },
+  { month: "Nov", revenue: 12400, orders: 335 },
+  { month: "Dec", revenue: 14800, orders: 392 },
+];
+
+export const adminProducts = [
+  {
+    id: "prd-1001",
+    name: "Noir Ember",
+    sku: "ELX-NOIR-30",
+    category: "For Him",
+    price: 89,
+    stock: 42,
+    status: "ACTIVE",
+    badge: "BEST_SELLER",
+    createdAt: "2026-01-12",
+    image:
+      "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=300&auto=format&fit=crop",
+  },
+  {
+    id: "prd-1002",
+    name: "Velvet Bloom",
+    sku: "ELX-VELVET-30",
+    category: "For Her",
+    price: 74,
+    stock: 18,
+    status: "ACTIVE",
+    badge: "NEW",
+    createdAt: "2026-01-18",
+    image:
+      "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=300&auto=format&fit=crop",
+  },
+  {
+    id: "prd-1003",
+    name: "Azure Mist",
+    sku: "ELX-AZURE-30",
+    category: "For Her",
+    price: 92,
+    stock: 0,
+    status: "INACTIVE",
+    badge: "LIMITED",
+    createdAt: "2026-02-02",
+    image:
+      "https://images.unsplash.com/photo-1615634260167-c8cdede054de?q=80&w=300&auto=format&fit=crop",
+  },
+  {
+    id: "prd-1004",
+    name: "Golden Oud",
+    sku: "ELX-OUD-50",
+    category: "Luxury Oud",
+    price: 120,
+    stock: 9,
+    status: "ACTIVE",
+    badge: "PREMIUM",
+    createdAt: "2026-02-10",
+    image:
+      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=300&auto=format&fit=crop",
+  },
+];
+
+export const adminOrders = [
+  {
+    id: "ORD-9001",
+    customerName: "Araf Rahman",
+    phone: "+8801712345678",
+    total: 163,
+    paymentMethod: "Cash on Delivery",
+    paymentStatus: "UNPAID",
+    orderStatus: "PENDING",
+    createdAt: "2026-02-15",
+  },
+  {
+    id: "ORD-9002",
+    customerName: "Nusrat Jahan",
+    phone: "+8801811122233",
+    total: 120,
+    paymentMethod: "Bkash",
+    paymentStatus: "PAID",
+    orderStatus: "PROCESSING",
+    createdAt: "2026-02-16",
+  },
+  {
+    id: "ORD-9003",
+    customerName: "Sakib Hasan",
+    phone: "+8801919988877",
+    total: 89,
+    paymentMethod: "Nagad",
+    paymentStatus: "PAID",
+    orderStatus: "DELIVERED",
+    createdAt: "2026-02-17",
+  },
+  {
+    id: "ORD-9004",
+    customerName: "Maliha Khan",
+    phone: "+8801612349876",
+    total: 214,
+    paymentMethod: "Cash on Delivery",
+    paymentStatus: "UNPAID",
+    orderStatus: "CONFIRMED",
+    createdAt: "2026-02-18",
+  },
+];
+
+export const monthlyReport = {
+  month: "February 2026",
+  revenue: 48920,
+  orders: 1284,
+  averageOrderValue: 38.1,
+  conversionRate: 4.8,
+  topCategory: "Luxury Oud",
+  bestProduct: "Golden Oud",
+};

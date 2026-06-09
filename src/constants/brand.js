@@ -12,6 +12,7 @@ export const NAV_LINKS = [
   { label: "Perfumes", page: "products" },
   { label: "Best Sellers", page: "bestSellers" },
   { label: "About", page: "about" },
+  { label: "Admin", page: "admin" },
 ];
 
 export const PRODUCTS = [
