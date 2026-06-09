@@ -1,22 +1,22 @@
 const badgeStyles = {
-  ACTIVE: "bg-emerald-50 text-emerald-700",
-  INACTIVE: "bg-rose-50 text-rose-700",
-  PENDING: "bg-amber-50 text-amber-700",
-  CONFIRMED: "bg-blue-50 text-blue-700",
-  PROCESSING: "bg-indigo-50 text-indigo-700",
-  DELIVERED: "bg-emerald-50 text-emerald-700",
-  CANCELLED: "bg-rose-50 text-rose-700",
-  PAID: "bg-emerald-50 text-emerald-700",
-  UNPAID: "bg-amber-50 text-amber-700",
-  BEST_SELLER: "bg-violet-50 text-violet-700",
-  NEW: "bg-blue-50 text-blue-700",
-  LIMITED: "bg-orange-50 text-orange-700",
-  PREMIUM: "bg-yellow-50 text-yellow-700",
+  ACTIVE: "bg-[var(--gold)]/15 text-[var(--gold-dark)]",
+  INACTIVE: "bg-[#0b0805]/10 text-[#0b0805]",
+  PENDING: "bg-[#b88545]/15 text-[#8f5f24]",
+  CONFIRMED: "bg-[var(--gold)]/15 text-[var(--gold-dark)]",
+  PROCESSING: "bg-[#c9a96e]/15 text-[#8f6a32]",
+  DELIVERED: "bg-[var(--gold)]/20 text-[var(--gold-dark)]",
+  CANCELLED: "bg-[#0b0805]/10 text-[#0b0805]",
+  PAID: "bg-[var(--gold)]/20 text-[var(--gold-dark)]",
+  UNPAID: "bg-[#b88545]/15 text-[#8f5f24]",
+  BEST_SELLER: "bg-[var(--gold)]/20 text-[var(--gold-dark)]",
+  NEW: "bg-[#f5f0e8] text-[var(--gold-dark)]",
+  LIMITED: "bg-[#b88545]/15 text-[#8f5f24]",
+  PREMIUM: "bg-[#0b0805] text-[var(--gold)]",
 };
 
 export default function AdminBadge({ value }) {
   const label = String(value || "-").replaceAll("_", " ");
-  const classes = badgeStyles[value] || "bg-slate-100 text-slate-600";
+  const classes = badgeStyles[value] || "bg-[var(--warm)] text-[var(--mist)]";
 
   return (
     <span
@@ -26,8 +26,10 @@ export default function AdminBadge({ value }) {
         rounded-full
         px-3
         py-1
-        text-xs
+        text-[11px]
         font-medium
+        uppercase
+        tracking-[0.14em]
         ${classes}
       `}
     >
