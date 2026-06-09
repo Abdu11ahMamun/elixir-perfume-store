@@ -66,7 +66,7 @@ const tiers = [
   "NEW_DISCOVERY",
 ];
 
-export default function AdminCustomers() {
+export default function AdminCustomers({setActivePage}) {
   const [search, setSearch] = useState("");
   const [tier, setTier] = useState("All");
 
@@ -175,7 +175,7 @@ export default function AdminCustomers() {
 
           <div className="divide-y divide-[var(--gold)]/10 bg-[#fffcf8]">
             {filteredCustomers.map((customer) => (
-              <CustomerRow key={customer.id} customer={customer} />
+              <CustomerRow key={customer.id} customer={customer} setActivePage={setActivePage} />
             ))}
 
             {filteredCustomers.length === 0 && (
@@ -196,7 +196,7 @@ export default function AdminCustomers() {
   );
 }
 
-function CustomerRow({ customer }) {
+function CustomerRow({ customer, setActivePage }) {
   const initials = customer.name
     .split(" ")
     .map((part) => part[0])
@@ -246,7 +246,10 @@ function CustomerRow({ customer }) {
       <AdminBadge value={customer.tier} />
 
       <div className="flex justify-end gap-2">
-        <button className="rounded-full border border-[var(--gold)]/20 px-4 py-2 text-xs text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)]">
+       <button
+          onClick={() => setActivePage("customerProfile")}
+          className="rounded-full border border-[var(--gold)]/20 px-4 py-2 text-xs text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)]"
+        >
           View
         </button>
 

@@ -9,39 +9,46 @@ import AdminReports from "./pages/AdminReports";
 import AdminProductForm from "./pages/AdminProductForm";
 import AdminOrderDetails from "./pages/AdminOrderDetails";
 import AdminCustomers from "./pages/AdminCustomers";
+import AdminCustomerProfile from "./pages/AdminCustomerProfile";
+import Cursor from "../components/ui/Cursor";
 
 export default function AdminApp() {
   const [activePage, setActivePage] = useState("dashboard");
 
   const renderPage = () => {
     switch (activePage) {
-      case "dashboard":
+       case "dashboard":
         return <AdminDashboard />;
 
       case "products":
         return <AdminProducts />;
 
+      case "addProduct":
+        return <AdminProductForm />;
+
       case "orders":
-        return <AdminOrders />;
+        return <AdminOrders setActivePage={setActivePage} />;
+
+      case "orderDetails":
+        return <AdminOrderDetails />;
+
+      case "customers":
+        return <AdminCustomers setActivePage={setActivePage} />;
+
+      case "customerProfile":
+        return <AdminCustomerProfile />;
 
       case "reports":
         return <AdminReports />;
 
-      case "addProduct":
-        return <AdminProductForm />;
-      case "orderDetails":
-        return <AdminOrderDetails />;
-      case "customers":
-        return <AdminCustomers />;
-
       default:
         return (
-          <div className="rounded-3xl border border-slate-200 bg-white p-10">
-            <h1 className="text-3xl font-bold">
+          <div className="rounded-3xl border border-[var(--gold)]/20 bg-white p-10">
+            <h1 className="font-display text-5xl font-light">
               {activePage}
             </h1>
 
-            <p className="mt-3 text-slate-500">
+            <p className="mt-3 text-[var(--mist)]">
               This module is under construction.
             </p>
           </div>
@@ -49,12 +56,16 @@ export default function AdminApp() {
     }
   };
 
-  return (
+return (
+  <>
+    <Cursor />
+
     <AdminLayout
       activePage={activePage}
       setActivePage={setActivePage}
     >
       {renderPage()}
     </AdminLayout>
-  );
+  </>
+);
 }

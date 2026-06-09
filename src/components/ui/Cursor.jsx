@@ -23,8 +23,8 @@ export default function Cursor() {
     };
 
     const animate = () => {
-      ring.current.x += (mouse.current.x - ring.current.x) * 0.35;
-      ring.current.y += (mouse.current.y - ring.current.y) * 0.35;
+      ring.current.x += (mouse.current.x - ring.current.x) * 0.5;
+      ring.current.y += (mouse.current.y - ring.current.y) * 0.5;
 
       if (dotRef.current) {
         dotRef.current.style.transform = `translate3d(${mouse.current.x}px, ${mouse.current.y}px, 0) translate(-50%, -50%)`;

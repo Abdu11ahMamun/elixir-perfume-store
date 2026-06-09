@@ -522,3 +522,7 @@ body {
 .page-enter {
   animation: fadeUp 0.7s var(--ease-luxury) both;
 }
+.admin-area,
+.admin-area * {
+  cursor: auto !important;
+}

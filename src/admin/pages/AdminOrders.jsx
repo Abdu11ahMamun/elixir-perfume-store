@@ -17,7 +17,7 @@ const statuses = [
   "CANCELLED",
 ];
 
-export default function AdminOrders() {
+export default function AdminOrders({setActivePage}) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
 
@@ -127,7 +127,7 @@ export default function AdminOrders() {
 
           <div className="divide-y divide-[var(--gold)]/10 bg-[#fffcf8]">
             {filteredOrders.map((order) => (
-              <OrderRow key={order.id} order={order} />
+              <OrderRow key={order.id} order={order}setActivePage={setActivePage}/>
             ))}
 
             {filteredOrders.length === 0 && (
@@ -148,7 +148,7 @@ export default function AdminOrders() {
   );
 }
 
-function OrderRow({ order }) {
+function OrderRow({ order, setActivePage }) {
   const initials = order.customerName
     .split(" ")
     .map((part) => part[0])
@@ -204,7 +204,10 @@ function OrderRow({ order }) {
       </p>
 
       <div className="flex justify-end gap-2">
-        <button className="rounded-full border border-[var(--gold)]/20 px-4 py-2 text-xs text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)]">
+       <button
+          onClick={() => setActivePage("orderDetails")}
+          className="rounded-full border border-[var(--gold)]/20 px-4 py-2 text-xs text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)]"
+        >
           View
         </button>
 
