@@ -1,171 +1,399 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Button from "../components/ui/Button";
+import { useNavigate, useParams } from "react-router-dom";
+import { REGULAR_PRODUCTS, COMBO_PRODUCTS, PRODUCTS } from "../constants/brand";
+import {
+  formatPrice,
+  getDefaultSize,
+  getStockLabel,
+} from "../utils/price";
 import Eyebrow from "../components/ui/Eyebrow";
+import Button from "../components/ui/Button";
 
-export default function ProductDetails({
-  product,
-  addToCart,
-  openProductsPage,
-}) {
-  const [lightboxImage, setLightboxImage] = useState(null);
+/* ══════════════════════════════════════════════════════
+   IMAGE SLIDER
+══════════════════════════════════════════════════════ */
+function ImageSlider({ images, alt }) {
+  const [idx, setIdx] = useState(0);
+
+  // Reset when images array changes (size switch)
+  useEffect(() => { setIdx(0); }, [images]);
+
+  if (!images?.length) return null;
+
+  const prev = () => setIdx((i) => (i - 1 + images.length) % images.length);
+  const next = () => setIdx((i) => (i + 1) % images.length);
 
   return (
-    <main>
-      <section className="px-6 py-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
-          <div className="grid grid-cols-2 gap-5">
-            {product.gallery?.map((image) => (
+    <div
+      className="relative w-full overflow-hidden select-none"
+      style={{ aspectRatio: "3/4", background: "var(--warm)" }}
+    >
+      {/* Main image */}
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={idx}
+          src={images[idx]}
+          alt={`${alt} ${idx + 1}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </AnimatePresence>
+
+      {/* Arrows */}
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center transition-all duration-300"
+            style={{ background: "rgba(14,12,10,0.45)", color: "var(--parchment)", backdropFilter: "blur(8px)", cursor: "none" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(14,12,10,0.85)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(14,12,10,0.45)"; }}
+          >
+            ‹
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center transition-all duration-300"
+            style={{ background: "rgba(14,12,10,0.45)", color: "var(--parchment)", backdropFilter: "blur(8px)", cursor: "none" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(14,12,10,0.85)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(14,12,10,0.45)"; }}
+          >
+            ›
+          </button>
+
+          {/* Dots */}
+          <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {images.map((_, i) => (
               <button
-                key={image}
-                onClick={() => setLightboxImage(image)}
-                className="rounded-[2rem] overflow-hidden bg-[var(--warm)]"
+                key={i}
+                onClick={() => setIdx(i)}
+                style={{
+                  width: i === idx ? "20px" : "6px",
+                  height: "6px",
+                  borderRadius: "3px",
+                  background: i === idx ? "var(--gold)" : "rgba(245,240,232,0.5)",
+                  transition: "all 0.3s",
+                  cursor: "none",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Thumbnail strip */}
+          <div
+            className="absolute bottom-0 left-0 right-0 flex gap-2 p-3 overflow-x-auto"
+            style={{ background: "linear-gradient(to top, rgba(14,12,10,0.6), transparent)" }}
+          >
+            {images.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => setIdx(i)}
+                className="shrink-0 transition-all duration-300"
+                style={{
+                  width: "48px", height: "48px",
+                  border: i === idx ? "2px solid var(--gold)" : "2px solid transparent",
+                  overflow: "hidden",
+                  cursor: "none",
+                }}
               >
-                <img
-                  src={image}
-                  alt={product.name}
-                  className="w-full h-full min-h-[360px] object-cover hover:scale-105 transition duration-700"
-                />
+                <img src={img} alt="" className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
 
-          <div className="lg:sticky lg:top-32">
+          {/* Counter */}
+          <div
+            className="absolute top-3 right-3 eyebrow px-2 py-1"
+            style={{ background: "rgba(14,12,10,0.55)", color: "var(--parchment)", fontSize: "0.5rem", backdropFilter: "blur(8px)" }}
+          >
+            {idx + 1} / {images.length}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   PRODUCT DETAILS PAGE
+   — Works both as a standalone route /perfumes/:id
+     and as a modal (product prop passed directly)
+══════════════════════════════════════════════════════ */
+export default function ProductDetails({ product: propProduct, addToCart, onClose }) {
+  // ── Route-based: load product from URL param ──
+  const params = useParams();
+  const navigate = useNavigate();
+
+  const product = propProduct
+    ?? [...REGULAR_PRODUCTS, ...COMBO_PRODUCTS].find((p) => p.id === params?.id);
+
+  // ── Local state ──
+  const [selectedMl, setSelectedMl] = useState(null);
+  const [qty, setQty]               = useState(1);
+
+  // Init: select default size on product change
+  useEffect(() => {
+    if (!product) return;
+    const def = getDefaultSize(product);
+    setSelectedMl(def?.ml ?? product.sizes[0]?.ml);
+    setQty(1);
+  }, [product?.id]);
+
+  if (!product) {
+    return (
+      <main className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center">
+          <p className="font-display text-4xl font-light mb-4" style={{ color: "var(--mist)" }}>
+            Product not found
+          </p>
+          <Button onClick={() => navigate("/perfumes")}>Back to Shop</Button>
+        </div>
+      </main>
+    );
+  }
+
+  const selectedSize = product.sizes.find((s) => s.ml === selectedMl) ?? product.sizes[0];
+  const sl           = getStockLabel(selectedSize.stock);
+  const isSoldOut    = selectedSize.stock === 0;
+
+  const handleAdd = () => {
+    if (isSoldOut || !addToCart) return;
+    addToCart({
+      ...product,
+      selectedMl,
+      price: selectedSize.price,
+      image: selectedSize.images[0],
+      quantity: qty,
+    });
+    if (onClose) onClose();
+  };
+
+  const isModal = !!onClose;
+
+  const content = (
+    <div className={isModal ? "" : "max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-24"}>
+      <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+
+        {/* ── LEFT: Image slider ── */}
+        <div className="lg:sticky lg:top-28">
+          <ImageSlider images={selectedSize.images} alt={product.name} />
+        </div>
+
+        {/* ── RIGHT: Details ── */}
+        <div className="flex flex-col">
+
+          {/* Category + offer tag */}
+          <div className="flex items-center gap-3 mb-4">
             <Eyebrow>{product.category}</Eyebrow>
-
-            <h1 className="font-display text-6xl md:text-8xl font-light mt-5 mb-5 leading-none">
-              {product.name}
-            </h1>
-
-            <p className="text-[var(--mist)] text-lg leading-8 mb-6">
-              {product.description}
-            </p>
-
-            <div className="flex items-center gap-3 mb-8">
-              <span className="text-[var(--gold)]">★★★★★</span>
-              <span>{product.rating}</span>
-              <span className="text-[var(--mist)]">
-                ({product.reviews} reviews)
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-3 mb-8">
-              {product.tags?.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-4 py-2 rounded-full bg-[var(--warm)] text-xs uppercase tracking-[0.18em]"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-4 mb-10">
-              <span className="font-display text-5xl">
-                {product.price}
-              </span>
-
-              {product.oldPrice && (
-                <span className="text-xl line-through text-[var(--mist)]">
-                  {product.oldPrice}
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 mb-12">
-              <Button
-                disabled={product.stock === "Sold out"}
-                onClick={() => addToCart(product)}
-                className="justify-center"
+            {product.isCombo && product.offerTag && (
+              <span
+                className="eyebrow px-3 py-1"
+                style={{ background: "var(--plum)", color: "var(--gold)", fontSize: "0.5rem" }}
               >
-                {product.stock === "Sold out"
-                  ? "Sold Out"
-                  : "Add To Cart"}
-              </Button>
+                {product.offerTag}
+              </span>
+            )}
+          </div>
 
-              <Button
-                variant="ghost"
-                onClick={() => openProductsPage(product.category)}
-                className="justify-center"
-              >
-                View Similar
-              </Button>
-            </div>
+          {/* Name */}
+          <h1
+            className="font-display font-light leading-none mb-3"
+            style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)" }}
+          >
+            {product.name}
+          </h1>
 
-            <div className="grid sm:grid-cols-3 gap-4 mb-12">
-              <InfoCard title="Longevity" value={product.longevity} />
-              <InfoCard title="Projection" value={product.projection} />
-              <InfoCard title="Season" value={product.season} />
-            </div>
+          {/* Inspired by */}
+          <p className="mb-5" style={{ fontFamily: "var(--font-body)", fontSize: "0.82rem", color: "var(--mist)" }}>
+            Inspired by:{" "}
+            <em style={{ color: "var(--gold-dark)", fontStyle: "italic" }}>{product.inspiredBy}</em>
+          </p>
 
-            <div className="bg-[var(--warm)] rounded-[2rem] p-8">
-              <h2 className="font-display text-4xl font-light mb-6">
-                Fragrance Notes
-              </h2>
+          {/* Description */}
+          <p
+            className="mb-6"
+            style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "0.92rem", lineHeight: 1.9, color: "var(--mist)" }}
+          >
+            {product.description}
+          </p>
 
-              <Notes title="Top Notes" items={product.topNotes} />
-              <Notes title="Heart Notes" items={product.heartNotes} />
-              <Notes title="Base Notes" items={product.baseNotes} />
+          {/* Scent note */}
+          <div className="mb-6 pb-6" style={{ borderBottom: "1px solid var(--warm)" }}>
+            <Eyebrow style={{ fontSize: "0.52rem" }}>Scent Profile</Eyebrow>
+            <p className="mt-2" style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem" }}>{product.note}</p>
+          </div>
+
+          {/* ── Size selector ── */}
+          <div className="mb-5">
+            <Eyebrow className="mb-3" style={{ fontSize: "0.52rem" }}>Select Size</Eyebrow>
+            <div className="flex gap-2 flex-wrap mt-3">
+              {product.sizes.map((s) => {
+                const active   = selectedMl === s.ml;
+                const outStock = s.stock === 0;
+                return (
+                  <button
+                    key={s.ml}
+                    onClick={() => { if (!outStock) { setSelectedMl(s.ml); setQty(1); } }}
+                    className="relative transition-all duration-300"
+                    style={{
+                      padding: "0.65rem 1.3rem",
+                      border: "1px solid",
+                      cursor: outStock ? "not-allowed" : "none",
+                      borderColor: active ? "var(--ink)" : outStock ? "rgba(14,12,10,0.12)" : "rgba(14,12,10,0.22)",
+                      background: active ? "var(--ink)" : "transparent",
+                      color: active ? "var(--parchment)" : outStock ? "rgba(14,12,10,0.3)" : "var(--ink)",
+                      opacity: outStock ? 0.55 : 1,
+                    }}
+                  >
+                    <div style={{ fontFamily: "var(--font-body)", fontSize: "0.72rem", fontWeight: active ? 400 : 300, letterSpacing: "0.1em" }}>
+                      {s.ml}ml
+                    </div>
+                    <div style={{ fontFamily: "var(--font-body)", fontSize: "0.62rem", color: active ? "rgba(245,240,232,0.7)" : "var(--mist)", marginTop: "2px" }}>
+                      {formatPrice(s.price)}
+                    </div>
+                    {/* Strikethrough for sold out */}
+                    {outStock && (
+                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+                        <div style={{ width: "100%", height: "1px", background: "rgba(14,12,10,0.2)", transform: "rotate(-18deg)" }} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
-      </section>
 
-      <AnimatePresence>
-        {lightboxImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setLightboxImage(null)}
-            className="fixed inset-0 z-[1000] bg-black/85 flex items-center justify-center p-6"
+          {/* ── Stock + Price bar ── */}
+          <div
+            className="flex items-center justify-between mb-5 p-4"
+            style={{ background: "var(--warm)", border: "1px solid rgba(14,12,10,0.06)" }}
           >
-            <motion.img
-              initial={{ scale: 0.92, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.92, opacity: 0 }}
-              src={lightboxImage}
-              alt={product.name}
-              className="max-w-5xl max-h-[85vh] object-contain rounded-[2rem]"
-              onClick={(event) => event.stopPropagation()}
-            />
+            <div>
+              <div style={{ fontFamily: "var(--font-body)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--mist)", marginBottom: "0.2rem" }}>
+                Stock ({selectedSize.ml}ml)
+              </div>
+              <div style={{ fontFamily: "var(--font-body)", fontSize: "0.85rem", fontWeight: 400, color: sl.color }}>
+                {sl.text}
+              </div>
+            </div>
+            <div className="text-right">
+              <div style={{ fontFamily: "var(--font-body)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--mist)", marginBottom: "0.2rem" }}>
+                Price
+              </div>
+              <div className="font-display text-3xl font-light" style={{ color: "var(--ink)" }}>
+                {formatPrice(selectedSize.price)}
+              </div>
+            </div>
+          </div>
 
+          {/* ── Quantity ── */}
+          {!isSoldOut && (
+            <div className="flex items-center gap-4 mb-6">
+              <div style={{ fontFamily: "var(--font-body)", fontSize: "0.6rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--mist)" }}>
+                Qty
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  className="w-9 h-9 flex items-center justify-center transition-colors duration-300"
+                  style={{ border: "1px solid var(--warm)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.color = "var(--parchment)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--ink)"; }}
+                >
+                  −
+                </button>
+                <span className="font-display text-2xl font-light w-8 text-center">{qty}</span>
+                <button
+                  onClick={() => setQty((q) => Math.min(selectedSize.stock, q + 1))}
+                  className="w-9 h-9 flex items-center justify-center transition-colors duration-300"
+                  style={{ border: "1px solid var(--warm)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.color = "var(--parchment)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--ink)"; }}
+                >
+                  +
+                </button>
+              </div>
+              <div style={{ fontFamily: "var(--font-body)", fontSize: "0.78rem", color: "var(--mist)" }}>
+                Total:{" "}
+                <strong style={{ color: "var(--ink)" }}>
+                  {formatPrice(selectedSize.price * qty)}
+                </strong>
+              </div>
+            </div>
+          )}
+
+          {/* ── CTA buttons ── */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            <Button
+              disabled={isSoldOut}
+              onClick={handleAdd}
+              className="justify-center flex-1"
+              style={{ opacity: isSoldOut ? 0.5 : 1, cursor: isSoldOut ? "not-allowed" : "none" }}
+            >
+              {isSoldOut ? "Out of Stock" : "Add to Bag"}
+            </Button>
+
+            {!isModal && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/perfumes")}
+                className="justify-center"
+              >
+                View All
+              </Button>
+            )}
+          </div>
+
+          {/* SKU */}
+          <p
+            className="text-center"
+            style={{ fontFamily: "var(--font-body)", fontSize: "0.6rem", color: "rgba(14,12,10,0.3)", letterSpacing: "0.12em" }}
+          >
+            SKU: {product.id} · {selectedSize.ml}ml
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Modal mode (called from ProductCard) ──
+  if (isModal) {
+    return (
+      <AnimatePresence>
+        <div
+          className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-6"
+          style={{ background: "rgba(8,7,11,0.75)", backdropFilter: "blur(6px)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="relative w-full sm:max-w-[900px] max-h-[95vh] overflow-y-auto"
+            style={{ background: "var(--cream)" }}
+          >
+            {/* Close button */}
             <button
-              onClick={() => setLightboxImage(null)}
-              className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white text-black"
+              onClick={onClose}
+              className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center transition-colors duration-300"
+              style={{ border: "1px solid var(--warm)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.color = "var(--parchment)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--ink)"; }}
             >
               ×
             </button>
+            <div className="p-6 sm:p-8">{content}</div>
           </motion.div>
-        )}
+        </div>
       </AnimatePresence>
-    </main>
-  );
-}
+    );
+  }
 
-function InfoCard({ title, value }) {
-  return (
-    <div className="bg-white rounded-[1.5rem] p-5">
-      <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--gold)] mb-2">
-        {title}
-      </p>
-      <p className="text-sm text-[var(--mist)] leading-6">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function Notes({ title, items }) {
-  return (
-    <div className="border-b border-black/10 last:border-b-0 py-5 first:pt-0 last:pb-0">
-      <p className="text-xs uppercase tracking-[0.22em] text-[var(--gold)] mb-3">
-        {title}
-      </p>
-
-      <p className="font-display text-2xl font-light">
-        {items?.join(", ")}
-      </p>
-    </div>
-  );
+  // ── Page mode (route /perfumes/:id) ──
+  return <main>{content}</main>;
 }

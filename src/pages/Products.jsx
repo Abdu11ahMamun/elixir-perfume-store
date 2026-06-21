@@ -1,252 +1,249 @@
 import { useMemo, useState } from "react";
-
-import { CATEGORIES, PRODUCTS } from "../constants/brand";
+import { CATEGORIES, REGULAR_PRODUCTS } from "../constants/brand";
 import ProductCard from "../components/ui/ProductCard";
 import Eyebrow from "../components/ui/Eyebrow";
 
+/* ─── PAGE_SIZE ──────────────────────────────────────────
+   BACKEND NOTE: replace local slice with
+   GET /api/products?category=X&search=Y&sort=Z&page=N&limit=8
+   and replace totalPages with Math.ceil(apiRes.total / PAGE_SIZE)
+─────────────────────────────────────────────────────────── */
 const PAGE_SIZE = 8;
 
 export default function Products({
   activeCategory,
   setActiveCategory,
-  addToCart,
-  openProductDetails,
+  onOpen,                  // (product) => void — opens ProductDetails modal
 }) {
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("featured");
-  const [page, setPage] = useState(1);
+  const [sort, setSort]     = useState("featured");
+  const [page, setPage]     = useState(1);
 
   const filteredProducts = useMemo(() => {
+    // Base list — regular products only (no combos)
     let result =
       activeCategory === "All"
-        ? PRODUCTS
-        : PRODUCTS.filter(
-            (product) => product.category === activeCategory
-          );
+        ? REGULAR_PRODUCTS
+        : REGULAR_PRODUCTS.filter((p) => p.category === activeCategory);
 
+    // Search: name, note, category, inspiredBy
     if (search.trim()) {
-      const query = search.toLowerCase();
-
-      result = result.filter((product) => {
-        return (
-          product.name.toLowerCase().includes(query) ||
-          product.note.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query) ||
-          product.tags?.some((tag) =>
-            tag.toLowerCase().includes(query)
-          )
-        );
-      });
+      const q = search.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.note.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.inspiredBy.toLowerCase().includes(q)
+      );
     }
 
+    // Sort — uses sizes[] prices (not a flat price string)
     if (sort === "price-low") {
       result = [...result].sort(
         (a, b) =>
-          Number(a.price.replace("$", "")) -
-          Number(b.price.replace("$", ""))
+          Math.min(...a.sizes.map((s) => s.price)) -
+          Math.min(...b.sizes.map((s) => s.price))
       );
     }
-
     if (sort === "price-high") {
       result = [...result].sort(
         (a, b) =>
-          Number(b.price.replace("$", "")) -
-          Number(a.price.replace("$", ""))
+          Math.max(...b.sizes.map((s) => s.price)) -
+          Math.max(...a.sizes.map((s) => s.price))
       );
     }
-
-    if (sort === "rating") {
-      result = [...result].sort(
-        (a, b) => b.rating - a.rating
-      );
+    if (sort === "name-az") {
+      result = [...result].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     return result;
   }, [activeCategory, search, sort]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredProducts.length / PAGE_SIZE)
-  );
+  const totalPages     = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+  const productsToShow = filteredProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const productsToShow = filteredProducts.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
-  );
-
-  const handleCategoryChange = (category) => {
-    setActiveCategory(category);
-    setPage(1);
-  };
+  const handleCategory = (cat) => { setActiveCategory(cat); setPage(1); };
+  const handleSearch   = (e)   => { setSearch(e.target.value); setPage(1); };
+  const handleSort     = (e)   => { setSort(e.target.value); setPage(1); };
 
   return (
     <main>
-      <section className="bg-[var(--ink)] px-6 py-24 text-center">
-        <Eyebrow>Perfume Shop</Eyebrow>
-
-        <h1
-          className="
-            font-display
-            text-6xl
-            md:text-8xl
-            font-light
-            text-[var(--parchment)]
-            mt-5
-          "
-        >
-          All Perfumes
-        </h1>
-
-        <p className="text-white/45 leading-8 max-w-2xl mx-auto mt-6">
-          Browse luxury fragrances by mood, category, price, and performance.
-        </p>
+      {/* ── Hero header ── */}
+      <section
+        className="relative overflow-hidden flex items-end"
+        style={{ minHeight: "40vh", background: "var(--ink)" }}
+      >
+        <img
+          src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=1800&auto=format&fit=crop"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ opacity: 0.2, filter: "saturate(0.5)" }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(to top, var(--ink) 0%, transparent 60%)" }}
+        />
+        <div className="relative max-w-[1400px] mx-auto px-6 lg:px-12 pb-12 pt-20 w-full">
+          <Eyebrow>Perfume Shop</Eyebrow>
+          <h1
+            className="font-display mt-3"
+            style={{ fontSize: "clamp(3rem,8vw,7rem)", fontWeight: 300, color: "var(--parchment)", lineHeight: 0.9 }}
+          >
+            All Perfumes
+          </h1>
+        </div>
       </section>
 
-      <section className="px-6 py-14 border-b border-black/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-6 lg:items-center lg:justify-between">
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {CATEGORIES.map((category) => (
-                <button
-                  key={category}
-                  onClick={() =>
-                    handleCategoryChange(category)
-                  }
-                  className={`
-                    shrink-0
-                    px-5
-                    py-3
-                    rounded-full
-                    border
-                    text-xs
-                    uppercase
-                    tracking-[0.2em]
-                    transition
-                    ${
-                      activeCategory === category
-                        ? "bg-[var(--ink)] text-white border-[var(--ink)]"
-                        : "border-black/10 hover:border-[var(--gold)]"
-                    }
-                  `}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <input
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                  setPage(1);
-                }}
-                type="text"
-                placeholder="Search perfumes..."
-                className="
-                  px-5
-                  py-3
-                  rounded-full
-                  bg-white
-                  border
-                  border-black/10
-                  outline-none
-                  min-w-[260px]
-                "
-              />
-
-              <select
-                value={sort}
-                onChange={(event) => {
-                  setSort(event.target.value);
-                  setPage(1);
-                }}
-                className="
-                  px-5
-                  py-3
-                  rounded-full
-                  bg-white
-                  border
-                  border-black/10
-                  outline-none
-                "
+      {/* ── Toolbar: search + sort + categories ── */}
+      <section
+        className="px-6 lg:px-12 py-8 max-w-[1400px] mx-auto"
+        style={{ background: "var(--cream)" }}
+      >
+        {/* Search + Sort row */}
+        <div
+          className="flex flex-col sm:flex-row gap-3 mb-6 pb-6"
+          style={{ borderBottom: "1px solid var(--warm)" }}
+        >
+          {/* Search */}
+          <div className="relative flex-1 max-w-sm">
+            <svg
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+              width="12" height="12" viewBox="0 0 12 12" fill="none"
+              style={{ color: "var(--mist)" }}
+            >
+              <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1"/>
+              <path d="M9 9l2.5 2.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={handleSearch}
+              placeholder="Search by name, note, or inspired by…"
+              className="cart-input"
+              style={{ paddingLeft: "2.2rem", background: "var(--warm)" }}
+            />
+            {search && (
+              <button
+                onClick={() => { setSearch(""); setPage(1); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+                style={{ color: "var(--mist)", fontSize: "1rem", lineHeight: 1, cursor: "none" }}
               >
-                <option value="featured">
-                  Sort: Featured
-                </option>
-                <option value="price-low">
-                  Price: Low to High
-                </option>
-                <option value="price-high">
-                  Price: High to Low
-                </option>
-                <option value="rating">
-                  Top Rated
-                </option>
-              </select>
-            </div>
+                ×
+              </button>
+            )}
           </div>
 
-          <p className="mt-6 text-sm text-[var(--mist)]">
-            Showing {filteredProducts.length} products
-          </p>
+          {/* Sort */}
+          <select
+            value={sort}
+            onChange={handleSort}
+            className="cart-input"
+            style={{ background: "var(--warm)", maxWidth: "200px", cursor: "none" }}
+          >
+            <option value="featured">Sort: Featured</option>
+            <option value="price-low">Price: Low → High</option>
+            <option value="price-high">Price: High → Low</option>
+            <option value="name-az">Name: A → Z</option>
+          </select>
+
+          {/* Count */}
+          <span
+            className="self-center ml-auto shrink-0"
+            style={{ fontFamily: "var(--font-body)", fontSize: "0.7rem", color: "var(--mist)" }}
+          >
+            {filteredProducts.length} {filteredProducts.length === 1 ? "item" : "items"}
+          </span>
         </div>
-      </section>
 
-      <section className="px-6 py-20">
-        <div className="max-w-7xl mx-auto">
-          {productsToShow.length > 0 ? (
-            <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
-              {productsToShow.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  addToCart={addToCart}
-                  openProductDetails={openProductDetails}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-24">
-              <h2 className="font-display text-5xl font-light mb-4">
-                No perfumes found
-              </h2>
-
-              <p className="text-[var(--mist)]">
-                Try changing your search or category.
-              </p>
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-3 mt-16">
-              {Array.from(
-                { length: totalPages },
-                (_, index) => index + 1
-              ).map((number) => (
-                <button
-                  key={number}
-                  onClick={() => setPage(number)}
-                  className={`
-                    w-11
-                    h-11
-                    rounded-full
-                    border
-                    transition
-                    ${
-                      page === number
-                        ? "bg-[var(--ink)] text-white border-[var(--ink)]"
-                        : "border-black/10 hover:border-[var(--gold)]"
-                    }
-                  `}
-                >
-                  {number}
-                </button>
-              ))}
-            </div>
-          )}
+        {/* Category tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-10">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => handleCategory(cat)}
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "0.65rem",
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                padding: "0.55rem 1.3rem",
+                border: "1px solid",
+                whiteSpace: "nowrap",
+                transition: "all 0.3s var(--ease-luxury)",
+                cursor: "none",
+                borderColor: activeCategory === cat ? "var(--ink)" : "rgba(14,12,10,0.14)",
+                background: activeCategory === cat ? "var(--ink)" : "transparent",
+                color: activeCategory === cat ? "var(--parchment)" : "var(--mist)",
+              }}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
+
+        {/* ── Product grid ── */}
+        {productsToShow.length > 0 ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {productsToShow.map((product) => (
+              <div key={product.id} className="animate-fade-up">
+                <ProductCard product={product} onOpen={onOpen} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-24">
+            <div className="font-display italic text-5xl mb-4" style={{ color: "var(--warm)" }}>∅</div>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem", color: "var(--mist)" }}>
+              No results for <em>"{search}"</em>
+            </p>
+            <button
+              onClick={() => { setSearch(""); setPage(1); }}
+              className="btn-ghost mt-6"
+              style={{ fontSize: "0.68rem" }}
+            >
+              Clear Search
+            </button>
+          </div>
+        )}
+
+        {/* ── Pagination ── */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-14">
+            <PageBtn onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} label="‹" />
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+              <PageBtn key={n} onClick={() => setPage(n)} active={page === n} label={n} />
+            ))}
+            <PageBtn onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} label="›" />
+            <span style={{ fontFamily: "var(--font-body)", fontSize: "0.72rem", color: "var(--mist)", marginLeft: "8px" }}>
+              {page} / {totalPages}
+            </span>
+          </div>
+        )}
       </section>
     </main>
+  );
+}
+
+/* ─── Pagination button ───────────────────────────────── */
+function PageBtn({ onClick, disabled, active, label }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        width: "36px", height: "36px",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        border: "1px solid",
+        transition: "all 0.3s var(--ease-luxury)",
+        cursor: disabled ? "not-allowed" : "none",
+        fontFamily: "var(--font-body)", fontSize: "0.78rem",
+        borderColor: active ? "var(--ink)" : disabled ? "rgba(14,12,10,0.08)" : "rgba(14,12,10,0.18)",
+        background: active ? "var(--ink)" : "transparent",
+        color: active ? "var(--parchment)" : disabled ? "rgba(14,12,10,0.2)" : "var(--mist)",
+      }}
+    >
+      {label}
+    </button>
   );
 }

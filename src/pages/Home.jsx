@@ -1,120 +1,137 @@
-import {
-  BRAND,
-  FEATURED,
-  COLLECTIONS,
-  STATS,
-} from "../constants/brand";
-
-import TrustBar from "../components/ui/TrustBar";
+import { BRAND, FEATURED, COLLECTIONS, STATS, COMBO_PRODUCTS } from "../constants/brand";
+import TrustBar    from "../components/ui/TrustBar";
 import CollectionCard from "../components/ui/CollectionCard";
-import ProductCard from "../components/ui/ProductCard";
-import Newsletter from "../components/ui/Newsletter";
-import FragranceFinder from "../components/fragrance/FragranceFinder";
-import Marquee from "../components/Marquee";
-import Eyebrow from "../components/ui/Eyebrow";
-import Button from "../components/ui/Button";
+import ProductCard  from "../components/ui/ProductCard";
+import Newsletter   from "../components/ui/Newsletter";
+import Marquee      from "../components/Marquee";
+import Eyebrow      from "../components/ui/Eyebrow";
+import Button       from "../components/ui/Button";
 
-export default function Home({
-  openProductsPage,
-  addToCart,
-  openProductDetails,
-}) {
+/* ─── Home ───────────────────────────────────────────────
+   Props:
+   - openProductsPage(category)  — navigates to /perfumes
+   - openPage(pageName)          — navigates to named page
+   - onOpen(product)             — opens ProductDetails modal
+─────────────────────────────────────────────────────────── */
+export default function Home({ openProductsPage, openPage, onOpen }) {
   return (
     <>
-      {/* HERO */}
-      <section className="relative min-h-[90vh] overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=1800&auto=format&fit=crop"
-            alt="Luxury perfume"
-            className="w-full h-full object-cover animate-slow-zoom"
-          />
+      {/* ── HERO ── */}
+      <section className="relative overflow-hidden" style={{ background: "var(--ink)", minHeight: "95vh", display: "flex", alignItems: "stretch" }}>
+        <div className="relative w-full grid lg:grid-cols-[1fr_1fr] min-h-[95vh]">
 
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent" />
-        </div>
+          {/* Left: Text */}
+          <div
+            className="relative z-10 flex flex-col justify-end px-8 sm:px-14 lg:px-20 py-16 lg:py-24"
+            style={{ background: "var(--ink)" }}
+          >
+            <div className="max-w-md">
+              <div className="animate-fade-up">
+                <Eyebrow>Luxury Perfume Collection</Eyebrow>
+                <div className="divider" />
+              </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 min-h-[90vh] flex items-center">
-          <div className="max-w-2xl text-white">
-            <Eyebrow>
-              Luxury Perfume Collection
-            </Eyebrow>
-
-            <h1
-              className="
-                font-display
-                text-6xl
-                md:text-8xl
-                font-light
-                leading-[0.9]
-                mt-6
-                mb-8
-                animate-fade-up
-              "
-            >
-              Wear Your
-              <br />
-              <span className="italic text-[var(--gold)]">
+              <h1
+                className="font-display animate-fade-up"
+                style={{ fontSize: "clamp(3.5rem,8vw,7rem)", fontWeight: 300, lineHeight: 0.95, color: "var(--parchment)", marginBottom: "0.15em", animationDelay: "0.2s" }}
+              >
+                Wear Your
+              </h1>
+              <h1
+                className="font-display italic animate-fade-up"
+                style={{ fontSize: "clamp(3.5rem,8vw,7rem)", fontWeight: 300, lineHeight: 0.95, color: "var(--gold)", marginBottom: "1.4rem", animationDelay: "0.3s" }}
+              >
                 Signature
-              </span>
-            </h1>
+              </h1>
 
-            <p
-              className="
-                text-lg
-                text-white/70
-                leading-8
-                mb-10
-                max-w-xl
-              "
+              <p
+                className="animate-fade-up"
+                style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "0.92rem", lineHeight: 1.9, color: "rgba(245,240,232,0.55)", marginBottom: "2.5rem", animationDelay: "0.4s" }}
+              >
+                {BRAND.description}
+              </p>
+
+              <div className="flex flex-wrap gap-4 animate-fade-up" style={{ animationDelay: "0.5s" }}>
+                <Button onClick={() => openProductsPage("All")}>
+                  Explore Collection
+                </Button>
+                <Button
+                  variant="ghost-light"
+                  onClick={() => openPage("offers")}
+                >
+                  View Offers
+                </Button>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div
+              className="flex gap-8 mt-14 pt-8 animate-fade-up"
+              style={{ borderTop: "1px solid rgba(245,240,232,0.08)", animationDelay: "0.6s" }}
             >
-              {BRAND.description}
-            </p>
+              {STATS.slice(0, 3).map(({ value, label }) => (
+                <div key={label}>
+                  <div className="font-display text-2xl font-light" style={{ color: "var(--gold)" }}>{value}</div>
+                  <div style={{ fontFamily: "var(--font-body)", fontSize: "0.58rem", letterSpacing: "0.18em", color: "rgba(245,240,232,0.28)", textTransform: "uppercase", marginTop: "0.2rem" }}>
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-            <div className="flex flex-wrap gap-4">
-              <Button
-                onClick={() =>
-                  openProductsPage("All")
-                }
-              >
-                Explore Collection
-              </Button>
+          {/* Right: Hero image */}
+          <div className="relative overflow-hidden h-[55vw] lg:h-auto">
+            <img
+              src="https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=1400&auto=format&fit=crop"
+              alt="Signature fragrance"
+              className="animate-slow-zoom absolute inset-0 w-full h-full object-cover"
+              style={{ filter: "brightness(0.88) saturate(0.85)" }}
+            />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to right, var(--ink) 0%, transparent 35%)" }} />
 
-              <Button
-                variant="ghost-light"
-                onClick={() =>
-                  openProductsPage("All")
-                }
-              >
-                Best Sellers
-              </Button>
+            {/* Floating badge */}
+            <div
+              className="absolute bottom-8 right-8 text-center animate-float"
+              style={{
+                width: "96px", height: "96px",
+                border: "1px solid rgba(201,169,110,0.5)", borderRadius: "50%",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                background: "rgba(14,12,10,0.65)", backdropFilter: "blur(10px)",
+              }}
+            >
+              <span className="font-display italic text-sm" style={{ color: "var(--gold)" }}>New</span>
+              <span style={{ fontFamily: "var(--font-body)", fontSize: "0.48rem", letterSpacing: "0.28em", color: "var(--parchment)", textTransform: "uppercase", marginTop: "2px" }}>
+                Collection
+              </span>
             </div>
           </div>
         </div>
       </section>
 
       <TrustBar />
-
       <Marquee />
 
-      {/* CATEGORIES */}
-      <section className="py-28 px-6">
-        <div className="max-w-7xl mx-auto">
-          <Eyebrow>Collections</Eyebrow>
+      {/* ── COLLECTIONS ── */}
+      <section className="py-24 lg:py-32" style={{ background: "var(--cream)" }}>
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12">
+            <div>
+              <Eyebrow>Collections</Eyebrow>
+              <h2
+                className="font-display mt-3"
+                style={{ fontSize: "clamp(3rem,6vw,5rem)", fontWeight: 300, lineHeight: 1.05, color: "var(--ink)" }}
+              >
+                Explore<br />
+                <em style={{ color: "var(--gold-dark)", fontStyle: "italic" }}>Categories</em>
+              </h2>
+            </div>
+            <Button variant="ghost" onClick={() => openProductsPage("All")}>
+              View All
+            </Button>
+          </div>
 
-          <h2
-            className="
-              font-display
-              text-5xl
-              md:text-7xl
-              font-light
-              mt-4
-              mb-14
-            "
-          >
-            Explore Categories
-          </h2>
-
-          <div className="grid lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {COLLECTIONS.map((collection) => (
               <CollectionCard
                 key={collection.title}
@@ -126,86 +143,138 @@ export default function Home({
         </div>
       </section>
 
-      {/* FEATURED */}
-      <section className="bg-[var(--ink)] py-28 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <Eyebrow>Best Sellers</Eyebrow>
-
-            <h2
-              className="
-                font-display
-                text-5xl
-                md:text-7xl
-                font-light
-                text-[var(--parchment)]
-                mt-4
-              "
-            >
-              Featured Fragrances
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
-            {FEATURED.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                addToCart={addToCart}
-                openProductDetails={
-                  openProductDetails
-                }
-              />
-            ))}
-          </div>
+      {/* ── FEATURED FRAGRANCES ── */}
+      <section className="py-24 lg:py-32 relative overflow-hidden" style={{ background: "var(--ink)" }}>
+        {/* Watermark */}
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+          aria-hidden="true"
+        >
+          <span
+            className="font-display italic"
+            style={{ fontSize: "clamp(8rem,26vw,26rem)", fontWeight: 300, color: "rgba(245,240,232,0.02)", lineHeight: 1, whiteSpace: "nowrap" }}
+          >
+            Scent
+          </span>
         </div>
-      </section>
 
-      {/* STATS */}
-      <section className="py-28 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            {STATS.map((item) => (
-              <div
-                key={item.label}
-                className="
-                  bg-[var(--warm)]
-                  rounded-[2rem]
-                  p-10
-                  text-center
-                "
+        <div className="relative max-w-[1400px] mx-auto px-6 lg:px-12">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-14">
+            <div>
+              <Eyebrow>Best Sellers</Eyebrow>
+              <h2
+                className="font-display mt-3"
+                style={{ fontSize: "clamp(3rem,6vw,5rem)", fontWeight: 300, color: "var(--parchment)", lineHeight: 1.0 }}
               >
-                <div
-                  className="
-                    font-display
-                    text-6xl
-                    text-[var(--gold-dark)]
-                    mb-4
-                  "
-                >
-                  {item.value}
-                </div>
+                Featured<br />
+                <em style={{ color: "var(--gold)", fontStyle: "italic" }}>Fragrances</em>
+              </h2>
+            </div>
+            <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "0.85rem", lineHeight: 1.9, color: "rgba(245,240,232,0.38)", maxWidth: "22rem" }}>
+              Inspired by the great perfume houses while maintaining a modern, premium identity.
+            </p>
+          </div>
 
-                <p
-                  className="
-                    uppercase
-                    tracking-[0.2em]
-                    text-xs
-                  "
-                >
-                  {item.label}
-                </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {FEATURED.map((product) => (
+              <div key={product.id} className="animate-fade-up">
+                <ProductCard product={product} onOpen={onOpen} />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <FragranceFinder
-        openProductDetails={
-          openProductDetails
-        }
-      />
+      {/* ── OFFERS / COMBO SECTION ── */}
+      {COMBO_PRODUCTS.length > 0 && (
+        <section className="py-24 lg:py-32 relative overflow-hidden" style={{ background: "var(--plum)" }}>
+          {/* Watermark */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden" aria-hidden="true">
+            <span className="font-display italic"
+              style={{ fontSize: "clamp(6rem,20vw,20rem)", fontWeight: 300, color: "rgba(245,240,232,0.025)", lineHeight: 1, whiteSpace: "nowrap" }}>
+              Offers
+            </span>
+          </div>
+
+          <div className="relative max-w-[1400px] mx-auto px-6 lg:px-12">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-14">
+              <div>
+                <Eyebrow>Special Occasions</Eyebrow>
+                <h2 className="font-display mt-3"
+                  style={{ fontSize: "clamp(2.8rem,5.5vw,4.5rem)", fontWeight: 300, color: "var(--parchment)", lineHeight: 1.0 }}>
+                  Combos &<br /><em style={{ color: "var(--gold)", fontStyle: "italic" }}>Offers</em>
+                </h2>
+              </div>
+              <Button variant="ghost-light" onClick={() => openPage("offers")}>
+                View All Offers
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+              {COMBO_PRODUCTS.map((product) => (
+                <div key={product.id} className="animate-fade-up">
+                  <ProductCard product={product} onOpen={onOpen} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── PHILOSOPHY ── */}
+      <section
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "72vh" }}
+        className="max-lg:block"
+      >
+        <div className="relative overflow-hidden" style={{ minHeight: "50vw" }}>
+          <img
+            src="https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?q=80&w=1400&auto=format&fit=crop"
+            alt="Luxury perfume"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: "saturate(0.78) brightness(0.92)" }}
+          />
+          <div className="absolute pointer-events-none" style={{ inset: "1.8rem", border: "1px solid rgba(201,169,110,0.25)" }} />
+          <div
+            className="absolute bottom-8 left-8"
+            style={{ maxWidth: "210px", padding: "1.4rem 1.5rem", background: "var(--plum)", border: "1px solid rgba(201,169,110,0.22)" }}
+          >
+            <p className="font-display italic leading-relaxed" style={{ fontSize: "1rem", color: "var(--parchment)" }}>
+              "Scent is the closest thing to memory."
+            </p>
+            <p className="eyebrow mt-3" style={{ fontSize: "0.48rem", color: "var(--gold)" }}>— ÉLIXIR</p>
+          </div>
+        </div>
+
+        <div
+          className="plum-bg flex flex-col justify-center px-8 sm:px-12 lg:px-16 py-20"
+        >
+          <Eyebrow>Our Philosophy</Eyebrow>
+          <div className="divider" />
+          <h2
+            className="font-display mb-7"
+            style={{ fontSize: "clamp(2.2rem,4.5vw,3.8rem)", fontWeight: 300, color: "var(--parchment)", lineHeight: 1.08 }}
+          >
+            Crafted For<br />
+            <em style={{ color: "var(--gold)", fontStyle: "italic" }}>Perfume Lovers</em>
+          </h2>
+          <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "0.9rem", lineHeight: 1.95, color: "rgba(245,240,232,0.52)", marginBottom: "1.5rem" }}>
+            We believe a fragrance is more than a scent — it is a mood, a memory, an invisible signature you leave on the world.
+          </p>
+          <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "0.9rem", lineHeight: 1.95, color: "rgba(245,240,232,0.4)", marginBottom: "2.5rem" }}>
+            ÉLIXIR combines the elegance of luxury perfume houses with the clarity of modern commerce — refined typography, generous space, and a visual hierarchy that honors every bottle.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {STATS.map(({ value, label }) => (
+              <div key={label} className="p-5" style={{ border: "1px solid rgba(201,169,110,0.15)", background: "rgba(201,169,110,0.06)" }}>
+                <div className="font-display text-3xl font-light" style={{ color: "var(--gold)" }}>{value}</div>
+                <div style={{ fontFamily: "var(--font-body)", fontSize: "0.65rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,240,232,0.32)", marginTop: "0.3rem" }}>
+                  {label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <Newsletter />
     </>
