@@ -1,145 +1,74 @@
-import { PRODUCTS } from "../constants/brand";
-
+import { REGULAR_PRODUCTS } from "../constants/brand";
 import ProductCard from "../components/ui/ProductCard";
 import Eyebrow from "../components/ui/Eyebrow";
 
-export default function BestSellers({
-  addToCart,
-  openProductDetails,
-}) {
-  const bestSellers = PRODUCTS.filter(
-    (product) =>
-      product.badge === "Best Seller" ||
-      product.rating >= 4.9
-  ).sort((a, b) => b.rating - a.rating);
+export default function BestSellers({ onOpen }) {
+  const bestSellers = REGULAR_PRODUCTS.slice(0, 6);
 
   return (
     <main>
-      <section className="bg-[var(--ink)] px-6 py-24 text-center">
-        <Eyebrow>Customer Favorites</Eyebrow>
+      {/* ── Cinematic header ── */}
+      <div
+        className="relative overflow-hidden flex items-end"
+        style={{ minHeight: "50vh", background: "var(--plum)" }}
+      >
+        <img
+          src="https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=1800&auto=format&fit=crop"
+          alt=""
+          className="animate-slow-zoom absolute inset-0 w-full h-full object-cover"
+          style={{ opacity: 0.2, filter: "saturate(0.5)" }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(to top, var(--plum) 0%, transparent 65%)" }}
+        />
 
-        <h1
-          className="
-            font-display
-            text-6xl
-            md:text-8xl
-            font-light
-            text-[var(--parchment)]
-            mt-5
-          "
-        >
-          Best Sellers
-        </h1>
+        {/* Spinning ring decoration */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            top: "50%", left: "50%",
+            width: "400px", height: "400px",
+            border: "1px solid rgba(201,169,110,0.1)",
+            borderRadius: "50%",
+            transform: "translate(-50%,-50%)",
+            animation: "spin 24s linear infinite",
+          }}
+        />
 
-        <p className="text-white/45 max-w-2xl mx-auto leading-8 mt-6">
-          Discover the fragrances our customers love the most.
-          These are the highest-rated and most frequently purchased
-          scents from the ÉLIXIR collection.
-        </p>
-      </section>
-
-      <section className="px-6 py-20">
-        <div className="max-w-7xl mx-auto">
-          {/* Top 3 spotlight */}
-          <div className="grid lg:grid-cols-3 gap-8 mb-20">
-            {bestSellers.slice(0, 3).map((product, index) => (
-              <div
-                key={product.id}
-                className="
-                  relative
-                  overflow-hidden
-                  rounded-[2rem]
-                  bg-[var(--warm)]
-                  p-8
-                "
-              >
-                <div
-                  className="
-                    absolute
-                    top-5
-                    right-5
-                    w-12
-                    h-12
-                    rounded-full
-                    bg-[var(--gold)]
-                    flex
-                    items-center
-                    justify-center
-                    font-medium
-                  "
-                >
-                  #{index + 1}
-                </div>
-
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="
-                    w-full
-                    h-[320px]
-                    object-cover
-                    rounded-[1.5rem]
-                    mb-6
-                  "
-                />
-
-                <p
-                  className="
-                    text-xs
-                    uppercase
-                    tracking-[0.22em]
-                    text-[var(--gold-dark)]
-                    mb-2
-                  "
-                >
-                  {product.category}
-                </p>
-
-                <h2
-                  className="
-                    font-display
-                    text-4xl
-                    font-light
-                    mb-2
-                  "
-                >
-                  {product.name}
-                </h2>
-
-                <p className="text-[var(--mist)] mb-4">
-                  {product.note}
-                </p>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-[var(--gold)]">
-                    ★★★★★
-                  </span>
-
-                  <span>
-                    {product.rating}
-                  </span>
-
-                  <span className="text-[var(--mist)]">
-                    ({product.reviews})
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Full grid */}
-          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
-            {bestSellers.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                addToCart={addToCart}
-                openProductDetails={openProductDetails}
-              />
-            ))}
-          </div>
+        <div className="relative max-w-[1400px] mx-auto px-6 lg:px-12 pb-14 pt-24 w-full">
+          <Eyebrow>Customer Favorites</Eyebrow>
+          <h1
+            className="font-display mt-3"
+            style={{
+              fontSize: "clamp(3.5rem,9vw,8rem)",
+              fontWeight: 300,
+              color: "var(--parchment)",
+              lineHeight: 0.9,
+            }}
+          >
+            Best<br />
+            <em style={{ color: "var(--gold)", fontStyle: "italic" }}>Sellers</em>
+          </h1>
         </div>
-      </section>
+      </div>
+
+      {/* ── Grid ── */}
+      <div
+        className="max-w-[1400px] mx-auto px-6 lg:px-12 py-20"
+        style={{ background: "var(--cream)" }}
+      >
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7">
+          {bestSellers.map((product, i) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              rank={i + 1}
+              onOpen={onOpen}
+            />
+          ))}
+        </div>
+      </div>
     </main>
   );
 }

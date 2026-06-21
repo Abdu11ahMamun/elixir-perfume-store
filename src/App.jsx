@@ -1,27 +1,32 @@
 import { useCallback, useState } from "react";
 
-import Navbar from "./components/layout/Navbar";
-import Footer from "./components/layout/Footer";
-import Cursor from "./components/ui/Cursor";
-import CartDrawer from "./components/cart/CartDrawer";
+import Navbar      from "./components/layout/Navbar";
+import Footer      from "./components/layout/Footer";
+import Cursor      from "./components/ui/Cursor";
+import CartDrawer  from "./components/cart/CartDrawer";
 
-import Home from "./pages/Home";
-import Products from "./pages/Products";
+import Home           from "./pages/Home";
+import Products       from "./pages/Products";
 import ProductDetails from "./pages/ProductDetails";
-import BestSellers from "./pages/BestSellers";
-import About from "./pages/About";
+import BestSellers    from "./pages/BestSellers";
+import Offers         from "./pages/Offers";
+import About          from "./pages/About";
 
 import AdminApp from "./admin/AdminApp";
 import { useCart } from "./hooks/useCart";
 
 export default function App() {
-  const [activePage, setActivePage] = useState("home");
+  const [activePage, setActivePage]     = useState("home");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen]     = useState(false);
+
+  // ── Product detail modal state ──
+  // Instead of a separate page, ProductDetails renders as a modal overlay
+  const [modalProduct, setModalProduct] = useState(null);
 
   const cart = useCart();
 
+  // ── Navigation helpers ──
   const openPage = useCallback((page) => {
     setActivePage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -33,12 +38,18 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const openProductDetails = useCallback((product) => {
-    setSelectedProduct(product);
-    setActivePage("productDetails");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  // ── Modal helpers ──
+  const openModal  = useCallback((product) => {
+    setModalProduct(product);
+    document.body.style.overflow = "hidden";
   }, []);
 
+  const closeModal = useCallback(() => {
+    setModalProduct(null);
+    document.body.style.overflow = "";
+  }, []);
+
+  // ── Admin shortcut ──
   if (activePage === "admin") {
     return <AdminApp />;
   }
@@ -46,10 +57,7 @@ export default function App() {
   return (
     <div
       className="grain min-h-screen overflow-x-hidden"
-      style={{
-        background: "var(--cream)",
-        color: "var(--ink)",
-      }}
+      style={{ background: "var(--cream)", color: "var(--ink)" }}
     >
       <Cursor />
 
@@ -57,18 +65,18 @@ export default function App() {
         activePage={activePage}
         openPage={openPage}
         openProductsPage={openProductsPage}
-        openProductDetails={openProductDetails}
+        onOpen={openModal}
         cartCount={cart.cartCount}
         setIsCartOpen={setIsCartOpen}
       />
 
-      <div className="pt-24">
+      {/* pt-20 to clear fixed navbar */}
+      <div className="pt-20">
         {activePage === "home" && (
           <Home
             openPage={openPage}
             openProductsPage={openProductsPage}
-            addToCart={cart.addToCart}
-            openProductDetails={openProductDetails}
+            onOpen={openModal}
           />
         )}
 
@@ -76,43 +84,52 @@ export default function App() {
           <Products
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
-            addToCart={cart.addToCart}
-            openProductDetails={openProductDetails}
-          />
-        )}
-
-        {activePage === "productDetails" && selectedProduct && (
-          <ProductDetails
-            product={selectedProduct}
-            addToCart={cart.addToCart}
-            openProductsPage={openProductsPage}
+            onOpen={openModal}
           />
         )}
 
         {activePage === "bestSellers" && (
-          <BestSellers
-            addToCart={cart.addToCart}
-            openProductDetails={openProductDetails}
-          />
+          <BestSellers onOpen={openModal} />
         )}
 
-        {activePage === "about" && <About />}
+        {activePage === "offers" && (
+          <Offers onOpen={openModal} />
+        )}
+
+        {activePage === "about" && (
+          <About />
+        )}
       </div>
 
       <Footer openPage={openPage} openProductsPage={openProductsPage} />
 
-      {cart.cartCount > 0 && (
+      {/* Sticky cart bubble */}
+      {cart.cartCount > 0 && !isCartOpen && (
         <button
           onClick={() => setIsCartOpen(true)}
-          className="sticky-cart bg-[var(--ink)] text-white rounded-full px-6 py-4 flex items-center gap-3"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 transition-all duration-300"
+          style={{
+            background: "var(--ink)",
+            color: "var(--parchment)",
+            border: "1px solid rgba(201,169,110,0.3)",
+            cursor: "none",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "var(--gold)"; e.currentTarget.style.color = "var(--ink)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.color = "var(--parchment)"; }}
         >
-          <span className="text-xs uppercase tracking-[0.2em]">Cart</span>
-          <span className="w-7 h-7 rounded-full bg-[var(--gold)] text-[var(--ink)] flex items-center justify-center text-xs">
+          <span style={{ fontFamily: "var(--font-body)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>
+            Bag
+          </span>
+          <span
+            className="w-6 h-6 flex items-center justify-center"
+            style={{ background: "var(--gold)", color: "var(--ink)", fontFamily: "var(--font-body)", fontSize: "0.72rem", fontWeight: 500 }}
+          >
             {cart.cartCount}
           </span>
         </button>
       )}
 
+      {/* Cart drawer */}
       <CartDrawer
         cart={cart.cart}
         isCartOpen={isCartOpen}
@@ -125,6 +142,15 @@ export default function App() {
         onSubmitOrder={cart.handleSubmitOrder}
         orderPlaced={cart.orderPlaced}
       />
+
+      {/* Product detail modal */}
+      {modalProduct && (
+        <ProductDetails
+          product={modalProduct}
+          addToCart={cart.addToCart}
+          onClose={closeModal}
+        />
+      )}
     </div>
   );
 }

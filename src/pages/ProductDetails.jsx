@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate, useParams } from "react-router-dom";
-import { REGULAR_PRODUCTS, COMBO_PRODUCTS, PRODUCTS } from "../constants/brand";
+import { REGULAR_PRODUCTS, COMBO_PRODUCTS } from "../constants/brand";
 import {
   formatPrice,
   getDefaultSize,
@@ -123,14 +122,7 @@ function ImageSlider({ images, alt }) {
    — Works both as a standalone route /perfumes/:id
      and as a modal (product prop passed directly)
 ══════════════════════════════════════════════════════ */
-export default function ProductDetails({ product: propProduct, addToCart, onClose }) {
-  // ── Route-based: load product from URL param ──
-  const params = useParams();
-  const navigate = useNavigate();
-
-  const product = propProduct
-    ?? [...REGULAR_PRODUCTS, ...COMBO_PRODUCTS].find((p) => p.id === params?.id);
-
+export default function ProductDetails({ product, addToCart, onClose }) {
   // ── Local state ──
   const [selectedMl, setSelectedMl] = useState(null);
   const [qty, setQty]               = useState(1);
@@ -143,18 +135,7 @@ export default function ProductDetails({ product: propProduct, addToCart, onClos
     setQty(1);
   }, [product?.id]);
 
-  if (!product) {
-    return (
-      <main className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-center">
-          <p className="font-display text-4xl font-light mb-4" style={{ color: "var(--mist)" }}>
-            Product not found
-          </p>
-          <Button onClick={() => navigate("/perfumes")}>Back to Shop</Button>
-        </div>
-      </main>
-    );
-  }
+  if (!product) return null;
 
   const selectedSize = product.sizes.find((s) => s.ml === selectedMl) ?? product.sizes[0];
   const sl           = getStockLabel(selectedSize.stock);
@@ -172,10 +153,8 @@ export default function ProductDetails({ product: propProduct, addToCart, onClos
     if (onClose) onClose();
   };
 
-  const isModal = !!onClose;
-
   const content = (
-    <div className={isModal ? "" : "max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-24"}>
+    <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
       <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
 
         {/* ── LEFT: Image slider ── */}
@@ -336,16 +315,6 @@ export default function ProductDetails({ product: propProduct, addToCart, onClos
             >
               {isSoldOut ? "Out of Stock" : "Add to Bag"}
             </Button>
-
-            {!isModal && (
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/perfumes")}
-                className="justify-center"
-              >
-                View All
-              </Button>
-            )}
           </div>
 
           {/* SKU */}
@@ -360,40 +329,35 @@ export default function ProductDetails({ product: propProduct, addToCart, onClos
     </div>
   );
 
-  // ── Modal mode (called from ProductCard) ──
-  if (isModal) {
-    return (
-      <AnimatePresence>
-        <div
-          className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-6"
-          style={{ background: "rgba(8,7,11,0.75)", backdropFilter: "blur(6px)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+  // ── Always renders as modal overlay ──
+  return (
+    <AnimatePresence>
+      <div
+        className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-6"
+        style={{ background: "rgba(8,7,11,0.75)", backdropFilter: "blur(6px)" }}
+        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 40 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="relative w-full sm:max-w-[900px] max-h-[95vh] overflow-y-auto"
+          style={{ background: "var(--cream)" }}
         >
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="relative w-full sm:max-w-[900px] max-h-[95vh] overflow-y-auto"
-            style={{ background: "var(--cream)" }}
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center transition-colors duration-300"
+            style={{ border: "1px solid var(--warm)" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.color = "var(--parchment)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--ink)"; }}
           >
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center transition-colors duration-300"
-              style={{ border: "1px solid var(--warm)" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.color = "var(--parchment)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--ink)"; }}
-            >
-              ×
-            </button>
-            <div className="p-6 sm:p-8">{content}</div>
-          </motion.div>
-        </div>
-      </AnimatePresence>
-    );
-  }
-
-  // ── Page mode (route /perfumes/:id) ──
-  return <main>{content}</main>;
+            ×
+          </button>
+          <div className="p-6 sm:p-8">{content}</div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
 }
