@@ -333,7 +333,7 @@ export default function ProductDetails({ product, addToCart, onClose }) {
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-6"
+        className="fixed inset-0 z-[1500] flex items-end sm:items-center justify-center p-0 sm:p-6"
         style={{ background: "rgba(8,7,11,0.75)", backdropFilter: "blur(6px)" }}
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
@@ -345,16 +345,22 @@ export default function ProductDetails({ product, addToCart, onClose }) {
           className="relative w-full sm:max-w-[900px] max-h-[95vh] overflow-y-auto"
           style={{ background: "var(--cream)" }}
         >
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center transition-colors duration-300"
-            style={{ border: "1px solid var(--warm)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.color = "var(--parchment)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--ink)"; }}
+          {/* Close button — sticky so always visible while scrolling */}
+          <div
+            className="sticky top-0 z-10 flex justify-end p-3"
+            style={{ background: "var(--cream)", borderBottom: "1px solid var(--warm)" }}
           >
-            ×
-          </button>
+            <button
+              onClick={onClose}
+              className="w-9 h-9 flex items-center justify-center transition-colors duration-300"
+              style={{ border: "1px solid var(--warm)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.color = "var(--parchment)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--ink)"; }}
+            >
+              ×
+            </button>
+          </div>
+
           <div className="p-6 sm:p-8">{content}</div>
         </motion.div>
       </div>

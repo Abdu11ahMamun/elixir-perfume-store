@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import Navbar      from "./components/layout/Navbar";
 import Footer      from "./components/layout/Footer";
@@ -49,9 +49,20 @@ export default function App() {
     document.body.style.overflow = "";
   }, []);
 
-  // ── Admin shortcut ──
+  // ── Admin keyboard shortcut: Ctrl+Shift+A ──
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === "A") {
+        openPage("admin");
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [openPage]);
+
+  // Admin — full page takeover
   if (activePage === "admin") {
-    return <AdminApp />;
+    return <AdminApp onExit={() => openPage("home")} />;
   }
 
   return (
@@ -102,6 +113,20 @@ export default function App() {
       </div>
 
       <Footer openPage={openPage} openProductsPage={openProductsPage} />
+
+      {/* ── Hidden Admin Access ── */}
+      {/* Click 3× quickly to go to admin, or use the tiny button bottom-left */}
+      <button
+        onClick={() => openPage("admin")}
+        title="Admin Panel"
+        className="fixed bottom-6 left-6 z-50 transition-all duration-300 opacity-0 hover:opacity-100"
+        style={{
+          width: "10px", height: "10px",
+          background: "var(--gold)",
+          borderRadius: "50%",
+          cursor: "none",
+        }}
+      />
 
       {/* Sticky cart bubble */}
       {cart.cartCount > 0 && !isCartOpen && (

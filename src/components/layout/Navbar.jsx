@@ -19,8 +19,7 @@ export default function Navbar({
   onOpen,
   cartCount,
   setIsCartOpen,
-}) {
-  const [search, setSearch]       = useState("");
+}) {  const [search, setSearch]       = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled]   = useState(false);
 
@@ -193,6 +192,29 @@ export default function Navbar({
               </span>
             </button>
 
+            {/* Admin button */}
+            <button
+              onClick={() => openPage("admin")}
+              className="hidden lg:flex items-center gap-1.5 px-4 py-2.5 transition-all duration-300"
+              style={{
+                border: "1px solid rgba(14,12,10,0.12)",
+                background: "transparent",
+                cursor: "none",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.borderColor = "var(--ink)"; e.currentTarget.querySelector("span").style.color = "var(--gold)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(14,12,10,0.12)"; e.currentTarget.querySelector("span").style.color = "var(--mist)"; }}
+            >
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style={{ color: "var(--mist)", flexShrink: 0 }}>
+                <rect x="0.5" y="0.5" width="4" height="4" stroke="currentColor" strokeWidth="1"/>
+                <rect x="6.5" y="0.5" width="4" height="4" stroke="currentColor" strokeWidth="1"/>
+                <rect x="0.5" y="6.5" width="4" height="4" stroke="currentColor" strokeWidth="1"/>
+                <rect x="6.5" y="6.5" width="4" height="4" stroke="currentColor" strokeWidth="1"/>
+              </svg>
+              <span style={{ fontFamily: "var(--font-body)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--mist)", transition: "color 0.3s" }}>
+                Admin
+              </span>
+            </button>
+
             {/* Mobile burger */}
             <button
               onClick={() => setMobileOpen((v) => !v)}
@@ -287,6 +309,15 @@ export default function Navbar({
                     {link.label}
                   </button>
                 ))}
+
+                {/* Admin link — mobile */}
+                <button
+                  onClick={() => { openPage("admin"); setMobileOpen(false); }}
+                  className="nav-link text-left"
+                  style={{ color: "var(--mist)", fontSize: "0.85rem" }}
+                >
+                  Admin Panel
+                </button>
               </div>
             </motion.div>
           )}
