@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import Navbar      from "./components/layout/Navbar";
 import Footer      from "./components/layout/Footer";
 import Cursor      from "./components/ui/Cursor";
 import CartDrawer  from "./components/cart/CartDrawer";
+import CartToast   from "./components/ui/CartToast";
 
 import Home           from "./pages/Home";
 import Products       from "./pages/Products";
@@ -24,7 +25,23 @@ export default function App() {
   // Instead of a separate page, ProductDetails renders as a modal overlay
   const [modalProduct, setModalProduct] = useState(null);
 
+  // ── Toast state ──
+  const [toast, setToast]     = useState({ visible: false, product: null });
+  const toastTimer            = useRef(null);
+
   const cart = useCart();
+
+  // Wrap addToCart to show toast
+  const addToCartWithToast = useCallback((item) => {
+    cart.addToCart(item);
+
+    // Show toast
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast({ visible: true, product: item });
+    toastTimer.current = setTimeout(() => {
+      setToast({ visible: false, product: null });
+    }, 3000);
+  }, [cart.addToCart]);
 
   // ── Navigation helpers ──
   const openPage = useCallback((page) => {
@@ -83,33 +100,11 @@ export default function App() {
 
       {/* pt-20 to clear fixed navbar */}
       <div className="pt-20">
-        {activePage === "home" && (
-          <Home
-            openPage={openPage}
-            openProductsPage={openProductsPage}
-            onOpen={openModal}
-          />
-        )}
-
-        {activePage === "products" && (
-          <Products
-            activeCategory={activeCategory}
-            setActiveCategory={setActiveCategory}
-            onOpen={openModal}
-          />
-        )}
-
-        {activePage === "bestSellers" && (
-          <BestSellers onOpen={openModal} />
-        )}
-
-        {activePage === "offers" && (
-          <Offers onOpen={openModal} />
-        )}
-
-        {activePage === "about" && (
-          <About />
-        )}
+      {activePage === "home"        && <Home openPage={openPage} openProductsPage={openProductsPage} onOpen={openModal}/>}
+      {activePage === "products"    && <Products activeCategory={activeCategory} setActiveCategory={setActiveCategory} onOpen={openModal}/>}
+      {activePage === "bestSellers" && <BestSellers onOpen={openModal}/>}
+      {activePage === "offers"      && <Offers onOpen={openModal}/>}
+      {activePage === "about"       && <About/>}
       </div>
 
       <Footer openPage={openPage} openProductsPage={openProductsPage} />
@@ -172,10 +167,19 @@ export default function App() {
       {modalProduct && (
         <ProductDetails
           product={modalProduct}
-          addToCart={cart.addToCart}
+          addToCart={addToCartWithToast}
           onClose={closeModal}
         />
       )}
+
+      {/* Cart add toast */}
+      <CartToast
+        toast={toast}
+        onViewBag={() => {
+          setToast({ visible: false, product: null });
+          setIsCartOpen(true);
+        }}
+      />
     </div>
   );
 }

@@ -58,7 +58,7 @@ export default function BestSellers({ onOpen }) {
         className="max-w-[1400px] mx-auto px-6 lg:px-12 py-20"
         style={{ background: "var(--cream)" }}
       >
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7">
           {bestSellers.map((product, i) => (
             <ProductCard
               key={product.id}

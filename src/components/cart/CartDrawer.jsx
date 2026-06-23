@@ -49,19 +49,19 @@ export default function CartDrawer({
             transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="cart-drawer absolute right-0 top-0 h-full w-full max-w-xl overflow-y-auto"
           >
-            <div className="p-7 md:p-10">
+            <div className="p-6 md:p-10">
 
               {/* ── Header ── */}
-              <div className="flex items-start justify-between mb-10">
+              <div className="flex items-start justify-between mb-8">
                 <div>
                   <Eyebrow>Checkout</Eyebrow>
-                  <h2 className="font-display text-5xl font-light mt-3">
+                  <h2 className="font-display font-light mt-2" style={{ fontSize: "clamp(2.2rem, 6vw, 3rem)" }}>
                     Your Bag
                   </h2>
                 </div>
                 <button
                   onClick={() => setIsCartOpen(false)}
-                  className="w-11 h-11 flex items-center justify-center border transition-colors duration-300"
+                  className="w-11 h-11 flex items-center justify-center border transition-colors duration-300 text-xl"
                   style={{ borderColor: "var(--warm)" }}
                   onMouseEnter={e => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.color = "var(--parchment)"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--ink)"; }}
@@ -172,11 +172,11 @@ export default function CartDrawer({
 function CartItem({ item, removeFromCart, updateQuantity }) {
   return (
     <div
-      className="flex gap-4 py-4"
+      className="flex gap-4 py-5"
       style={{ borderBottom: "1px solid var(--warm)" }}
     >
-      {/* Image */}
-      <div className="w-16 h-20 overflow-hidden shrink-0">
+      {/* Image — bigger on mobile */}
+      <div className="w-20 h-24 sm:w-16 sm:h-20 overflow-hidden shrink-0">
         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
       </div>
 
@@ -184,27 +184,27 @@ function CartItem({ item, removeFromCart, updateQuantity }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="font-display text-lg font-light">{item.name}</h3>
+            <h3 className="font-display font-light" style={{ fontSize: "clamp(1.1rem, 4vw, 1.3rem)" }}>{item.name}</h3>
 
             {/* ML size + note */}
-            <p style={{ fontFamily: "var(--font-body)", fontSize: "0.7rem", color: "var(--mist)", marginTop: "2px" }}>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: "0.82rem", color: "var(--mist)", marginTop: "3px" }}>
               {item.selectedMl}ml · {item.note}
             </p>
 
             {/* Order ID */}
-            <p style={{ fontFamily: "var(--font-body)", fontSize: "0.58rem", color: "var(--gold-dark)", marginTop: "2px", letterSpacing: "0.1em" }}>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: "0.68rem", color: "var(--gold-dark)", marginTop: "3px", letterSpacing: "0.1em" }}>
               Order ID: {item.orderId}
             </p>
 
-            {/* Price */}
-            <p className="font-display text-base mt-1" style={{ color: "var(--ink)", fontWeight: 400 }}>
+            {/* Price — bigger, more visible */}
+            <p className="font-display font-light mt-2" style={{ fontSize: "1.2rem", color: "var(--ink)" }}>
               {formatPrice(item.price)}
             </p>
           </div>
 
           <button
             onClick={() => removeFromCart(item.cartKey)}
-            style={{ fontFamily: "var(--font-body)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--mist)", cursor: "none" }}
+            style={{ fontFamily: "var(--font-body)", fontSize: "0.72rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--mist)", cursor: "none", paddingTop: "2px" }}
             onMouseEnter={e => { e.currentTarget.style.color = "var(--ink)"; }}
             onMouseLeave={e => { e.currentTarget.style.color = "var(--mist)"; }}
           >
@@ -212,24 +212,24 @@ function CartItem({ item, removeFromCart, updateQuantity }) {
           </button>
         </div>
 
-        {/* Qty controls */}
-        <div className="flex items-center gap-3 mt-3">
+        {/* Qty controls — bigger touch targets */}
+        <div className="flex items-center gap-3 mt-4">
           {[["−", "decrease"], ["＋", "increase"]].map(([sym, type]) => (
             <button
               key={type}
               onClick={() => updateQuantity(item.cartKey, type)}
-              className="w-7 h-7 flex items-center justify-center transition-colors duration-300"
-              style={{ border: "1px solid var(--warm)", cursor: "none" }}
+              className="w-9 h-9 flex items-center justify-center transition-colors duration-300"
+              style={{ border: "1px solid var(--warm)", fontSize: "1rem", cursor: "none" }}
               onMouseEnter={e => { e.currentTarget.style.background = "var(--ink)"; e.currentTarget.style.color = "var(--parchment)"; e.currentTarget.style.borderColor = "var(--ink)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--ink)"; e.currentTarget.style.borderColor = "var(--warm)"; }}
             >
               {sym}
             </button>
           ))}
-          <span style={{ fontFamily: "var(--font-body)", fontSize: "0.85rem" }}>{item.quantity}</span>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: "1rem", fontWeight: 400, minWidth: "1.5rem", textAlign: "center" }}>{item.quantity}</span>
 
           {/* Line total */}
-          <span style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem", color: "var(--mist)", marginLeft: "auto" }}>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: "0.85rem", color: "var(--mist)", marginLeft: "auto" }}>
             {formatPrice(item.price * item.quantity)}
           </span>
         </div>

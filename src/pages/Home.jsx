@@ -131,7 +131,7 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {COLLECTIONS.map((collection) => (
               <CollectionCard
                 key={collection.title}
@@ -175,7 +175,7 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {FEATURED.map((product) => (
               <div key={product.id} className="animate-fade-up">
                 <ProductCard product={product} onOpen={onOpen} />
@@ -222,11 +222,10 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
       )}
 
       {/* ── PHILOSOPHY ── */}
-      <section
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "72vh" }}
-        className="max-lg:block"
-      >
-        <div className="relative overflow-hidden" style={{ minHeight: "50vw" }}>
+      <section className="grid lg:grid-cols-2">
+
+        {/* Image — hidden on mobile, shows on lg */}
+        <div className="relative overflow-hidden hidden lg:block" style={{ minHeight: "600px" }}>
           <img
             src="https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?q=80&w=1400&auto=format&fit=crop"
             alt="Luxury perfume"
@@ -234,6 +233,7 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
             style={{ filter: "saturate(0.78) brightness(0.92)" }}
           />
           <div className="absolute pointer-events-none" style={{ inset: "1.8rem", border: "1px solid rgba(201,169,110,0.25)" }} />
+          {/* Quote card */}
           <div
             className="absolute bottom-8 left-8"
             style={{ maxWidth: "210px", padding: "1.4rem 1.5rem", background: "var(--plum)", border: "1px solid rgba(201,169,110,0.22)" }}
@@ -245,29 +245,47 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
           </div>
         </div>
 
+        {/* Text — full width on mobile */}
         <div
-          className="plum-bg flex flex-col justify-center px-8 sm:px-12 lg:px-16 py-20"
+          className="flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-16 lg:py-24"
+          style={{ background: "linear-gradient(145deg, #1a0a2e 0%, #0d051f 100%)" }}
         >
+          {/* Mobile only: small image strip */}
+          <div className="lg:hidden w-full h-52 overflow-hidden mb-8 relative">
+            <img
+              src="https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?q=80&w=800&auto=format&fit=crop"
+              alt="Luxury perfume"
+              className="w-full h-full object-cover object-top"
+              style={{ filter: "saturate(0.8)" }}
+            />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 50%, #1a0a2e 100%)" }} />
+          </div>
+
           <Eyebrow>Our Philosophy</Eyebrow>
           <div className="divider" />
+
           <h2
-            className="font-display mb-7"
-            style={{ fontSize: "clamp(2.2rem,4.5vw,3.8rem)", fontWeight: 300, color: "var(--parchment)", lineHeight: 1.08 }}
+            className="font-display mb-6"
+            style={{ fontSize: "clamp(2rem, 6vw, 3.5rem)", fontWeight: 300, color: "#f5f0e8", lineHeight: 1.1 }}
           >
             Crafted For<br />
             <em style={{ color: "var(--gold)", fontStyle: "italic" }}>Perfume Lovers</em>
           </h2>
-          <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "0.9rem", lineHeight: 1.95, color: "rgba(245,240,232,0.52)", marginBottom: "1.5rem" }}>
+
+          <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "1rem", lineHeight: 1.9, color: "rgba(245,240,232,0.75)", marginBottom: "1rem" }}>
             We believe a fragrance is more than a scent — it is a mood, a memory, an invisible signature you leave on the world.
           </p>
-          <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "0.9rem", lineHeight: 1.95, color: "rgba(245,240,232,0.4)", marginBottom: "2.5rem" }}>
-            ÉLIXIR combines the elegance of luxury perfume houses with the clarity of modern commerce — refined typography, generous space, and a visual hierarchy that honors every bottle.
+          <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "0.95rem", lineHeight: 1.9, color: "rgba(245,240,232,0.55)", marginBottom: "2rem" }}>
+            ÉLIXIR combines the elegance of luxury perfume houses with the clarity of modern commerce.
           </p>
+
+          {/* Stats — 2 col always, readable */}
           <div className="grid grid-cols-2 gap-3">
             {STATS.map(({ value, label }) => (
-              <div key={label} className="p-5" style={{ border: "1px solid rgba(201,169,110,0.15)", background: "rgba(201,169,110,0.06)" }}>
-                <div className="font-display text-3xl font-light" style={{ color: "var(--gold)" }}>{value}</div>
-                <div style={{ fontFamily: "var(--font-body)", fontSize: "0.65rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,240,232,0.32)", marginTop: "0.3rem" }}>
+              <div key={label} className="p-4 sm:p-5"
+                style={{ border: "1px solid rgba(201,169,110,0.2)", background: "rgba(201,169,110,0.08)" }}>
+                <div className="font-display font-light" style={{ fontSize: "clamp(1.6rem, 5vw, 2.2rem)", color: "var(--gold)" }}>{value}</div>
+                <div style={{ fontFamily: "var(--font-body)", fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,240,232,0.5)", marginTop: "0.3rem" }}>
                   {label}
                 </div>
               </div>

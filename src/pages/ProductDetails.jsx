@@ -159,7 +159,11 @@ export default function ProductDetails({ product, addToCart, onClose }) {
 
         {/* ── LEFT: Image slider ── */}
         <div className="lg:sticky lg:top-28">
-          <ImageSlider images={selectedSize.images} alt={product.name} />
+          <ImageSlider
+            key={selectedMl}
+            images={selectedSize.images}
+            alt={product.name}
+          />
         </div>
 
         {/* ── RIGHT: Details ── */}
@@ -181,13 +185,13 @@ export default function ProductDetails({ product, addToCart, onClose }) {
           {/* Name */}
           <h1
             className="font-display font-light leading-none mb-3"
-            style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)" }}
+            style={{ fontSize: "clamp(2.8rem, 7vw, 5rem)" }}
           >
             {product.name}
           </h1>
 
           {/* Inspired by */}
-          <p className="mb-5" style={{ fontFamily: "var(--font-body)", fontSize: "0.82rem", color: "var(--mist)" }}>
+          <p className="mb-5" style={{ fontFamily: "var(--font-body)", fontSize: "0.92rem", color: "var(--mist)" }}>
             Inspired by:{" "}
             <em style={{ color: "var(--gold-dark)", fontStyle: "italic" }}>{product.inspiredBy}</em>
           </p>
@@ -195,7 +199,7 @@ export default function ProductDetails({ product, addToCart, onClose }) {
           {/* Description */}
           <p
             className="mb-6"
-            style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "0.92rem", lineHeight: 1.9, color: "var(--mist)" }}
+            style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "1rem", lineHeight: 1.9, color: "var(--mist)" }}
           >
             {product.description}
           </p>
@@ -306,22 +310,44 @@ export default function ProductDetails({ product, addToCart, onClose }) {
           )}
 
           {/* ── CTA buttons ── */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 mb-5">
             <Button
               disabled={isSoldOut}
               onClick={handleAdd}
               className="justify-center flex-1"
-              style={{ opacity: isSoldOut ? 0.5 : 1, cursor: isSoldOut ? "not-allowed" : "none" }}
+              style={{
+                opacity: isSoldOut ? 0.5 : 1,
+                cursor: isSoldOut ? "not-allowed" : "none",
+                padding: "1.1rem 2rem",
+                fontSize: "0.8rem",
+              }}
             >
               {isSoldOut ? "Out of Stock" : "Add to Bag"}
             </Button>
           </div>
 
-          {/* SKU */}
-          <p
-            className="text-center"
-            style={{ fontFamily: "var(--font-body)", fontSize: "0.6rem", color: "rgba(14,12,10,0.3)", letterSpacing: "0.12em" }}
+          {/* WhatsApp support */}
+          <a
+            href="https://wa.me/8801700000000"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 mb-6 transition-opacity duration-300 hover:opacity-70"
+            style={{ cursor: "none" }}
           >
+            {/* WhatsApp icon */}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="#25D366"/>
+              <path d="M12 2C6.486 2 2 6.486 2 12c0 1.745.45 3.448 1.304 4.947L2.032 22l5.194-1.253A9.95 9.95 0 0012 22c5.514 0 10-4.486 10-10S17.514 2 12 2zm0 18a7.946 7.946 0 01-4.031-1.095l-.29-.173-2.994.722.751-2.913-.19-.3A7.96 7.96 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z" fill="#25D366"/>
+            </svg>
+            <span style={{ fontFamily: "var(--font-body)", fontSize: "0.82rem", color: "var(--mist)" }}>
+              অর্ডারে অসুবিধা হলে{" "}
+              <strong style={{ color: "#25D366" }}>WhatsApp</strong>
+              {" "}এ মেসেজ করুন
+            </span>
+          </a>
+
+          {/* SKU */}
+          <p style={{ fontFamily: "var(--font-body)", fontSize: "0.65rem", color: "rgba(14,12,10,0.28)", letterSpacing: "0.1em" }}>
             SKU: {product.id} · {selectedSize.ml}ml
           </p>
         </div>
