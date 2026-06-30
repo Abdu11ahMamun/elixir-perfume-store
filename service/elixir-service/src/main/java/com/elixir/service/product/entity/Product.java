@@ -3,15 +3,7 @@ package com.elixir.service.product.entity;
 import com.elixir.service.category.entity.Category;
 import com.elixir.service.common.entity.BaseEntity;
 import com.elixir.service.offer.entity.OfferTag;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,7 +18,8 @@ import lombok.Setter;
                 @Index(name = "idx_products_category", columnList = "category_id"),
                 @Index(name = "idx_products_status", columnList = "status"),
                 @Index(name = "idx_products_combo", columnList = "combo")
-        })
+        }
+)
 public class Product extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 150)
