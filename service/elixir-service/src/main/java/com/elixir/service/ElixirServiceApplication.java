@@ -1,4 +1,4 @@
-package com.elixir.elixir_service;
+package com.elixir.service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
