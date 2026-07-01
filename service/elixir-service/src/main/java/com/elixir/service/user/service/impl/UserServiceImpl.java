@@ -26,9 +26,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponse getById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return toResponse(user);
+        return toResponse(findUserById(id));
     }
 
     @Override
@@ -42,7 +40,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserResponse> getAll() {
-        return userRepository.findAll().stream().map(this::toResponse).toList();
+        return userRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
@@ -60,7 +61,10 @@ public class UserServiceImpl implements UserService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
-        user.setPasswordHash(request.getPasswordHash());
+
+        // TODO: Hash password in security phase.
+        user.setPasswordHash(request.getPassword());
+
         user.setRole(UserRole.CUSTOMER);
         user.setStatus(UserStatus.ACTIVE);
 
@@ -71,14 +75,27 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse update(Long id, UserUpdateRequest request) {
-        User existing = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User existing = findUserById(id);
 
-        existing.setName(request.getName());
-        existing.setEmail(request.getEmail());
-        existing.setPhone(request.getPhone());
-        existing.setRole(request.getRole());
-        existing.setStatus(request.getStatus());
+        if (request.getName() != null) {
+            existing.setName(request.getName());
+        }
+
+        if (request.getEmail() != null) {
+            existing.setEmail(request.getEmail());
+        }
+
+        if (request.getPhone() != null) {
+            existing.setPhone(request.getPhone());
+        }
+
+        if (request.getRole() != null) {
+            existing.setRole(request.getRole());
+        }
+
+        if (request.getStatus() != null) {
+            existing.setStatus(request.getStatus());
+        }
 
         User saved = userRepository.save(existing);
         return toResponse(saved);
@@ -87,10 +104,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void delete(Long id) {
-        User existing = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User existing = findUserById(id);
         existing.setDeletedAt(LocalDateTime.now());
         userRepository.save(existing);
+    }
+
+    private User findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     private UserResponse toResponse(User user) {

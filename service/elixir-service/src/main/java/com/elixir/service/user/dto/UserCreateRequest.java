@@ -11,6 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class UserCreateRequest {
+
     @NotBlank
     @Size(max = 120)
     private String name;
@@ -24,6 +25,6 @@ public class UserCreateRequest {
     private String phone;
 
     @NotBlank
-    @Size(max = 255)
-    private String passwordHash;
+    @Size(min = 8, max = 255)
+    private String password;
 }
