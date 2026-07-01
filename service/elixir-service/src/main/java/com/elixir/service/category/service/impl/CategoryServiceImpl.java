@@ -4,7 +4,6 @@ import com.elixir.service.category.dto.CategoryCreateRequest;
 import com.elixir.service.category.dto.CategoryResponse;
 import com.elixir.service.category.dto.CategoryUpdateRequest;
 import com.elixir.service.category.entity.Category;
-import com.elixir.service.category.mapper.CategoryMapper;
 import com.elixir.service.category.repository.CategoryRepository;
 import com.elixir.service.category.service.CategoryService;
 import com.elixir.service.common.exception.DuplicateResourceException;
@@ -21,15 +20,12 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final CategoryMapper categoryMapper;
 
     @Override
     @Transactional(readOnly = true)
     public CategoryResponse getById(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-
-        return categoryMapper.toResponse(category);
+        Category category = findCategoryById(id);
+        return toResponse(category);
     }
 
     @Override
@@ -38,7 +34,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        return categoryMapper.toResponse(category);
+        return toResponse(category);
     }
 
     @Override
@@ -46,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryResponse> getAll() {
         return categoryRepository.findAll()
                 .stream()
-                .map(categoryMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -55,7 +51,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryResponse> getActive() {
         return categoryRepository.findByActiveTrue()
                 .stream()
-                .map(categoryMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -66,29 +62,71 @@ public class CategoryServiceImpl implements CategoryService {
             throw new DuplicateResourceException("Category slug already exists");
         }
 
-        Category category = categoryMapper.toEntity(request);
+        Category category = toEntity(request);
         Category saved = categoryRepository.save(category);
-        return categoryMapper.toResponse(saved);
+        return toResponse(saved);
     }
 
     @Override
     @Transactional
     public CategoryResponse update(Long id, CategoryUpdateRequest request) {
-        Category existing = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        Category existing = findCategoryById(id);
 
-        categoryMapper.updateEntity(request, existing);
+        applyUpdate(request, existing);
 
         Category saved = categoryRepository.save(existing);
-        return categoryMapper.toResponse(saved);
+        return toResponse(saved);
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
-        Category existing = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        Category existing = findCategoryById(id);
         existing.setDeletedAt(LocalDateTime.now());
         categoryRepository.save(existing);
+    }
+
+    private Category findCategoryById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+    }
+
+    private CategoryResponse toResponse(Category category) {
+        CategoryResponse response = new CategoryResponse();
+        response.setId(category.getId());
+        response.setName(category.getName());
+        response.setSlug(category.getSlug());
+        response.setDescription(category.getDescription());
+        response.setActive(category.getActive());
+        response.setCreatedAt(category.getCreatedAt());
+        response.setUpdatedAt(category.getUpdatedAt());
+        return response;
+    }
+
+    private Category toEntity(CategoryCreateRequest request) {
+        Category category = new Category();
+        category.setName(request.getName());
+        category.setSlug(request.getSlug());
+        category.setDescription(request.getDescription());
+        category.setActive(request.getActive());
+        return category;
+    }
+
+    private void applyUpdate(CategoryUpdateRequest request, Category category) {
+        if (request.getName() != null) {
+            category.setName(request.getName());
+        }
+
+        if (request.getSlug() != null) {
+            category.setSlug(request.getSlug());
+        }
+
+        if (request.getDescription() != null) {
+            category.setDescription(request.getDescription());
+        }
+
+        if (request.getActive() != null) {
+            category.setActive(request.getActive());
+        }
     }
 }
