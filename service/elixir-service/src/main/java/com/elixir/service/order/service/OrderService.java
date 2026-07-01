@@ -1,24 +1,24 @@
 package com.elixir.service.order.service;
 
-import com.elixir.service.order.entity.Order;
-import com.elixir.service.user.entity.User;
+import com.elixir.service.order.dto.OrderCreateRequest;
+import com.elixir.service.order.dto.OrderResponse;
+import com.elixir.service.order.dto.OrderUpdateRequest;
 
 import java.util.List;
 
 public interface OrderService {
 
-    // TODO: Replace entity return types with DTOs in DTO phase.
-    Order getById(Long id);
+    OrderResponse getById(Long id);
 
-    Order getByOrderNumber(String orderNumber);
+    OrderResponse getByOrderNumber(String orderNumber);
 
-    List<Order> getByCustomer(User customer);
+    List<OrderResponse> getByCustomerId(Long customerId);
 
-    List<Order> getByCustomerPhone(String customerPhone);
+    List<OrderResponse> getByCustomerPhone(String customerPhone);
 
-    Order create(Order order);
+    OrderResponse create(OrderCreateRequest request);
 
-    Order update(Long id, Order order);
+    OrderResponse update(Long id, OrderUpdateRequest request);
 
     void delete(Long id);
 }

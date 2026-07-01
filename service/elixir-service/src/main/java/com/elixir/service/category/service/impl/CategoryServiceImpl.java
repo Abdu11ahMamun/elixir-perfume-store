@@ -1,6 +1,10 @@
 package com.elixir.service.category.service.impl;
 
+import com.elixir.service.category.dto.CategoryCreateRequest;
+import com.elixir.service.category.dto.CategoryResponse;
+import com.elixir.service.category.dto.CategoryUpdateRequest;
 import com.elixir.service.category.entity.Category;
+import com.elixir.service.category.mapper.CategoryMapper;
 import com.elixir.service.category.repository.CategoryRepository;
 import com.elixir.service.category.service.CategoryService;
 import com.elixir.service.common.exception.DuplicateResourceException;
@@ -17,60 +21,73 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
     @Override
     @Transactional(readOnly = true)
-    public Category getById(Long id) {
-        return categoryRepository.findById(id)
+    public CategoryResponse getById(Long id) {
+        Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+        return categoryMapper.toResponse(category);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Category getBySlug(String slug) {
-        return categoryRepository.findBySlug(slug)
+    public CategoryResponse getBySlug(String slug) {
+        Category category = categoryRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+        return categoryMapper.toResponse(category);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Category> getAll() {
-        return categoryRepository.findAll();
+    public List<CategoryResponse> getAll() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(categoryMapper::toResponse)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Category> getActive() {
-        return categoryRepository.findByActiveTrue();
+    public List<CategoryResponse> getActive() {
+        return categoryRepository.findByActiveTrue()
+                .stream()
+                .map(categoryMapper::toResponse)
+                .toList();
     }
 
     @Override
     @Transactional
-    public Category create(Category category) {
-        if (categoryRepository.existsBySlug(category.getSlug())) {
+    public CategoryResponse create(CategoryCreateRequest request) {
+        if (categoryRepository.existsBySlug(request.getSlug())) {
             throw new DuplicateResourceException("Category slug already exists");
         }
 
-        return categoryRepository.save(category);
+        Category category = categoryMapper.toEntity(request);
+        Category saved = categoryRepository.save(category);
+        return categoryMapper.toResponse(saved);
     }
 
     @Override
     @Transactional
-    public Category update(Long id, Category category) {
-        Category existing = getById(id);
+    public CategoryResponse update(Long id, CategoryUpdateRequest request) {
+        Category existing = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        existing.setName(category.getName());
-        existing.setSlug(category.getSlug());
-        existing.setDescription(category.getDescription());
-        existing.setActive(category.getActive());
+        categoryMapper.updateEntity(request, existing);
 
-        return categoryRepository.save(existing);
+        Category saved = categoryRepository.save(existing);
+        return categoryMapper.toResponse(saved);
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
-        Category existing = getById(id);
+        Category existing = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         existing.setDeletedAt(LocalDateTime.now());
         categoryRepository.save(existing);
     }

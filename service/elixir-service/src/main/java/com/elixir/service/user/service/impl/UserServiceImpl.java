@@ -2,7 +2,12 @@ package com.elixir.service.user.service.impl;
 
 import com.elixir.service.common.exception.DuplicateResourceException;
 import com.elixir.service.common.exception.ResourceNotFoundException;
+import com.elixir.service.user.dto.UserCreateRequest;
+import com.elixir.service.user.dto.UserResponse;
+import com.elixir.service.user.dto.UserUpdateRequest;
 import com.elixir.service.user.entity.User;
+import com.elixir.service.user.entity.UserRole;
+import com.elixir.service.user.entity.UserStatus;
 import com.elixir.service.user.repository.UserRepository;
 import com.elixir.service.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -20,57 +25,84 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public User getById(Long id) {
-        return userRepository.findById(id)
+    public UserResponse getById(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return toResponse(user);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public User getByPhone(String phone) {
-        return userRepository.findByPhone(phone)
+    public UserResponse getByPhone(String phone) {
+        User user = userRepository.findByPhone(phone)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return toResponse(user);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getAll() {
-        return userRepository.findAll();
+    public List<UserResponse> getAll() {
+        return userRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     @Override
     @Transactional
-    public User create(User user) {
-        if (userRepository.existsByPhone(user.getPhone())) {
+    public UserResponse create(UserCreateRequest request) {
+        if (userRepository.existsByPhone(request.getPhone())) {
             throw new DuplicateResourceException("Phone already exists");
         }
 
-        if (user.getEmail() != null && userRepository.existsByEmail(user.getEmail())) {
+        if (request.getEmail() != null && userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("Email already exists");
         }
 
-        return userRepository.save(user);
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+        user.setPasswordHash(request.getPasswordHash());
+        user.setRole(UserRole.CUSTOMER);
+        user.setStatus(UserStatus.ACTIVE);
+
+        User saved = userRepository.save(user);
+        return toResponse(saved);
     }
 
     @Override
     @Transactional
-    public User update(Long id, User user) {
-        User existing = getById(id);
+    public UserResponse update(Long id, UserUpdateRequest request) {
+        User existing = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        existing.setName(user.getName());
-        existing.setEmail(user.getEmail());
-        existing.setPhone(user.getPhone());
-        existing.setRole(user.getRole());
-        existing.setStatus(user.getStatus());
+        existing.setName(request.getName());
+        existing.setEmail(request.getEmail());
+        existing.setPhone(request.getPhone());
+        existing.setRole(request.getRole());
+        existing.setStatus(request.getStatus());
 
-        return userRepository.save(existing);
+        User saved = userRepository.save(existing);
+        return toResponse(saved);
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
-        User existing = getById(id);
+        User existing = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         existing.setDeletedAt(LocalDateTime.now());
         userRepository.save(existing);
+    }
+
+    private UserResponse toResponse(User user) {
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setName(user.getName());
+        response.setEmail(user.getEmail());
+        response.setPhone(user.getPhone());
+        response.setRole(user.getRole());
+        response.setStatus(user.getStatus());
+        response.setCreatedAt(user.getCreatedAt());
+        response.setUpdatedAt(user.getUpdatedAt());
+        return response;
     }
 }

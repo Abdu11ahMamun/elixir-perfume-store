@@ -1,23 +1,24 @@
 package com.elixir.service.category.service;
 
-import com.elixir.service.category.entity.Category;
+import com.elixir.service.category.dto.CategoryCreateRequest;
+import com.elixir.service.category.dto.CategoryResponse;
+import com.elixir.service.category.dto.CategoryUpdateRequest;
 
 import java.util.List;
 
 public interface CategoryService {
 
-    // TODO: Replace entity return types with DTOs in DTO phase.
-    Category getById(Long id);
+    CategoryResponse getById(Long id);
 
-    Category getBySlug(String slug);
+    CategoryResponse getBySlug(String slug);
 
-    List<Category> getAll();
+    List<CategoryResponse> getAll();
 
-    List<Category> getActive();
+    List<CategoryResponse> getActive();
 
-    Category create(Category category);
+    CategoryResponse create(CategoryCreateRequest request);
 
-    Category update(Long id, Category category);
+    CategoryResponse update(Long id, CategoryUpdateRequest request);
 
     void delete(Long id);
 }

@@ -1,23 +1,24 @@
 package com.elixir.service.offer.service;
 
-import com.elixir.service.offer.entity.OfferTag;
+import com.elixir.service.offer.dto.OfferTagCreateRequest;
+import com.elixir.service.offer.dto.OfferTagResponse;
+import com.elixir.service.offer.dto.OfferTagUpdateRequest;
 
 import java.util.List;
 
 public interface OfferTagService {
 
-    // TODO: Replace entity return types with DTOs in DTO phase.
-    OfferTag getById(Long id);
+    OfferTagResponse getById(Long id);
 
-    OfferTag getBySlug(String slug);
+    OfferTagResponse getBySlug(String slug);
 
-    List<OfferTag> getAll();
+    List<OfferTagResponse> getAll();
 
-    List<OfferTag> getActive();
+    List<OfferTagResponse> getActive();
 
-    OfferTag create(OfferTag offerTag);
+    OfferTagResponse create(OfferTagCreateRequest request);
 
-    OfferTag update(Long id, OfferTag offerTag);
+    OfferTagResponse update(Long id, OfferTagUpdateRequest request);
 
     void delete(Long id);
 }

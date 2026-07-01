@@ -1,22 +1,22 @@
 package com.elixir.service.product.service;
 
-import com.elixir.service.product.entity.Product;
-import com.elixir.service.product.entity.ProductSize;
+import com.elixir.service.product.dto.ProductSizeCreateRequest;
+import com.elixir.service.product.dto.ProductSizeResponse;
+import com.elixir.service.product.dto.ProductSizeUpdateRequest;
 
 import java.util.List;
 
 public interface ProductSizeService {
 
-    // TODO: Replace entity return types with DTOs in DTO phase.
-    ProductSize getById(Long id);
+    ProductSizeResponse getById(Long id);
 
-    ProductSize getBySku(String sku);
+    ProductSizeResponse getBySku(String sku);
 
-    List<ProductSize> getByProduct(Product product);
+    List<ProductSizeResponse> getByProductId(Long productId);
 
-    ProductSize create(ProductSize productSize);
+    ProductSizeResponse create(ProductSizeCreateRequest request);
 
-    ProductSize update(Long id, ProductSize productSize);
+    ProductSizeResponse update(Long id, ProductSizeUpdateRequest request);
 
     void delete(Long id);
 }

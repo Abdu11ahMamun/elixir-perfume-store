@@ -1,21 +1,22 @@
 package com.elixir.service.user.service;
 
-import com.elixir.service.user.entity.User;
+import com.elixir.service.user.dto.UserCreateRequest;
+import com.elixir.service.user.dto.UserResponse;
+import com.elixir.service.user.dto.UserUpdateRequest;
 
 import java.util.List;
 
 public interface UserService {
 
-    // TODO: Replace entity return types with DTOs in DTO phase.
-    User getById(Long id);
+    UserResponse getById(Long id);
 
-    User getByPhone(String phone);
+    UserResponse getByPhone(String phone);
 
-    List<User> getAll();
+    List<UserResponse> getAll();
 
-    User create(User user);
+    UserResponse create(UserCreateRequest request);
 
-    User update(Long id, User user);
+    UserResponse update(Long id, UserUpdateRequest request);
 
     void delete(Long id);
 }

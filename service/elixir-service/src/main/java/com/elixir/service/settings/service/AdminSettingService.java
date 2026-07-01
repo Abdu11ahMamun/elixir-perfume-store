@@ -1,21 +1,22 @@
 package com.elixir.service.settings.service;
 
-import com.elixir.service.settings.entity.AdminSetting;
+import com.elixir.service.settings.dto.AdminSettingCreateRequest;
+import com.elixir.service.settings.dto.AdminSettingResponse;
+import com.elixir.service.settings.dto.AdminSettingUpdateRequest;
 
 import java.util.List;
 
 public interface AdminSettingService {
 
-    // TODO: Replace entity return types with DTOs in DTO phase.
-    AdminSetting getById(Long id);
+    AdminSettingResponse getById(Long id);
 
-    AdminSetting getBySettingKey(String settingKey);
+    AdminSettingResponse getBySettingKey(String settingKey);
 
-    List<AdminSetting> getAll();
+    List<AdminSettingResponse> getAll();
 
-    AdminSetting create(AdminSetting adminSetting);
+    AdminSettingResponse create(AdminSettingCreateRequest request);
 
-    AdminSetting update(Long id, AdminSetting adminSetting);
+    AdminSettingResponse update(Long id, AdminSettingUpdateRequest request);
 
     void delete(Long id);
 }
