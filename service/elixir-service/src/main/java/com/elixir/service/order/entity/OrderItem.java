@@ -36,12 +36,12 @@ public class OrderItem extends BaseEntity {
     @Column(name = "selected_ml_snapshot", nullable = false)
     private Integer selectedMlSnapshot;
 
-    @Column(name = "unit_price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal unitPrice;
+    @Column(name = "unit_price", nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
+    private BigDecimal unitPrice = BigDecimal.ZERO;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "line_total", nullable = false, precision = 10, scale = 2)
-    private BigDecimal lineTotal;
+    @Column(name = "line_total", nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
+    private BigDecimal lineTotal = BigDecimal.ZERO;
 }

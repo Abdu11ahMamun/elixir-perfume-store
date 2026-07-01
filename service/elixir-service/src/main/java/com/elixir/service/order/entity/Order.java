@@ -56,18 +56,18 @@ public class Order extends BaseEntity {
     @Column(name = "order_status", nullable = false, length = 30)
     private OrderStatus orderStatus;
 
-    @Column(name = "priority", nullable = false)
+    @Column(name = "priority", nullable = false, columnDefinition = "TINYINT")
     private Integer priority;
 
-    @Column(name = "subtotal", nullable = false, precision = 10, scale = 2)
-    private BigDecimal subtotal;
+    @Column(name = "subtotal", nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
+    private BigDecimal subtotal = BigDecimal.ZERO;
 
-    @Column(name = "delivery_charge", nullable = false, precision = 10, scale = 2)
-    private BigDecimal deliveryCharge;
+    @Column(name = "delivery_charge", nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
+    private BigDecimal deliveryCharge = BigDecimal.ZERO;
 
-    @Column(name = "discount", nullable = false, precision = 10, scale = 2)
-    private BigDecimal discount;
+    @Column(name = "discount", nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
+    private BigDecimal discount = BigDecimal.ZERO;
 
-    @Column(name = "grand_total", nullable = false, precision = 10, scale = 2)
-    private BigDecimal grandTotal;
+    @Column(name = "grand_total", nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
+    private BigDecimal grandTotal = BigDecimal.ZERO;
 }

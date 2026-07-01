@@ -22,6 +22,6 @@ public class OfferTag extends BaseEntity {
     @Column(name = "color_code", length = 20)
     private String colorCode;
 
-    @Column(name = "active", nullable = false)
+    @Column(name = "active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean active = true;
 }

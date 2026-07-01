@@ -22,6 +22,6 @@ public class Category extends BaseEntity {
     @Column(name = "description", length = 500)
     private String description;
 
-    @Column(name = "active", nullable = false)
+    @Column(name = "active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean active = true;
 }

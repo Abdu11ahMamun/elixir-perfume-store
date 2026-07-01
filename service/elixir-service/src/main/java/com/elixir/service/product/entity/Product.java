@@ -34,7 +34,7 @@ public class Product extends BaseEntity {
     @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
-    @Column(name = "combo", nullable = false)
+    @Column(name = "combo", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean combo = false;
 
     @Enumerated(EnumType.STRING)

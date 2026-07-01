@@ -2,6 +2,7 @@ package com.elixir.service.product.entity;
 
 import com.elixir.service.common.entity.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,14 +29,19 @@ public class ProductSize extends BaseEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "ml", nullable = false)
+    @NotNull
+    @Column(
+            name = "ml",
+            nullable = false,
+            columnDefinition = "INT CHECK (ml IN (6, 15, 30))"
+    )
     private Integer ml;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(name = "price", nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
+    private BigDecimal price = BigDecimal.ZERO;
 
     @Column(name = "stock", nullable = false)
-    private Integer stock;
+    private Integer stock = 0;
 
     @Column(name = "image_urls", columnDefinition = "JSON")
     private String imageUrls;
@@ -43,6 +49,6 @@ public class ProductSize extends BaseEntity {
     @Column(name = "sku", nullable = false, unique = true, length = 100)
     private String sku;
 
-    @Column(name = "active", nullable = false)
+    @Column(name = "active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean active = true;
 }
