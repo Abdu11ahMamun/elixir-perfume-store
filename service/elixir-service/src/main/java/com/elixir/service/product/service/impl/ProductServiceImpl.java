@@ -14,10 +14,12 @@ import com.elixir.service.product.entity.ProductStatus;
 import com.elixir.service.product.repository.ProductRepository;
 import com.elixir.service.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -27,6 +29,50 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final OfferTagRepository offerTagRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getActiveProducts(int page, int size, String sort) {
+        Pageable pageable = buildPageable(page, size, sort);
+
+        List<ProductResponse> products = productRepository.findByStatus(ProductStatus.ACTIVE)
+            .stream()
+            .filter(product -> product.getDeletedAt() == null)
+            .sorted(resolveComparator(sort))
+            .map(this::toResponse)
+            .toList();
+
+        return toPage(products, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductResponse getProduct(Long id) {
+        Product product = productRepository.findById(id)
+            .filter(existing -> existing.getDeletedAt() == null)
+            .filter(existing -> ProductStatus.ACTIVE.equals(existing.getStatus()))
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        return toResponse(product);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getProductsByCategory(Long categoryId, int page, int size, String sort) {
+        Pageable pageable = buildPageable(page, size, sort);
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+        List<ProductResponse> products = productRepository.findByCategory(category)
+            .stream()
+            .filter(product -> product.getDeletedAt() == null)
+            .filter(product -> ProductStatus.ACTIVE.equals(product.getStatus()))
+            .sorted(resolveComparator(sort))
+            .map(this::toResponse)
+            .toList();
+
+        return toPage(products, pageable);
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -40,26 +86,6 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public List<ProductResponse> getAll() {
         return productRepository.findAll().stream().map(this::toResponse).toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProductResponse> getByStatus(ProductStatus status) {
-        return productRepository.findByStatus(status).stream().map(this::toResponse).toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProductResponse> getByCategory(Long categoryId) {
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-        return productRepository.findByCategory(category).stream().map(this::toResponse).toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProductResponse> getByCombo(Boolean combo) {
-        return productRepository.findByCombo(combo).stream().map(this::toResponse).toList();
     }
 
     @Override
@@ -147,5 +173,48 @@ public class ProductServiceImpl implements ProductService {
         response.setCreatedAt(product.getCreatedAt());
         response.setUpdatedAt(product.getUpdatedAt());
         return response;
+    }
+
+    private Pageable buildPageable(int page, int size, String sort) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+
+        String[] sortParts = sort.split(",");
+        String sortField = sortParts.length > 0 ? sortParts[0] : "createdAt";
+        Sort.Direction direction = sortParts.length > 1 && "asc".equalsIgnoreCase(sortParts[1])
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        return PageRequest.of(safePage, safeSize, Sort.by(direction, sortField));
+    }
+
+    private Page<ProductResponse> toPage(List<ProductResponse> products, Pageable pageable) {
+        int start = (int) pageable.getOffset();
+
+        if (start >= products.size()) {
+            return new PageImpl<>(List.of(), pageable, products.size());
+        }
+
+        int end = Math.min(start + pageable.getPageSize(), products.size());
+
+        return new PageImpl<>(products.subList(start, end), pageable, products.size());
+    }
+
+    private Comparator<Product> resolveComparator(String sort) {
+        boolean ascending = sort != null && sort.toLowerCase().endsWith(",asc");
+
+        Comparator<Product> comparator = Comparator.comparing(
+                Product::getCreatedAt,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        );
+
+        if (sort != null && sort.startsWith("name")) {
+            comparator = Comparator.comparing(
+                    Product::getName,
+                    Comparator.nullsLast(String::compareToIgnoreCase)
+            );
+        }
+
+        return ascending ? comparator : comparator.reversed();
     }
 }
