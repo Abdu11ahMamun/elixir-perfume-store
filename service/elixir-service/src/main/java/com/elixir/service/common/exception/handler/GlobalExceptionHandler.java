@@ -14,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.elixir.service.common.exception.InvalidCredentialsException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -149,5 +150,18 @@ public class GlobalExceptionHandler {
         .build();
 
     return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(
+            InvalidCredentialsException exception,
+            HttpServletRequest request
+    ) {
+        return buildResponse(
+                HttpStatus.UNAUTHORIZED,
+                "Invalid email or password",
+                request,
+                null
+        );
     }
 }
