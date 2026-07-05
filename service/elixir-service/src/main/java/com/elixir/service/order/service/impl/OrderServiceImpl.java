@@ -20,6 +20,10 @@ import com.elixir.service.product.repository.ProductSizeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.elixir.service.common.dto.PageResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -188,5 +192,78 @@ public class OrderServiceImpl implements OrderService {
         response.setLineTotal(item.getLineTotal());
 
         return response;
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<OrderResponse> getAdminOrders(
+            OrderStatus orderStatus,
+            PaymentStatus paymentStatus,
+            String customerPhone,
+            Pageable pageable
+    ) {
+        // TODO: Implement dynamic filtering in a future phase using architect-approved repository strategy.
+        // Current phase keeps repository unchanged and returns paginated non-deleted orders.
+
+        List<Order> allOrders = orderRepository.findAll()
+                .stream()
+                .filter(order -> order.getDeletedAt() == null)
+                .filter(order -> orderStatus == null || orderStatus.equals(order.getOrderStatus()))
+                .filter(order -> paymentStatus == null || paymentStatus.equals(order.getPaymentStatus()))
+                .filter(order -> customerPhone == null || customerPhone.isBlank() || customerPhone.equals(order.getCustomerPhone()))
+                .toList();
+
+        List<OrderResponse> responses = allOrders.stream()
+                .map(order -> toResponse(order, orderItemRepository.findByOrder(order)))
+                .toList();
+
+        Page<OrderResponse> page = toPage(responses, pageable);
+
+        return PageResponse.fromPage(page, pageable.getSort().toString());
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse updateOrderStatus(String orderNumber, OrderStatus status) {
+        Order order = findOrderByOrderNumber(orderNumber);
+        order.setOrderStatus(status);
+
+        Order saved = orderRepository.save(order);
+        List<OrderItem> items = orderItemRepository.findByOrder(saved);
+
+        return toResponse(saved, items);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse updatePaymentStatus(String orderNumber, PaymentStatus status) {
+        Order order = findOrderByOrderNumber(orderNumber);
+        order.setPaymentStatus(status);
+
+        Order saved = orderRepository.save(order);
+        List<OrderItem> items = orderItemRepository.findByOrder(saved);
+
+        return toResponse(saved, items);
+    }
+
+    private Order findOrderByOrderNumber(String orderNumber) {
+        return orderRepository.findByOrderNumber(orderNumber)
+                .filter(order -> order.getDeletedAt() == null)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+    }
+
+    private Page<OrderResponse> toPage(List<OrderResponse> orders, Pageable pageable) {
+        int start = (int) pageable.getOffset();
+
+        if (start >= orders.size()) {
+            return new PageImpl<>(List.of(), pageable, orders.size());
+        }
+
+        int end = Math.min(start + pageable.getPageSize(), orders.size());
+
+        return new PageImpl<>(
+                orders.subList(start, end),
+                pageable,
+                orders.size()
+        );
     }
 }

@@ -253,4 +253,24 @@ public class ProductServiceImpl implements ProductService {
 
         return ascending ? comparator : comparator.reversed();
     }
+
+    @Override
+    @Transactional
+    public ProductResponse toggleStatus(Long id) {
+        Product product = findProductById(id);
+
+        if (ProductStatus.ACTIVE.equals(product.getStatus())) {
+            product.setStatus(ProductStatus.ARCHIVED);
+        } else {
+            product.setStatus(ProductStatus.ACTIVE);
+        }
+
+        return toResponse(productRepository.save(product));
+    }
+
+    private Product findProductById(Long id) {
+        return productRepository.findById(id)
+                .filter(product -> product.getDeletedAt() == null)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+    }
 }

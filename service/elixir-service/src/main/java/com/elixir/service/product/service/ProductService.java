@@ -24,4 +24,6 @@ public interface ProductService {
     ProductResponse getProduct(Long id);
 
     Page<ProductResponse> getProductsByCategory(Long categoryId, int page, int size, String sort);
+
+    ProductResponse toggleStatus(Long id);
 }
