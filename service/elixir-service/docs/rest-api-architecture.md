@@ -80,9 +80,15 @@ offer-tags
 
 ---
 
-## 4. Standard Success Response
+## Standard Success Response DTO
 
-All successful API responses should follow one structure.
+All successful API responses should use:
+
+```java
+ApiResponse<T>
+```
+
+Response structure:
 
 ```json
 {
@@ -94,15 +100,22 @@ All successful API responses should follow one structure.
 }
 ```
 
-Fields:
+Rules:
 
-* `success`: always `true` for success responses.
-* `message`: human-readable result message.
-* `data`: response payload.
-* `timestamp`: response time.
-* `path`: request path.
+* `success` must always be `true`.
+* `timestamp` is generated automatically.
+* `data` may be null.
+* No error fields are included in success responses.
+* Error responses use `ApiErrorResponse`.
 
-For `204 No Content`, no response body is required.
+Factory methods:
+
+```java
+ApiResponse.success(message, data, path)
+ApiResponse.success(message, path)
+ApiResponse.created(message, data, path)
+ApiResponse.noContent(message, path)
+```
 
 ---
 
@@ -162,9 +175,27 @@ Rules:
 
 ---
 
-## 7. Pagination Standard
+## 6. Build/test verification
 
-Paginated responses should follow this structure:
+Run:
+
+```bash
+mvn clean compile
+mvn test
+mvn spring-boot:run
+```
+
+---
+
+## Pagination Standard
+
+Paginated API responses should use:
+
+```java
+PageResponse<T>
+```
+
+Response structure:
 
 ```json
 {
@@ -179,12 +210,12 @@ Paginated responses should follow this structure:
 }
 ```
 
-Rules:
+Pagination rules:
 
 * Page index starts from `0`.
-* Default size should be `20`.
-* Maximum page size should be decided before controller implementation.
-* Sorting format should be `field,direction`.
+* Default page size is `20`.
+* Maximum page size is `100`.
+* Sorting format is `field,direction`.
 
 Example:
 
