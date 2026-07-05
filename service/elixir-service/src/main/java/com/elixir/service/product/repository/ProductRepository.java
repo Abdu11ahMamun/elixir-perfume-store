@@ -25,4 +25,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 	List<Product> findByCombo(Boolean combo);
 
 	boolean existsByName(String name);
+
+	long countByDeletedAtIsNull();
+
+	long countByStatusAndDeletedAtIsNull(ProductStatus status);
 }
