@@ -1,129 +1,164 @@
 package com.elixir.service.order.service.impl;
 
-import com.elixir.service.common.exception.DuplicateResourceException;
+import com.elixir.service.common.exception.BusinessValidationException;
 import com.elixir.service.common.exception.ResourceNotFoundException;
 import com.elixir.service.order.dto.OrderCreateRequest;
+import com.elixir.service.order.dto.OrderItemCreateRequest;
+import com.elixir.service.order.dto.OrderItemResponse;
 import com.elixir.service.order.dto.OrderResponse;
-import com.elixir.service.order.dto.OrderUpdateRequest;
 import com.elixir.service.order.entity.Order;
+import com.elixir.service.order.entity.OrderItem;
+import com.elixir.service.order.entity.OrderStatus;
+import com.elixir.service.order.entity.PaymentStatus;
+import com.elixir.service.order.repository.OrderItemRepository;
 import com.elixir.service.order.repository.OrderRepository;
 import com.elixir.service.order.service.OrderService;
-import com.elixir.service.user.entity.User;
-import com.elixir.service.user.repository.UserRepository;
+import com.elixir.service.product.entity.Product;
+import com.elixir.service.product.entity.ProductSize;
+import com.elixir.service.product.entity.ProductStatus;
+import com.elixir.service.product.repository.ProductSizeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
+    private static final DateTimeFormatter ORDER_NUMBER_FORMAT =
+            DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final ProductSizeRepository productSizeRepository;
 
     @Override
-    @Transactional(readOnly = true)
-    public OrderResponse getById(Long id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        return toResponse(order);
+    @Transactional
+    public OrderResponse placeOrder(OrderCreateRequest request) {
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new BusinessValidationException("Order must contain at least one item");
+        }
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        BigDecimal subtotal = BigDecimal.ZERO;
+        Integer priority = null;
+
+        Order order = new Order();
+        order.setOrderNumber(generateOrderNumber());
+        order.setCustomer(null);
+        order.setCustomerName(request.getCustomerName());
+        order.setCustomerPhone(request.getCustomerPhone());
+        order.setCustomerEmail(request.getCustomerEmail());
+        order.setDeliveryAddress(request.getDeliveryAddress());
+        order.setPaymentMethod(request.getPaymentMethod());
+        order.setPaymentStatus(PaymentStatus.UNPAID);
+        order.setOrderStatus(OrderStatus.PENDING);
+
+        for (OrderItemCreateRequest itemRequest : request.getItems()) {
+            ProductSize productSize = productSizeRepository.findById(itemRequest.getProductSizeId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product size not found"));
+
+            validateProductSizeForPublicOrder(productSize);
+
+            Product product = productSize.getProduct();
+
+            BigDecimal unitPrice = productSize.getPrice();
+            BigDecimal quantity = BigDecimal.valueOf(itemRequest.getQuantity());
+            BigDecimal lineTotal = unitPrice.multiply(quantity);
+
+            subtotal = subtotal.add(lineTotal);
+
+            int itemPriority = resolvePriority(productSize.getMl());
+            priority = priority == null ? itemPriority : Math.min(priority, itemPriority);
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProductSize(productSize);
+            orderItem.setProductNameSnapshot(product.getName());
+            orderItem.setSelectedMlSnapshot(productSize.getMl());
+            orderItem.setUnitPrice(unitPrice);
+            orderItem.setQuantity(itemRequest.getQuantity());
+            orderItem.setLineTotal(lineTotal);
+
+            orderItems.add(orderItem);
+
+            // TODO: Deduct stock in inventory phase.
+        }
+
+        BigDecimal deliveryCharge = BigDecimal.ZERO;
+        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal grandTotal = subtotal.add(deliveryCharge).subtract(discount);
+
+        order.setPriority(priority);
+        order.setSubtotal(subtotal);
+        order.setDeliveryCharge(deliveryCharge);
+        order.setDiscount(discount);
+        order.setGrandTotal(grandTotal);
+
+        Order savedOrder = orderRepository.save(order);
+        List<OrderItem> savedItems = orderItemRepository.saveAll(orderItems);
+
+        return toResponse(savedOrder, savedItems);
     }
 
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getByOrderNumber(String orderNumber) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
+                .filter(existing -> existing.getDeletedAt() == null)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        return toResponse(order);
+
+        List<OrderItem> items = orderItemRepository.findByOrder(order);
+
+        return toResponse(order, items);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrderResponse> getByCustomerId(Long customerId) {
-        User customer = userRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return orderRepository.findByCustomer(customer).stream().map(this::toResponse).toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrderResponse> getByCustomerPhone(String customerPhone) {
-        return orderRepository.findByCustomerPhone(customerPhone).stream().map(this::toResponse).toList();
-    }
-
-    @Override
-    @Transactional
-    public OrderResponse create(OrderCreateRequest request) {
-        if (orderRepository.findByOrderNumber(request.getOrderNumber()).isPresent()) {
-            throw new DuplicateResourceException("Order number already exists");
+    private void validateProductSizeForPublicOrder(ProductSize productSize) {
+        if (!Boolean.TRUE.equals(productSize.getActive()) || productSize.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("Product size not found");
         }
 
-        Order order = new Order();
-        order.setOrderNumber(request.getOrderNumber());
+        Product product = productSize.getProduct();
 
-        if (request.getCustomerId() != null) {
-            User customer = userRepository.findById(request.getCustomerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-            order.setCustomer(customer);
+        if (product == null
+                || product.getDeletedAt() != null
+                || !ProductStatus.ACTIVE.equals(product.getStatus())) {
+            throw new ResourceNotFoundException("Product not found");
+        }
+    }
+
+    private Integer resolvePriority(Integer ml) {
+        if (Integer.valueOf(30).equals(ml)) {
+            return 1;
         }
 
-        order.setCustomerName(request.getCustomerName());
-        order.setCustomerPhone(request.getCustomerPhone());
-        order.setCustomerEmail(request.getCustomerEmail());
-        order.setDeliveryAddress(request.getDeliveryAddress());
-        order.setPaymentMethod(request.getPaymentMethod());
-        order.setPaymentStatus(request.getPaymentStatus());
-        order.setOrderStatus(request.getOrderStatus());
-        order.setPriority(request.getPriority());
-        order.setSubtotal(request.getSubtotal());
-        order.setDeliveryCharge(request.getDeliveryCharge());
-        order.setDiscount(request.getDiscount());
-        order.setGrandTotal(request.getGrandTotal());
+        if (Integer.valueOf(15).equals(ml)) {
+            return 2;
+        }
 
-        Order saved = orderRepository.save(order);
-        return toResponse(saved);
+        if (Integer.valueOf(6).equals(ml)) {
+            return 3;
+        }
+
+        throw new BusinessValidationException("Invalid product size");
     }
 
-    @Override
-    @Transactional
-    public OrderResponse update(Long id, OrderUpdateRequest request) {
-        Order existing = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-
-        existing.setCustomerName(request.getCustomerName());
-        existing.setCustomerPhone(request.getCustomerPhone());
-        existing.setCustomerEmail(request.getCustomerEmail());
-        existing.setDeliveryAddress(request.getDeliveryAddress());
-        existing.setPaymentMethod(request.getPaymentMethod());
-        existing.setPaymentStatus(request.getPaymentStatus());
-        existing.setOrderStatus(request.getOrderStatus());
-        existing.setPriority(request.getPriority());
-        existing.setSubtotal(request.getSubtotal());
-        existing.setDeliveryCharge(request.getDeliveryCharge());
-        existing.setDiscount(request.getDiscount());
-        existing.setGrandTotal(request.getGrandTotal());
-
-        Order saved = orderRepository.save(existing);
-        return toResponse(saved);
+    private String generateOrderNumber() {
+        // TODO: Replace with Redis INCR-based ml-priority order number generator.
+        return "ELX-" + LocalDateTime.now().format(ORDER_NUMBER_FORMAT) + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
     }
 
-    @Override
-    @Transactional
-    public void delete(Long id) {
-        Order existing = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        existing.setDeletedAt(LocalDateTime.now());
-        orderRepository.save(existing);
-    }
-
-    private OrderResponse toResponse(Order order) {
+    private OrderResponse toResponse(Order order, List<OrderItem> items) {
         OrderResponse response = new OrderResponse();
-        response.setId(order.getId());
+
         response.setOrderNumber(order.getOrderNumber());
-        response.setCustomerId(order.getCustomer() != null ? order.getCustomer().getId() : null);
         response.setCustomerName(order.getCustomerName());
         response.setCustomerPhone(order.getCustomerPhone());
         response.setCustomerEmail(order.getCustomerEmail());
@@ -136,8 +171,22 @@ public class OrderServiceImpl implements OrderService {
         response.setDeliveryCharge(order.getDeliveryCharge());
         response.setDiscount(order.getDiscount());
         response.setGrandTotal(order.getGrandTotal());
-        response.setCreatedAt(order.getCreatedAt());
-        response.setUpdatedAt(order.getUpdatedAt());
+        response.setItems(items.stream().map(this::toItemResponse).toList());
+
+        return response;
+    }
+
+    private OrderItemResponse toItemResponse(OrderItem item) {
+        OrderItemResponse response = new OrderItemResponse();
+
+        response.setId(item.getId());
+        response.setProductSizeId(item.getProductSize() != null ? item.getProductSize().getId() : null);
+        response.setProductNameSnapshot(item.getProductNameSnapshot());
+        response.setSelectedMlSnapshot(item.getSelectedMlSnapshot());
+        response.setUnitPrice(item.getUnitPrice());
+        response.setQuantity(item.getQuantity());
+        response.setLineTotal(item.getLineTotal());
+
         return response;
     }
 }
