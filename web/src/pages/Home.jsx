@@ -1,4 +1,5 @@
-import { BRAND, FEATURED, COLLECTIONS, STATS, COMBO_PRODUCTS } from "../constants/brand";
+import { BRAND, COLLECTIONS, STATS, COMBO_PRODUCTS } from "../constants/brand";
+import { useFeaturedProducts, useOfferProducts } from "../hooks/useProducts";
 import TrustBar    from "../components/ui/TrustBar";
 import CollectionCard from "../components/ui/CollectionCard";
 import ProductCard  from "../components/ui/ProductCard";
@@ -14,6 +15,8 @@ import Button       from "../components/ui/Button";
    - onOpen(product)             — opens ProductDetails modal
 ─────────────────────────────────────────────────────────── */
 export default function Home({ openProductsPage, openPage, onOpen }) {
+  const { products: featuredProducts, loading: featuredLoading } = useFeaturedProducts();
+  const { products: offerProducts }                               = useOfferProducts();
   return (
     <>
       {/* ── HERO ── */}
@@ -176,17 +179,23 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {FEATURED.map((product) => (
-              <div key={product.id} className="animate-fade-up">
-                <ProductCard product={product} onOpen={onOpen} />
-              </div>
-            ))}
+            {featuredLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="animate-pulse"
+                    style={{ aspectRatio: "3/4", background: "rgba(245,240,232,0.1)" }} />
+                ))
+              : featuredProducts.map((product) => (
+                  <div key={product.id} className="animate-fade-up">
+                    <ProductCard product={product} onOpen={onOpen} />
+                  </div>
+                ))
+            }
           </div>
         </div>
       </section>
 
       {/* ── OFFERS / COMBO SECTION ── */}
-      {COMBO_PRODUCTS.length > 0 && (
+      {offerProducts.length > 0 && (
         <section className="py-24 lg:py-32 relative overflow-hidden" style={{ background: "var(--plum)" }}>
           {/* Watermark */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden" aria-hidden="true">
@@ -211,7 +220,7 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-              {COMBO_PRODUCTS.map((product) => (
+              {offerProducts.map((product) => (
                 <div key={product.id} className="animate-fade-up">
                   <ProductCard product={product} onOpen={onOpen} />
                 </div>

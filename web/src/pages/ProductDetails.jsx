@@ -146,9 +146,10 @@ export default function ProductDetails({ product, addToCart, onClose }) {
     addToCart({
       ...product,
       selectedMl,
-      price: selectedSize.price,
-      image: selectedSize.images[0],
+      price:    selectedSize.price,
+      image:    selectedSize.images[0],
       quantity: qty,
+      sizeId:   selectedSize.id,   // ← backend productSizeId for order API
     });
     if (onClose) onClose();
   };

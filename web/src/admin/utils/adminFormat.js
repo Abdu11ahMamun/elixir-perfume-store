@@ -1,17 +1,38 @@
+// ─── Currency ─────────────────────────────────────────────
+// Format: ৳1,100
 export function formatCurrency(value) {
-  return `$${Number(value || 0).toLocaleString()}`;
+  if (value === null || value === undefined) return "৳0";
+  return `৳${Number(value).toLocaleString("en-BD")}`;
 }
 
-export function formatNumber(value) {
-  return Number(value || 0).toLocaleString();
+// ─── Date ─────────────────────────────────────────────────
+// Input: "2026-06-03" or ISO string
+// Output: "03 Jun 2026"
+export function formatDate(dateStr) {
+  if (!dateStr) return "—";
+  try {
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day:   "2-digit",
+      month: "short",
+      year:  "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
 }
 
-export function formatDate(value) {
-  if (!value) return "-";
-
-  return new Intl.DateTimeFormat("en", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
+// ─── Date + Time ──────────────────────────────────────────
+export function formatDateTime(dateStr) {
+  if (!dateStr) return "—";
+  try {
+    return new Date(dateStr).toLocaleString("en-GB", {
+      day:    "2-digit",
+      month:  "short",
+      year:   "numeric",
+      hour:   "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return dateStr;
+  }
 }

@@ -159,8 +159,7 @@ export default function App() {
         subtotal={cart.subtotal}
         deliveryFee={cart.deliveryFee}
         total={cart.total}
-        onSubmitOrder={cart.handleSubmitOrder}
-        orderPlaced={cart.orderPlaced}
+        clearCart={cart.clearCart}
       />
 
       {/* Product detail modal */}

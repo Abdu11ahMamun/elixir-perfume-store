@@ -32,22 +32,20 @@ export function useCart() {
   const addToCart = useCallback((item) => {
     if (!item) return;
 
-    const { id, selectedMl, price, image, quantity = 1 } = item;
+    const { id, selectedMl, price, image, quantity = 1, sizeId } = item;
 
-    // Guard: must have size selected
     if (!selectedMl) {
       console.warn("useCart.addToCart: selectedMl is required");
       return;
     }
 
-    const cartKey = `${id}-${selectedMl}`;
-    const orderId = generateOrderId(selectedMl);
+    const cartKey  = `${id}-${selectedMl}`;
+    const orderId  = generateOrderId(selectedMl);
     const priority = getOrderPriority(selectedMl);
 
     setCart((prev) => {
       const existing = prev.find((i) => i.cartKey === cartKey);
       if (existing) {
-        // Same product + same size → increment quantity
         return prev.map((i) =>
           i.cartKey === cartKey
             ? { ...i, quantity: i.quantity + quantity }
@@ -56,7 +54,8 @@ export function useCart() {
       }
       return [
         ...prev,
-        { ...item, cartKey, orderId, priority, price, image, quantity },
+        // sizeId stored for backend order placement
+        { ...item, cartKey, orderId, priority, price, image, quantity, sizeId },
       ];
     });
 
