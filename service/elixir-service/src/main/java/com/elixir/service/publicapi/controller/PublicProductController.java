@@ -6,6 +6,8 @@ import com.elixir.service.product.dto.ProductResponse;
 import com.elixir.service.product.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,11 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/public/products")
+@Tag(name = "Public Products", description = "Public product browsing APIs")
 public class PublicProductController {
 
     private final ProductService productService;
 
     @GetMapping
+        @Operation(summary = "Get active products", description = "Returns paginated active public products.")
     public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getActiveProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -40,6 +44,7 @@ public class PublicProductController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get product", description = "Returns a single active public product by id.")
     public ResponseEntity<ApiResponse<ProductResponse>> getProduct(
             @PathVariable Long id,
             HttpServletRequest request
@@ -56,6 +61,7 @@ public class PublicProductController {
     }
 
     @GetMapping("/category/{categoryId}")
+        @Operation(summary = "Get products by category", description = "Returns paginated active public products for a category.")
     public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getProductsByCategory(
             @PathVariable Long categoryId,
             @RequestParam(defaultValue = "0") int page,

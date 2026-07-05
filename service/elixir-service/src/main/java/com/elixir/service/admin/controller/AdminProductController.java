@@ -12,6 +12,8 @@ import com.elixir.service.product.service.ProductSizeService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,12 +23,14 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/products")
+@Tag(name = "Admin Products", description = "Admin product and product size management APIs")
 public class AdminProductController {
 
     private final ProductService productService;
     private final ProductSizeService productSizeService;
 
     @GetMapping
+    @Operation(summary = "Get all products", description = "Returns all admin products.")
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProducts(
             HttpServletRequest request
     ) {
@@ -42,6 +46,7 @@ public class AdminProductController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get product by id", description = "Returns a product by id.")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductById(
             @PathVariable Long id,
             HttpServletRequest request
@@ -58,6 +63,7 @@ public class AdminProductController {
     }
 
     @PostMapping
+    @Operation(summary = "Create product", description = "Creates a new product.")
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
             @Valid @RequestBody ProductCreateRequest requestBody,
             HttpServletRequest request
@@ -73,6 +79,7 @@ public class AdminProductController {
     }
 
     @PutMapping("/{id}")
+        @Operation(summary = "Update product", description = "Updates an existing product.")
     public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody ProductUpdateRequest requestBody,
@@ -90,6 +97,7 @@ public class AdminProductController {
     }
 
     @PatchMapping("/{id}/status")
+    @Operation(summary = "Toggle product status", description = "Toggles the product status.")
     public ResponseEntity<ApiResponse<ProductResponse>> toggleProductStatus(
             @PathVariable Long id,
             HttpServletRequest request
@@ -106,12 +114,14 @@ public class AdminProductController {
     }
 
     @DeleteMapping("/{id}")
+        @Operation(summary = "Delete product", description = "Deletes a product.")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{productId}/sizes")
+        @Operation(summary = "Create product size", description = "Creates a new product size.")
     public ResponseEntity<ApiResponse<ProductSizeResponse>> createProductSize(
             @PathVariable Long productId,
             @Valid @RequestBody ProductSizeCreateRequest requestBody,
@@ -130,6 +140,7 @@ public class AdminProductController {
     }
 
     @PutMapping("/sizes/{sizeId}")
+        @Operation(summary = "Update product size", description = "Updates an existing product size.")
     public ResponseEntity<ApiResponse<ProductSizeResponse>> updateProductSize(
             @PathVariable Long sizeId,
             @Valid @RequestBody ProductSizeUpdateRequest requestBody,
@@ -147,6 +158,7 @@ public class AdminProductController {
     }
 
     @DeleteMapping("/sizes/{sizeId}")
+        @Operation(summary = "Delete product size", description = "Deletes a product size.")
     public ResponseEntity<Void> deleteProductSize(@PathVariable Long sizeId) {
         productSizeService.delete(sizeId);
         return ResponseEntity.noContent().build();

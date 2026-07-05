@@ -11,6 +11,8 @@ import com.elixir.service.order.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,11 +22,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/orders")
+@Tag(name = "Admin Orders", description = "Admin order management APIs")
 public class AdminOrderController {
 
     private final OrderService orderService;
 
     @GetMapping
+        @Operation(summary = "Get orders", description = "Returns paginated admin orders.")
     public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getOrders(
             @RequestParam(required = false) OrderStatus orderStatus,
             @RequestParam(required = false) PaymentStatus paymentStatus,
@@ -53,6 +57,7 @@ public class AdminOrderController {
     }
 
     @GetMapping("/{orderNumber}")
+    @Operation(summary = "Get order by order number", description = "Returns an admin order by order number.")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderByOrderNumber(
             @PathVariable String orderNumber,
             HttpServletRequest request
@@ -69,6 +74,7 @@ public class AdminOrderController {
     }
 
     @PatchMapping("/{orderNumber}/status")
+        @Operation(summary = "Update order status", description = "Updates the status of an order.")
     public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
             @PathVariable String orderNumber,
             @Valid @RequestBody OrderStatusUpdateRequest requestBody,
@@ -86,6 +92,7 @@ public class AdminOrderController {
     }
 
     @PatchMapping("/{orderNumber}/payment-status")
+        @Operation(summary = "Update payment status", description = "Updates the payment status of an order.")
     public ResponseEntity<ApiResponse<OrderResponse>> updatePaymentStatus(
             @PathVariable String orderNumber,
             @Valid @RequestBody PaymentStatusUpdateRequest requestBody,

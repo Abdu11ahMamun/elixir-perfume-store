@@ -9,12 +9,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class ProductSizeCreateRequest {
-    @NotNull
+
     private Long productId;
 
     @NotNull
@@ -28,7 +29,7 @@ public class ProductSizeCreateRequest {
     @PositiveOrZero
     private Integer stock;
 
-    private String imageUrls;
+    private List<String> imageUrls;
 
     @NotBlank
     @Size(max = 100)

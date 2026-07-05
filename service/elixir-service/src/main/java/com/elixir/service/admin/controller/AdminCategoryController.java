@@ -8,6 +8,8 @@ import com.elixir.service.common.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,11 +19,13 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/categories")
+@Tag(name = "Admin Categories", description = "Admin category management APIs")
 public class AdminCategoryController {
 
     private final CategoryService categoryService;
 
     @GetMapping
+    @Operation(summary = "Get all categories", description = "Returns all admin categories.")
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategories(
             HttpServletRequest request
     ) {
@@ -37,6 +41,7 @@ public class AdminCategoryController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get category by id", description = "Returns a category by id.")
     public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryById(
             @PathVariable Long id,
             HttpServletRequest request
@@ -53,6 +58,7 @@ public class AdminCategoryController {
     }
 
     @PostMapping
+    @Operation(summary = "Create category", description = "Creates a new category.")
     public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(
             @Valid @RequestBody CategoryCreateRequest requestBody,
             HttpServletRequest request
@@ -68,6 +74,7 @@ public class AdminCategoryController {
     }
 
     @PutMapping("/{id}")
+        @Operation(summary = "Update category", description = "Updates an existing category.")
     public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(
             @PathVariable Long id,
             @Valid @RequestBody CategoryUpdateRequest requestBody,
@@ -85,6 +92,7 @@ public class AdminCategoryController {
     }
 
     @PatchMapping("/{id}/toggle-status")
+    @Operation(summary = "Toggle category status", description = "Toggles the category active status.")
     public ResponseEntity<ApiResponse<CategoryResponse>> toggleCategoryStatus(
             @PathVariable Long id,
             HttpServletRequest request
@@ -101,6 +109,7 @@ public class AdminCategoryController {
     }
 
     @DeleteMapping("/{id}")
+        @Operation(summary = "Delete category", description = "Deletes a category.")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();

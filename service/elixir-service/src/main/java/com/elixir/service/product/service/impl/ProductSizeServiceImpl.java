@@ -11,9 +11,14 @@ import com.elixir.service.product.entity.ProductSize;
 import com.elixir.service.product.repository.ProductRepository;
 import com.elixir.service.product.repository.ProductSizeRepository;
 import com.elixir.service.product.service.ProductSizeService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +32,7 @@ public class ProductSizeServiceImpl implements ProductSizeService {
 
     private final ProductSizeRepository productSizeRepository;
     private final ProductRepository productRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -56,12 +62,14 @@ public class ProductSizeServiceImpl implements ProductSizeService {
     @Transactional
     public ProductSizeResponse create(ProductSizeCreateRequest request) {
         validateMl(request.getMl());
+        validateImageUrls(request.getImageUrls());
 
         if (productSizeRepository.existsBySku(request.getSku())) {
             throw new DuplicateResourceException("SKU already exists");
         }
 
         Product product = productRepository.findById(request.getProductId())
+                .filter(existing -> existing.getDeletedAt() == null)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         ProductSize productSize = new ProductSize();
@@ -69,9 +77,9 @@ public class ProductSizeServiceImpl implements ProductSizeService {
         productSize.setMl(request.getMl());
         productSize.setPrice(request.getPrice());
         productSize.setStock(request.getStock());
-        productSize.setImageUrls(request.getImageUrls());
+        productSize.setImageUrls(toJson(request.getImageUrls()));
         productSize.setSku(request.getSku());
-        productSize.setActive(request.getActive());
+        productSize.setActive(request.getActive() != null ? request.getActive() : true);
 
         ProductSize saved = productSizeRepository.save(productSize);
         return toResponse(saved);
@@ -80,19 +88,33 @@ public class ProductSizeServiceImpl implements ProductSizeService {
     @Override
     @Transactional
     public ProductSizeResponse update(Long id, ProductSizeUpdateRequest request) {
+        ProductSize existing = getProductSizeEntity(id);
+
         if (request.getMl() != null) {
             validateMl(request.getMl());
+            existing.setMl(request.getMl());
         }
 
-        ProductSize existing = productSizeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product size not found"));
+        if (request.getPrice() != null) {
+            existing.setPrice(request.getPrice());
+        }
 
-        existing.setMl(request.getMl());
-        existing.setPrice(request.getPrice());
-        existing.setStock(request.getStock());
-        existing.setImageUrls(request.getImageUrls());
-        existing.setSku(request.getSku());
-        existing.setActive(request.getActive());
+        if (request.getStock() != null) {
+            existing.setStock(request.getStock());
+        }
+
+        if (request.getImageUrls() != null) {
+            validateImageUrls(request.getImageUrls());
+            existing.setImageUrls(toJson(request.getImageUrls()));
+        }
+
+        if (request.getSku() != null) {
+            existing.setSku(request.getSku());
+        }
+
+        if (request.getActive() != null) {
+            existing.setActive(request.getActive());
+        }
 
         ProductSize saved = productSizeRepository.save(existing);
         return toResponse(saved);
@@ -121,8 +143,56 @@ public class ProductSizeServiceImpl implements ProductSizeService {
         response.setPrice(productSize.getPrice());
         response.setSku(productSize.getSku());
         response.setStock(productSize.getStock());
-        response.setImageUrls(productSize.getImageUrls());
+        response.setImageUrls(fromJson(productSize.getImageUrls()));
 
         return response;
+    }
+    private ProductSize getProductSizeEntity(Long id) {
+        return productSizeRepository.findById(id)
+                .filter(productSize -> productSize.getDeletedAt() == null)
+                .orElseThrow(() -> new ResourceNotFoundException("Product size not found"));
+    }
+
+    private void validateImageUrls(List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return;
+        }
+
+        for (String imageUrl : imageUrls) {
+            if (imageUrl == null || imageUrl.isBlank()) {
+                throw new BusinessValidationException("Image URL must not be blank");
+            }
+
+            boolean validLocalUpload = imageUrl.startsWith("/uploads/products/");
+            boolean validHttpUrl = imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
+
+            if (!validLocalUpload && !validHttpUrl) {
+                throw new BusinessValidationException("Invalid image URL format");
+            }
+        }
+    }
+
+    private String toJson(List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return objectMapper.writeValueAsString(imageUrls);
+        } catch (JsonProcessingException exception) {
+            throw new BusinessValidationException("Invalid image URL data");
+        }
+    }
+
+    private List<String> fromJson(String imageUrls) {
+        if (imageUrls == null || imageUrls.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            return objectMapper.readValue(imageUrls, new TypeReference<List<String>>() {});
+        } catch (JsonProcessingException exception) {
+            return Collections.emptyList();
+        }
     }
 }

@@ -16,10 +16,15 @@ import com.elixir.service.product.entity.ProductStatus;
 import com.elixir.service.product.repository.ProductRepository;
 import com.elixir.service.product.repository.ProductSizeRepository;
 import com.elixir.service.product.service.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -33,6 +38,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final OfferTagRepository offerTagRepository;
     private final ProductSizeRepository productSizeRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -206,7 +212,7 @@ public class ProductServiceImpl implements ProductService {
         response.setPrice(productSize.getPrice());
         response.setSku(productSize.getSku());
         response.setStock(productSize.getStock());
-        response.setImageUrls(productSize.getImageUrls());
+        response.setImageUrls(fromJson(productSize.getImageUrls()));
 
         return response;
     }
@@ -272,5 +278,16 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findById(id)
                 .filter(product -> product.getDeletedAt() == null)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+    }
+    private List<String> fromJson(String imageUrls) {
+        if (imageUrls == null || imageUrls.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            return objectMapper.readValue(imageUrls, new TypeReference<List<String>>() {});
+        } catch (JsonProcessingException exception) {
+            return Collections.emptyList();
+        }
     }
 }

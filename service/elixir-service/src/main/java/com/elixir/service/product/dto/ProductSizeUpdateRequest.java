@@ -7,11 +7,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class ProductSizeUpdateRequest {
+
     private Integer ml;
 
     @PositiveOrZero
@@ -20,7 +22,7 @@ public class ProductSizeUpdateRequest {
     @PositiveOrZero
     private Integer stock;
 
-    private String imageUrls;
+    private List<String> imageUrls;
 
     @Size(max = 100)
     private String sku;
