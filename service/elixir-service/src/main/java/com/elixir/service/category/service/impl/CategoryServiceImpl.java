@@ -51,6 +51,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryResponse> getActive() {
         return categoryRepository.findByActiveTrue()
                 .stream()
+                .filter(category -> category.getDeletedAt() == null)
                 .map(this::toResponse)
                 .toList();
     }
@@ -63,6 +64,11 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         Category category = toEntity(request);
+
+        if (category.getActive() == null) {
+            category.setActive(true);
+        }
+
         Category saved = categoryRepository.save(category);
         return toResponse(saved);
     }
@@ -72,7 +78,23 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse update(Long id, CategoryUpdateRequest request) {
         Category existing = findCategoryById(id);
 
+        if (request.getSlug() != null
+                && !request.getSlug().equals(existing.getSlug())
+                && categoryRepository.existsBySlug(request.getSlug())) {
+            throw new DuplicateResourceException("Category slug already exists");
+        }
+
         applyUpdate(request, existing);
+
+        Category saved = categoryRepository.save(existing);
+        return toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse toggleStatus(Long id) {
+        Category existing = findCategoryById(id);
+        existing.setActive(!Boolean.TRUE.equals(existing.getActive()));
 
         Category saved = categoryRepository.save(existing);
         return toResponse(saved);
@@ -88,6 +110,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private Category findCategoryById(Long id) {
         return categoryRepository.findById(id)
+                .filter(category -> category.getDeletedAt() == null)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
     }
 
