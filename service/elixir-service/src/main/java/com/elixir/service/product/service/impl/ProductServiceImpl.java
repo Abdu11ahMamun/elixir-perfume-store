@@ -8,10 +8,13 @@ import com.elixir.service.offer.entity.OfferTag;
 import com.elixir.service.offer.repository.OfferTagRepository;
 import com.elixir.service.product.dto.ProductCreateRequest;
 import com.elixir.service.product.dto.ProductResponse;
+import com.elixir.service.product.dto.ProductSizeResponse;
 import com.elixir.service.product.dto.ProductUpdateRequest;
 import com.elixir.service.product.entity.Product;
+import com.elixir.service.product.entity.ProductSize;
 import com.elixir.service.product.entity.ProductStatus;
 import com.elixir.service.product.repository.ProductRepository;
+import com.elixir.service.product.repository.ProductSizeRepository;
 import com.elixir.service.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -29,6 +32,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final OfferTagRepository offerTagRepository;
+    private final ProductSizeRepository productSizeRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -159,6 +163,7 @@ public class ProductServiceImpl implements ProductService {
 
     private ProductResponse toResponse(Product product) {
         ProductResponse response = new ProductResponse();
+
         response.setId(product.getId());
         response.setName(product.getName());
         response.setInspiredBy(product.getInspiredBy());
@@ -166,12 +171,43 @@ public class ProductServiceImpl implements ProductService {
         response.setNote(product.getNote());
         response.setCombo(product.getCombo());
         response.setStatus(product.getStatus());
-        response.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
-        response.setCategoryName(product.getCategory() != null ? product.getCategory().getName() : null);
-        response.setOfferTagId(product.getOfferTag() != null ? product.getOfferTag().getId() : null);
-        response.setOfferTagName(product.getOfferTag() != null ? product.getOfferTag().getName() : null);
+
+        if (product.getCategory() != null) {
+            response.setCategoryId(product.getCategory().getId());
+            response.setCategoryName(product.getCategory().getName());
+        }
+
+        if (product.getOfferTag() != null) {
+            response.setOfferTagId(product.getOfferTag().getId());
+            response.setOfferTagName(product.getOfferTag().getName());
+        }
+
+        response.setSizes(getPublicSizes(product));
+
         response.setCreatedAt(product.getCreatedAt());
         response.setUpdatedAt(product.getUpdatedAt());
+
+        return response;
+    }
+    private List<ProductSizeResponse> getPublicSizes(Product product) {
+        return productSizeRepository.findByProduct(product)
+                .stream()
+                .filter(size -> Boolean.TRUE.equals(size.getActive()))
+                .filter(size -> size.getDeletedAt() == null)
+                .map(this::toSizeResponse)
+                .toList();
+    }
+
+    private ProductSizeResponse toSizeResponse(ProductSize productSize) {
+        ProductSizeResponse response = new ProductSizeResponse();
+
+        response.setId(productSize.getId());
+        response.setMl(productSize.getMl());
+        response.setPrice(productSize.getPrice());
+        response.setSku(productSize.getSku());
+        response.setStock(productSize.getStock());
+        response.setImageUrls(productSize.getImageUrls());
+
         return response;
     }
 

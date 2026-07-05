@@ -115,16 +115,14 @@ public class ProductSizeServiceImpl implements ProductSizeService {
 
     private ProductSizeResponse toResponse(ProductSize productSize) {
         ProductSizeResponse response = new ProductSizeResponse();
+
         response.setId(productSize.getId());
-        response.setProductId(productSize.getProduct() != null ? productSize.getProduct().getId() : null);
         response.setMl(productSize.getMl());
         response.setPrice(productSize.getPrice());
+        response.setSku(productSize.getSku());
         response.setStock(productSize.getStock());
         response.setImageUrls(productSize.getImageUrls());
-        response.setSku(productSize.getSku());
-        response.setActive(productSize.getActive());
-        response.setCreatedAt(productSize.getCreatedAt());
-        response.setUpdatedAt(productSize.getUpdatedAt());
+
         return response;
     }
 }
