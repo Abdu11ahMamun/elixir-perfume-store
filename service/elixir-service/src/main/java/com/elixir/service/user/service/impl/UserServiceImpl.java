@@ -1,5 +1,6 @@
 package com.elixir.service.user.service.impl;
 
+import com.elixir.service.common.exception.BusinessValidationException;
 import com.elixir.service.common.exception.DuplicateResourceException;
 import com.elixir.service.common.exception.ResourceNotFoundException;
 import com.elixir.service.user.dto.UserCreateRequest;
@@ -11,6 +12,7 @@ import com.elixir.service.user.entity.UserStatus;
 import com.elixir.service.user.repository.UserRepository;
 import com.elixir.service.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)
@@ -33,7 +36,9 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserResponse getByPhone(String phone) {
         User user = userRepository.findByPhone(phone)
+                .filter(existing -> existing.getDeletedAt() == null)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         return toResponse(user);
     }
 
@@ -42,6 +47,7 @@ public class UserServiceImpl implements UserService {
     public List<UserResponse> getAll() {
         return userRepository.findAll()
                 .stream()
+                .filter(user -> user.getDeletedAt() == null)
                 .map(this::toResponse)
                 .toList();
     }
@@ -49,6 +55,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse create(UserCreateRequest request) {
+        validateCreateRequest(request);
+
         if (userRepository.existsByPhone(request.getPhone())) {
             throw new DuplicateResourceException("Phone already exists");
         }
@@ -61,11 +69,8 @@ public class UserServiceImpl implements UserService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
-
-        // TODO: Hash password in security phase.
-        user.setPasswordHash(request.getPassword());
-
-        user.setRole(UserRole.CUSTOMER);
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
         user.setStatus(UserStatus.ACTIVE);
 
         User saved = userRepository.save(user);
@@ -76,6 +81,18 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse update(Long id, UserUpdateRequest request) {
         User existing = findUserById(id);
+
+        if (request.getPhone() != null
+                && !request.getPhone().equals(existing.getPhone())
+                && userRepository.existsByPhone(request.getPhone())) {
+            throw new DuplicateResourceException("Phone already exists");
+        }
+
+        if (request.getEmail() != null
+                && !request.getEmail().equals(existing.getEmail())
+                && userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("Email already exists");
+        }
 
         if (request.getName() != null) {
             existing.setName(request.getName());
@@ -103,14 +120,38 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public UserResponse toggleStatus(Long id) {
+        User existing = findUserById(id);
+
+        if (UserStatus.ACTIVE.equals(existing.getStatus())) {
+            existing.setStatus(UserStatus.BLOCKED);
+        } else {
+            existing.setStatus(UserStatus.ACTIVE);
+        }
+
+        User saved = userRepository.save(existing);
+        return toResponse(saved);
+    }
+
+    @Override
+    @Transactional
     public void delete(Long id) {
         User existing = findUserById(id);
         existing.setDeletedAt(LocalDateTime.now());
+        existing.setStatus(UserStatus.DELETED);
         userRepository.save(existing);
+    }
+
+    private void validateCreateRequest(UserCreateRequest request) {
+        if (UserRole.ADMIN.equals(request.getRole())
+                && (request.getEmail() == null || request.getEmail().isBlank())) {
+            throw new BusinessValidationException("Email is required for admin users");
+        }
     }
 
     private User findUserById(Long id) {
         return userRepository.findById(id)
+                .filter(user -> user.getDeletedAt() == null)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 

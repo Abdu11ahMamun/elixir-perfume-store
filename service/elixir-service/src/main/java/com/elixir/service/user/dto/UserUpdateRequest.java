@@ -12,17 +12,18 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class UserUpdateRequest {
-	@Size(max = 120)
-	private String name;
 
-	@Email
-	@Size(max = 150)
-	private String email;
+    @Size(max = 120)
+    private String name;
 
-	@Size(max = 20)
-	private String phone;
+    @Email
+    @Size(max = 150)
+    private String email;
 
-	private UserRole role;
+    @Size(max = 20)
+    private String phone;
 
-	private UserStatus status;
+    private UserRole role;
+
+    private UserStatus status;
 }

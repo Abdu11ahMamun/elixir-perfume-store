@@ -18,5 +18,7 @@ public interface UserService {
 
     UserResponse update(Long id, UserUpdateRequest request);
 
+    UserResponse toggleStatus(Long id);
+
     void delete(Long id);
 }
