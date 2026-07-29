@@ -71,6 +71,8 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = buildPageable(page, size, sort);
 
         Category category = categoryRepository.findById(categoryId)
+                .filter(existing -> existing.getDeletedAt() == null)
+                .filter(existing -> Boolean.TRUE.equals(existing.getActive()))
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         List<ProductResponse> products = productRepository.findByCategory(category)
@@ -133,12 +135,29 @@ public class ProductServiceImpl implements ProductService {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        existing.setName(request.getName());
-        existing.setInspiredBy(request.getInspiredBy());
-        existing.setDescription(request.getDescription());
-        existing.setNote(request.getNote());
-        existing.setCombo(request.getCombo());
-        existing.setStatus(request.getStatus());
+        if (request.getName() != null) {
+            existing.setName(request.getName());
+        }
+
+        if (request.getInspiredBy() != null) {
+            existing.setInspiredBy(request.getInspiredBy());
+        }
+
+        if (request.getDescription() != null) {
+            existing.setDescription(request.getDescription());
+        }
+
+        if (request.getNote() != null) {
+            existing.setNote(request.getNote());
+        }
+
+        if (request.getCombo() != null) {
+            existing.setCombo(request.getCombo());
+        }
+
+        if (request.getStatus() != null) {
+            existing.setStatus(request.getStatus());
+        }
 
         if (request.getCategoryId() != null) {
             Category category = categoryRepository.findById(request.getCategoryId())

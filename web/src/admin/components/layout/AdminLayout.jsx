@@ -8,6 +8,7 @@ const pageMeta = {
   addProduct: { title: "Add Product",description: "Create a new perfume with notes, gallery, pricing, and SEO." },
   orders:     { title: "Orders",     description: "Track purchases, payment, delivery, and customer requests." },
   customers:  { title: "Customers",  description: "Understand buyers, repeat customers, and fragrance preferences." },
+  users:      { title: "Users",      description: "Manage admin and customer accounts, roles, and access status." },
   reports:    { title: "Reports",    description: "Monthly sales, top fragrances, revenue, and growth insights." },
   marketing:  { title: "Marketing",  description: "Feature products, campaigns, banners, and promotions." },
   settings:   { title: "Settings",   description: "Configure store, delivery, payment, and admin preferences." },

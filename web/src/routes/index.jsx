@@ -18,6 +18,7 @@ import AdminOrders          from "../admin/pages/AdminOrders";
 import AdminOrderDetails    from "../admin/pages/AdminOrderDetails";
 import AdminCustomers       from "../admin/pages/AdminCustomers";
 import AdminCustomerProfile from "../admin/pages/AdminCustomerProfile";
+import AdminUsers           from "../admin/pages/AdminUsers";
 import AdminMarketing       from "../admin/pages/AdminMarketing";
 import AdminReports         from "../admin/pages/AdminReports";
 
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
       { path: "orders/:orderId",              element: <AdminOrderDetails /> },
       { path: "customers",                    element: <AdminCustomers /> },
       { path: "customers/:customerId",        element: <AdminCustomerProfile /> },
+      { path: "users",                        element: <AdminUsers /> },
       { path: "marketing",                    element: <AdminMarketing /> },
       { path: "reports",                      element: <AdminReports /> },
     ],

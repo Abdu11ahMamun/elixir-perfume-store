@@ -7,6 +7,7 @@ import com.elixir.service.common.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -14,7 +15,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import com.elixir.service.common.exception.InvalidCredentialsException;
+import com.elixir.service.common.exception.InsufficientStockException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -114,6 +118,62 @@ public class GlobalExceptionHandler {
     return buildResponse(
         HttpStatus.BAD_REQUEST,
         "Malformed request body",
+        request,
+        null
+    );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(
+        DataIntegrityViolationException exception,
+        HttpServletRequest request
+    ) {
+    log.warn("Data integrity violation: path={}, message={}", request.getRequestURI(), exception.getMessage());
+
+    return buildResponse(
+        HttpStatus.CONFLICT,
+        "Request could not be completed due to a data conflict",
+        request,
+        null
+    );
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ApiErrorResponse> handleInsufficientStock(
+        InsufficientStockException exception,
+        HttpServletRequest request
+    ) {
+    log.warn("Insufficient stock: path={}, message={}", request.getRequestURI(), exception.getMessage());
+
+    return buildResponse(
+        HttpStatus.CONFLICT,
+        exception.getMessage(),
+        request,
+        null
+    );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiErrorResponse> handleMethodArgumentTypeMismatch(
+        MethodArgumentTypeMismatchException exception,
+        HttpServletRequest request
+    ) {
+    return buildResponse(
+        HttpStatus.BAD_REQUEST,
+        "Invalid value for parameter '" + exception.getName() + "'",
+        request,
+        null
+    );
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleMaxUploadSizeExceeded(
+        MaxUploadSizeExceededException exception,
+        HttpServletRequest request
+    ) {
+    return buildResponse(
+        HttpStatus.PAYLOAD_TOO_LARGE,
+        "Uploaded file exceeds the maximum allowed size",
         request,
         null
     );

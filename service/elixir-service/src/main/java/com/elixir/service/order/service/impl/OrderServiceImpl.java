@@ -1,6 +1,7 @@
 package com.elixir.service.order.service.impl;
 
 import com.elixir.service.common.exception.BusinessValidationException;
+import com.elixir.service.common.exception.InsufficientStockException;
 import com.elixir.service.common.exception.ResourceNotFoundException;
 import com.elixir.service.order.dto.OrderCreateRequest;
 import com.elixir.service.order.dto.OrderItemCreateRequest;
@@ -29,7 +30,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -65,12 +68,37 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentStatus(PaymentStatus.UNPAID);
         order.setOrderStatus(OrderStatus.PENDING);
 
+        Map<Long, Integer> requiredQuantitiesBySize = new LinkedHashMap<>();
         for (OrderItemCreateRequest itemRequest : request.getItems()) {
-            ProductSize productSize = productSizeRepository.findById(itemRequest.getProductSizeId())
+            requiredQuantitiesBySize.merge(
+                    itemRequest.getProductSizeId(),
+                    itemRequest.getQuantity(),
+                    Integer::sum
+            );
+        }
+
+        Map<Long, ProductSize> lockedProductSizes = new LinkedHashMap<>();
+        for (Map.Entry<Long, Integer> entry : requiredQuantitiesBySize.entrySet()) {
+            Long productSizeId = entry.getKey();
+            int requiredQuantity = entry.getValue();
+
+            ProductSize productSize = productSizeRepository.findByIdAndDeletedAtIsNull(productSizeId)
                     .orElseThrow(() -> new ResourceNotFoundException("Product size not found"));
 
             validateProductSizeForPublicOrder(productSize);
 
+            if (productSize.getStock() == null || productSize.getStock() < requiredQuantity) {
+                throw new InsufficientStockException("Insufficient stock for product size: " + productSize.getSku());
+            }
+
+            productSize.setStock(productSize.getStock() - requiredQuantity);
+            productSizeRepository.save(productSize);
+
+            lockedProductSizes.put(productSizeId, productSize);
+        }
+
+        for (OrderItemCreateRequest itemRequest : request.getItems()) {
+            ProductSize productSize = lockedProductSizes.get(itemRequest.getProductSizeId());
             Product product = productSize.getProduct();
 
             BigDecimal unitPrice = productSize.getPrice();
@@ -92,8 +120,6 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setLineTotal(lineTotal);
 
             orderItems.add(orderItem);
-
-            // TODO: Deduct stock in inventory phase.
         }
 
         BigDecimal deliveryCharge = BigDecimal.ZERO;

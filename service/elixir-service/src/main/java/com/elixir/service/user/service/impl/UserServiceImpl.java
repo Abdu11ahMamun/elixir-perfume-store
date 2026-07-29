@@ -3,6 +3,7 @@ package com.elixir.service.user.service.impl;
 import com.elixir.service.common.exception.BusinessValidationException;
 import com.elixir.service.common.exception.DuplicateResourceException;
 import com.elixir.service.common.exception.ResourceNotFoundException;
+import com.elixir.service.security.user.CustomUserDetails;
 import com.elixir.service.user.dto.UserCreateRequest;
 import com.elixir.service.user.dto.UserResponse;
 import com.elixir.service.user.dto.UserUpdateRequest;
@@ -12,6 +13,8 @@ import com.elixir.service.user.entity.UserStatus;
 import com.elixir.service.user.repository.UserRepository;
 import com.elixir.service.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,11 +109,25 @@ public class UserServiceImpl implements UserService {
             existing.setPhone(request.getPhone());
         }
 
-        if (request.getRole() != null) {
+        if (request.getRole() != null && !request.getRole().equals(existing.getRole())) {
+            if (UserRole.ADMIN.equals(existing.getRole()) && !UserRole.ADMIN.equals(request.getRole())) {
+                if (id.equals(currentUserId())) {
+                    throw new BusinessValidationException("You cannot change your own admin role");
+                }
+                ensureNotLastActiveAdmin(existing);
+            }
+
             existing.setRole(request.getRole());
         }
 
-        if (request.getStatus() != null) {
+        if (request.getStatus() != null && !request.getStatus().equals(existing.getStatus())) {
+            if (UserStatus.ACTIVE.equals(existing.getStatus()) && !UserStatus.ACTIVE.equals(request.getStatus())) {
+                if (id.equals(currentUserId())) {
+                    throw new BusinessValidationException("You cannot change your own account status");
+                }
+                ensureNotLastActiveAdmin(existing);
+            }
+
             existing.setStatus(request.getStatus());
         }
 
@@ -124,6 +141,11 @@ public class UserServiceImpl implements UserService {
         User existing = findUserById(id);
 
         if (UserStatus.ACTIVE.equals(existing.getStatus())) {
+            if (id.equals(currentUserId())) {
+                throw new BusinessValidationException("You cannot block your own account");
+            }
+            ensureNotLastActiveAdmin(existing);
+
             existing.setStatus(UserStatus.BLOCKED);
         } else {
             existing.setStatus(UserStatus.ACTIVE);
@@ -137,9 +159,41 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void delete(Long id) {
         User existing = findUserById(id);
+
+        if (id.equals(currentUserId())) {
+            throw new BusinessValidationException("You cannot delete your own account");
+        }
+        ensureNotLastActiveAdmin(existing);
+
         existing.setDeletedAt(LocalDateTime.now());
         existing.setStatus(UserStatus.DELETED);
         userRepository.save(existing);
+    }
+
+    private void ensureNotLastActiveAdmin(User target) {
+        if (!UserRole.ADMIN.equals(target.getRole()) || !UserStatus.ACTIVE.equals(target.getStatus())) {
+            return;
+        }
+
+        long otherActiveAdmins = userRepository.countByRoleAndStatusAndDeletedAtIsNullAndIdNot(
+                UserRole.ADMIN,
+                UserStatus.ACTIVE,
+                target.getId()
+        );
+
+        if (otherActiveAdmins == 0) {
+            throw new BusinessValidationException("Cannot modify the last active admin account");
+        }
+    }
+
+    private Long currentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
+            return customUserDetails.getId();
+        }
+
+        return null;
     }
 
     private void validateCreateRequest(UserCreateRequest request) {

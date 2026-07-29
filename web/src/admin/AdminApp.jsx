@@ -11,6 +11,7 @@ import AdminOrders          from "./pages/AdminOrders";
 import AdminOrderDetails    from "./pages/AdminOrderDetails";
 import AdminCustomers       from "./pages/AdminCustomers";
 import AdminCustomerProfile from "./pages/AdminCustomerProfile";
+import AdminUsers           from "./pages/AdminUsers";
 import AdminReports         from "./pages/AdminReports";
 import AdminMarketing       from "./pages/AdminMarketing";
 
@@ -83,6 +84,8 @@ export default function AdminApp() {
         return <AdminCustomers setActivePage={setActivePage} />;
       case "customerProfile":
         return <AdminCustomerProfile />;
+      case "users":
+        return <AdminUsers />;
       case "reports":
         return <AdminReports />;
       case "marketing":

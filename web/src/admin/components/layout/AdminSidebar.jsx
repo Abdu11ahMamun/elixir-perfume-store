@@ -16,6 +16,12 @@ const navGroups = [
     ],
   },
   {
+    label: "Access",
+    items: [
+      { id: "users", label: "Users", icon: "⚿" },
+    ],
+  },
+  {
     label: "Brand",
     items: [
       { id: "marketing", label: "Marketing", icon: "✺" },

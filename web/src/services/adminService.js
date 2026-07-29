@@ -179,3 +179,39 @@ export async function updatePaymentStatus(orderNumber, paymentStatus) {
   );
   return res.data.data;
 }
+
+// ═══════════════════════════════════════════
+// USERS
+// ═══════════════════════════════════════════
+
+export async function getAdminUsers() {
+  const res = await apiClient.get("/api/v1/admin/users");
+  return res.data.data;
+}
+
+export async function getAdminUserById(id) {
+  const res = await apiClient.get(`/api/v1/admin/users/${id}`);
+  return res.data.data;
+}
+
+export async function createUser(data) {
+  // data: { name, email, phone, password, role }
+  const res = await apiClient.post("/api/v1/admin/users", data);
+  return res.data.data;
+}
+
+export async function updateUser(id, data) {
+  // data: { name, email, phone, role } — password/status not accepted here
+  const res = await apiClient.put(`/api/v1/admin/users/${id}`, data);
+  return res.data.data;
+}
+
+export async function toggleUserStatus(id) {
+  const res = await apiClient.patch(`/api/v1/admin/users/${id}/status`);
+  return res.data.data;
+}
+
+export async function deleteUser(id) {
+  const res = await apiClient.delete(`/api/v1/admin/users/${id}`);
+  return res.data;
+}
