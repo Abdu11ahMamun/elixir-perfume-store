@@ -12,6 +12,7 @@ import About         from "../pages/About";
 // ─── Admin Layout + Pages ─────────────────────────────────
 import AdminApp             from "../admin/AdminApp";
 import AdminDashboard       from "../admin/pages/AdminDashboard";
+import AdminCategories      from "../admin/pages/AdminCategories";
 import AdminProducts        from "../admin/pages/AdminProducts";
 import AdminProductForm     from "../admin/pages/AdminProductForm";
 import AdminOrders          from "../admin/pages/AdminOrders";
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
     element: <AdminApp />,
     children: [
       { index: true,                          element: <AdminDashboard /> },
+      { path: "categories",                   element: <AdminCategories /> },
       { path: "products",                     element: <AdminProducts /> },
       { path: "products/new",                 element: <AdminProductForm /> },
       { path: "products/:id/edit",            element: <AdminProductForm /> },

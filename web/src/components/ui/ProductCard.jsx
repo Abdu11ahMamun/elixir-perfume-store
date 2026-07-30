@@ -151,19 +151,21 @@ export default function ProductCard({ product, onOpen, rank }) {
 
         {/* Inspired by + starting price */}
         <div className="flex items-end justify-between gap-2 flex-wrap">
-          <p
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "0.68rem",
-              color: "var(--gold-dark)",
-              fontStyle: "italic",
-            }}
-          >
-            Inspired by {product.inspiredBy.split("—")[0].trim()}
-          </p>
+          {product.inspiredBy && (
+            <p
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "0.68rem",
+                color: "var(--gold-dark)",
+                fontStyle: "italic",
+              }}
+            >
+              Inspired by {product.inspiredBy.split("—")[0].trim()}
+            </p>
+          )}
 
           <span
-            className="font-display font-light"
+            className="font-display font-light ml-auto"
             style={{ fontSize: "0.95rem", color: "var(--ink)" }}
           >
             {hasStock ? startingPrice : (

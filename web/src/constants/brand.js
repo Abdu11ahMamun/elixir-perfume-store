@@ -5,6 +5,13 @@ export const BRAND = {
   description: "A premium perfume-only ecommerce concept focused on luxury, aesthetics, and elegant shopping experiences.",
 };
 
+// ─── FALLBACK IMAGE ───────────────────────────────────────
+// Used when a category/product image is missing or fails to load.
+// No dedicated placeholder asset exists in this project, so this reuses
+// an image already displayed elsewhere on the homepage (hero section).
+export const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=1400&auto=format&fit=crop";
+
 // ─── PRODUCT SCHEMA ──────────────────────────────────────
 // sizes: array of { ml, price, stock (units), images[] }
 // inspiredBy: string — the designer fragrance it references

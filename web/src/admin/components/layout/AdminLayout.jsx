@@ -4,6 +4,7 @@ import AdminTopbar  from "./AdminTopbar";
 
 const pageMeta = {
   dashboard:  { title: "Dashboard",  description: "Luxury store performance, sales, orders, and inventory." },
+  categories: { title: "Categories", description: "Manage storefront categories, descriptions, and their display image." },
   products:   { title: "Products",   description: "Manage fragrance catalog, stock, pricing, and visibility." },
   addProduct: { title: "Add Product",description: "Create a new perfume with notes, gallery, pricing, and SEO." },
   orders:     { title: "Orders",     description: "Track purchases, payment, delivery, and customer requests." },

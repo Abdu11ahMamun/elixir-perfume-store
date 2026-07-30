@@ -41,10 +41,18 @@ export async function getProductById(id) {
 
 /**
  * Get featured products (homepage)
+ *
+ * The backend has no dedicated "featured" endpoint or flag on ProductResponse
+ * (confirmed against PublicProductController — only list/by-id/by-category
+ * exist). This fetches a small batch of the most recent active products from
+ * the real public products endpoint; the caller selects the first N that are
+ * actually suitable to display (i.e. have at least one active size).
  */
 export async function getFeaturedProducts() {
-  const res = await apiClient.get("/api/v1/public/products/featured");
-  return res.data.data;
+  const res = await apiClient.get("/api/v1/public/products", {
+    params: { page: 0, size: 12, sort: "createdAt,desc" },
+  });
+  return res.data.data; // { content, page, size, totalElements, totalPages }
 }
 
 /**
@@ -73,7 +81,7 @@ export function adaptProduct(backendProduct) {
     // Core identity
     id:          backendProduct.id,
     name:        backendProduct.name,
-    inspiredBy:  backendProduct.inspiredBy,
+    inspiredBy:  backendProduct.inspiredBy || "",
     category:    backendProduct.categoryName || "",
     categoryId:  backendProduct.categoryId,
     note:        backendProduct.note || "",

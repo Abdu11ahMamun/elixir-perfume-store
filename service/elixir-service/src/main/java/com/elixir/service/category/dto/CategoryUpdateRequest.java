@@ -18,5 +18,8 @@ public class CategoryUpdateRequest {
     @Size(max = 500)
     private String description;
 
+    @Size(max = 500)
+    private String imageUrl;
+
     private Boolean active;
 }

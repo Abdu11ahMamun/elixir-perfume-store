@@ -1,5 +1,6 @@
-import { BRAND, COLLECTIONS, STATS, COMBO_PRODUCTS } from "../constants/brand";
-import { useFeaturedProducts, useOfferProducts } from "../hooks/useProducts";
+import { BRAND, STATS } from "../constants/brand";
+import { useFeaturedProducts, useOfferProducts, useHomeCategories } from "../hooks/useProducts";
+import { buildImageUrl } from "../services/apiClient";
 import TrustBar    from "../components/ui/TrustBar";
 import CollectionCard from "../components/ui/CollectionCard";
 import ProductCard  from "../components/ui/ProductCard";
@@ -15,8 +16,9 @@ import Button       from "../components/ui/Button";
    - onOpen(product)             — opens ProductDetails modal
 ─────────────────────────────────────────────────────────── */
 export default function Home({ openProductsPage, openPage, onOpen }) {
-  const { products: featuredProducts, loading: featuredLoading } = useFeaturedProducts();
+  const { products: featuredProducts, loading: featuredLoading, error: featuredError } = useFeaturedProducts();
   const { products: offerProducts }                               = useOfferProducts();
+  const { categories, loading: categoriesLoading, error: categoriesError } = useHomeCategories();
   return (
     <>
       {/* ── HERO ── */}
@@ -134,15 +136,40 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {COLLECTIONS.map((collection) => (
-              <CollectionCard
-                key={collection.title}
-                collection={collection}
-                openProductsPage={openProductsPage}
-              />
-            ))}
-          </div>
+          {categoriesLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse rounded-[2rem]"
+                  style={{ minHeight: "520px", background: "var(--warm)" }} />
+              ))}
+            </div>
+          ) : categoriesError ? (
+            <div className="text-center py-16" style={{ border: "1px solid var(--warm)" }}>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem", color: "var(--mist)" }}>
+                Categories couldn't be loaded right now. Please try again shortly.
+              </p>
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="text-center py-16" style={{ border: "1px solid var(--warm)" }}>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem", color: "var(--mist)" }}>
+                No categories available yet.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {categories.map((category) => (
+                <CollectionCard
+                  key={category.id}
+                  collection={{
+                    title: category.name,
+                    subtitle: category.description || "",
+                    image: buildImageUrl(category.imageUrl), // relative "/uploads/..." path or absolute URL → resolved; CollectionCard falls back if empty/broken
+                  }}
+                  openProductsPage={openProductsPage}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -178,19 +205,34 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {featuredLoading
-              ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="animate-pulse"
-                    style={{ aspectRatio: "3/4", background: "rgba(245,240,232,0.1)" }} />
-                ))
-              : featuredProducts.map((product) => (
-                  <div key={product.id} className="animate-fade-up">
-                    <ProductCard product={product} onOpen={onOpen} />
-                  </div>
-                ))
-            }
-          </div>
+          {featuredLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse"
+                  style={{ aspectRatio: "3/4", background: "rgba(245,240,232,0.1)" }} />
+              ))}
+            </div>
+          ) : featuredError ? (
+            <div className="text-center py-16" style={{ border: "1px solid rgba(245,240,232,0.1)" }}>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem", color: "rgba(245,240,232,0.5)" }}>
+                Featured fragrances couldn't be loaded right now. Please try again shortly.
+              </p>
+            </div>
+          ) : featuredProducts.length === 0 ? (
+            <div className="text-center py-16" style={{ border: "1px solid rgba(245,240,232,0.1)" }}>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem", color: "rgba(245,240,232,0.5)" }}>
+                No fragrances available yet.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              {featuredProducts.map((product) => (
+                <div key={product.id} className="animate-fade-up">
+                  <ProductCard product={product} onOpen={onOpen} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

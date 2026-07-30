@@ -1,4 +1,5 @@
 import Button from "./Button";
+import { FALLBACK_IMAGE } from "../../constants/brand";
 
 export default function CollectionCard({ collection, openProductsPage }) {
   return (
@@ -13,8 +14,9 @@ export default function CollectionCard({ collection, openProductsPage }) {
       "
     >
       <img
-        src={collection.image}
+        src={collection.image || FALLBACK_IMAGE}
         alt={collection.title}
+        onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
         className="
           absolute
           inset-0

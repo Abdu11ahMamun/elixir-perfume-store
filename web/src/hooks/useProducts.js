@@ -8,7 +8,7 @@ import {
   adaptProducts,
   adaptProduct,
 } from "../services/productService";
-import { FEATURED, REGULAR_PRODUCTS, COLLECTIONS, COMBO_PRODUCTS } from "../constants/brand";
+import { REGULAR_PRODUCTS, COMBO_PRODUCTS } from "../constants/brand";
 
 // ─── useCategories ────────────────────────────────────────
 export function useCategories() {
@@ -26,21 +26,49 @@ export function useCategories() {
         // Map backend shape to frontend filter tab shape
         const mapped = [
           { id: "all", name: "All", slug: "all" },
-          ...data.map((c) => ({ id: c.id, name: c.name, slug: c.slug })),
+          ...(data || []).map((c) => ({ id: c.id, name: c.name, slug: c.slug })),
         ];
         setCategories(mapped);
+        setError(null);
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
-        // Fallback to static categories
-        setCategories([
-          { id: "all",        name: "All",        slug: "all" },
-          { id: "for-him",    name: "For Him",     slug: "for-him" },
-          { id: "for-her",    name: "For Her",     slug: "for-her" },
-          { id: "luxury-oud", name: "Luxury Oud",  slug: "luxury-oud" },
-          { id: "gift-sets",  name: "Gift Sets",   slug: "gift-sets" },
-        ]);
-        setError("Using offline categories");
+        // No hardcoded fallback — keep just the "All" tab so filtering
+        // degrades gracefully instead of showing fabricated categories.
+        setCategories([{ id: "all", name: "All", slug: "all" }]);
+        setError(err.message || "Unable to load categories.");
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
+  }, []);
+
+  return { categories, loading, error };
+}
+
+// ─── useHomeCategories ────────────────────────────────────
+// Raw category list for the homepage "Explore Categories" grid —
+// only categories actually returned by the backend, no synthetic
+// "All" entry and no hardcoded fallback data.
+export function useHomeCategories() {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    getCategories()
+      .then((data) => {
+        if (cancelled) return;
+        setCategories(Array.isArray(data) ? data : []);
+        setError(null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setCategories([]);
+        setError(err.message || "Unable to load categories.");
       })
       .finally(() => { if (!cancelled) setLoading(false); });
 
@@ -63,13 +91,17 @@ export function useFeaturedProducts() {
     getFeaturedProducts()
       .then((data) => {
         if (cancelled) return;
-        setProducts(adaptProducts(Array.isArray(data) ? data : data?.content || []));
+        const content = Array.isArray(data) ? data : data?.content || [];
+        // "Suitable" = has at least one active, purchasable size (sizes[]
+        // already excludes inactive/deleted sizes — enforced by the backend).
+        const suitable = adaptProducts(content).filter((p) => p.sizes.length > 0);
+        setProducts(suitable.slice(0, 4));
+        setError(null);
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
-        // Fallback to static data
-        setProducts(FEATURED);
-        setError("Using offline data");
+        setProducts([]);
+        setError(err.message || "Unable to load featured fragrances.");
       })
       .finally(() => { if (!cancelled) setLoading(false); });
 

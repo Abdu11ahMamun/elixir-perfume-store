@@ -5,6 +5,7 @@ import AdminLogin  from "./pages/AdminLogin";
 import Cursor      from "../components/ui/Cursor";
 
 import AdminDashboard       from "./pages/AdminDashboard";
+import AdminCategories      from "./pages/AdminCategories";
 import AdminProducts        from "./pages/AdminProducts";
 import AdminProductForm     from "./pages/AdminProductForm";
 import AdminOrders          from "./pages/AdminOrders";
@@ -72,6 +73,8 @@ export default function AdminApp() {
     switch (activePage) {
       case "dashboard":
         return <AdminDashboard />;
+      case "categories":
+        return <AdminCategories />;
       case "products":
         return <AdminProducts setActivePage={setActivePage} />;
       case "addProduct":

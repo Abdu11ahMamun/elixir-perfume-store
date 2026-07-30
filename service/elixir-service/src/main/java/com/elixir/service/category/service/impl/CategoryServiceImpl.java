@@ -6,6 +6,7 @@ import com.elixir.service.category.dto.CategoryUpdateRequest;
 import com.elixir.service.category.entity.Category;
 import com.elixir.service.category.repository.CategoryRepository;
 import com.elixir.service.category.service.CategoryService;
+import com.elixir.service.common.exception.BusinessValidationException;
 import com.elixir.service.common.exception.DuplicateResourceException;
 import com.elixir.service.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryResponse> getAll() {
         return categoryRepository.findAll()
                 .stream()
+                .filter(category -> category.getDeletedAt() == null)
                 .map(this::toResponse)
                 .toList();
     }
@@ -63,6 +65,8 @@ public class CategoryServiceImpl implements CategoryService {
             throw new DuplicateResourceException("Category slug already exists");
         }
 
+        validateImageUrl(request.getImageUrl());
+
         Category category = toEntity(request);
 
         if (category.getActive() == null) {
@@ -83,6 +87,8 @@ public class CategoryServiceImpl implements CategoryService {
                 && categoryRepository.existsBySlug(request.getSlug())) {
             throw new DuplicateResourceException("Category slug already exists");
         }
+
+        validateImageUrl(request.getImageUrl());
 
         applyUpdate(request, existing);
 
@@ -120,6 +126,7 @@ public class CategoryServiceImpl implements CategoryService {
         response.setName(category.getName());
         response.setSlug(category.getSlug());
         response.setDescription(category.getDescription());
+        response.setImageUrl(category.getImageUrl());
         response.setActive(category.getActive());
         response.setCreatedAt(category.getCreatedAt());
         response.setUpdatedAt(category.getUpdatedAt());
@@ -131,6 +138,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(request.getName());
         category.setSlug(request.getSlug());
         category.setDescription(request.getDescription());
+        category.setImageUrl(request.getImageUrl());
         category.setActive(request.getActive());
         return category;
     }
@@ -148,8 +156,25 @@ public class CategoryServiceImpl implements CategoryService {
             category.setDescription(request.getDescription());
         }
 
+        if (request.getImageUrl() != null) {
+            category.setImageUrl(request.getImageUrl());
+        }
+
         if (request.getActive() != null) {
             category.setActive(request.getActive());
+        }
+    }
+
+    private void validateImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return;
+        }
+
+        boolean validLocalUpload = imageUrl.startsWith("/uploads/");
+        boolean validHttpUrl = imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
+
+        if (!validLocalUpload && !validHttpUrl) {
+            throw new BusinessValidationException("Invalid image URL format");
         }
     }
 }

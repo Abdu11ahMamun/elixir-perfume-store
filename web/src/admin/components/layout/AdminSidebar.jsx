@@ -9,6 +9,7 @@ const navGroups = [
   {
     label: "Commerce",
     items: [
+      { id: "categories", label: "Categories", icon: "▤" },
       { id: "products", label: "Products", icon: "◈" },
       { id: "addProduct", label: "Add Product", icon: "+" },
       { id: "orders", label: "Orders", icon: "◎" },
