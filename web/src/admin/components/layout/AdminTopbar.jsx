@@ -15,97 +15,90 @@ export default function AdminTopbar({
     : "A";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--gold)]/15 bg-[var(--cream)]/90 backdrop-blur-xl">
-      <div className="flex h-24 items-center justify-between gap-4 px-6 lg:px-10">
+    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur">
+      <div className="flex h-16 items-center justify-between gap-4 px-5 lg:px-8">
 
         {/* Left: title */}
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--gold)]/30 bg-white text-[var(--ink)] lg:hidden"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 lg:hidden"
           >
-            ☰
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
           </button>
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.32em] text-[var(--gold)]">
-              ÉLIXIR Backoffice
-            </p>
-            <h2 className="mt-1 font-display text-4xl font-light text-[var(--ink)]">
-              {title}
-            </h2>
+          <div className="min-w-0">
+            <h2 className="truncate text-base font-semibold text-gray-900">{title}</h2>
             {description && (
-              <p className="mt-1 text-sm text-[var(--mist)]">{description}</p>
+              <p className="hidden truncate text-xs text-gray-400 sm:block">{description}</p>
             )}
           </div>
         </div>
 
-        {/* Right: search + admin menu */}
-        <div className="hidden items-center gap-3 md:flex">
-          <input
-            type="text"
-            placeholder="Search orders, products..."
-            className="w-64 xl:w-80 rounded-full border border-[var(--gold)]/20 bg-white px-5 py-3 text-sm outline-none transition focus:border-[var(--gold)]"
-          />
+        {/* Right: search + notification + admin menu */}
+        <div className="flex items-center gap-3">
+          <div className="relative hidden md:block">
+            <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" viewBox="0 0 20 20" fill="none">
+              <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.6" />
+              <path d="M17 17L13.5 13.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search orders, products..."
+              className="w-56 rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[var(--gold)] focus:bg-white focus:ring-2 focus:ring-[#c9a96e]/20 xl:w-72"
+            />
+          </div>
+
+          <button className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100" aria-label="Notifications">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M4 7.2a5 5 0 0110 0c0 3 1 4 1.4 4.4H2.6C3 11.2 4 10.2 4 7.2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+              <path d="M7.2 14.4a1.8 1.8 0 003.6 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--gold)] ring-2 ring-white" />
+          </button>
 
           {/* Admin dropdown */}
           <div className="relative">
             <button
               onClick={() => setShowMenu((v) => !v)}
-              className="flex items-center gap-3 rounded-full border border-[var(--gold)]/25 bg-white px-3 py-2 transition hover:border-[var(--gold)]/50"
+              className="flex items-center gap-2.5 rounded-lg border border-gray-200 py-1.5 pl-1.5 pr-2.5 transition hover:bg-gray-50"
             >
-              {/* Avatar */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0b0805] font-display text-lg text-[var(--gold)]">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--ink)] text-xs font-semibold text-[var(--gold)]">
                 {initials}
               </div>
               <div className="hidden text-left xl:block">
-                <p className="text-sm font-medium text-[var(--ink)]">
-                  {admin?.name || "Admin"}
-                </p>
-                <p className="text-xs text-[var(--mist)]">
-                  {admin?.role || "Super Admin"}
-                </p>
+                <p className="text-xs font-medium leading-none text-gray-900">{admin?.name || "Admin"}</p>
+                <p className="mt-1 text-[11px] leading-none text-gray-400">{admin?.role || "Super Admin"}</p>
               </div>
-              {/* Chevron */}
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
-                className="hidden xl:block"
-                style={{ color: "var(--mist)", transform: showMenu ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
-                <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                className="hidden text-gray-400 xl:block"
+                style={{ transform: showMenu ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
+                <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
 
-            {/* Dropdown menu */}
             {showMenu && (
               <>
-                {/* Backdrop to close */}
                 <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
 
-                <div className="absolute right-0 top-14 z-20 w-56 overflow-hidden border border-[var(--gold)]/15 bg-white shadow-xl"
-                  style={{ borderRadius: "1rem" }}>
-
-                  {/* Admin info */}
-                  <div className="px-5 py-4 border-b border-[var(--gold)]/10">
-                    <p className="text-sm font-medium text-[var(--ink)]">{admin?.name || "Admin"}</p>
-                    <p className="text-xs text-[var(--mist)] mt-0.5 truncate">{admin?.email || ""}</p>
+                <div className="absolute right-0 top-12 z-20 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <div className="border-b border-gray-100 px-4 py-3">
+                    <p className="text-sm font-medium text-gray-900">{admin?.name || "Admin"}</p>
+                    <p className="mt-0.5 truncate text-xs text-gray-400">{admin?.email || ""}</p>
                   </div>
 
-                  {/* Menu items */}
-                  <div className="py-2">
+                  <div className="py-1.5">
                     <button
                       onClick={() => { setShowMenu(false); }}
-                      className="w-full flex items-center gap-3 px-5 py-3 text-sm text-left text-[var(--mist)] hover:bg-[var(--warm)] transition-colors"
+                      className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-gray-600 transition hover:bg-gray-50"
                     >
-                      <span>⚙</span> Settings
+                      Settings
                     </button>
 
-                    {/* Logout */}
                     <button
                       onClick={() => { setShowMenu(false); onLogout?.(); }}
-                      className="w-full flex items-center gap-3 px-5 py-3 text-sm text-left transition-colors"
-                      style={{ color: "#b91c1c" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(185,28,28,0.06)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                      className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
                     >
-                      <span>→</span> Sign Out
+                      Sign Out
                     </button>
                   </div>
                 </div>
@@ -113,15 +106,6 @@ export default function AdminTopbar({
             )}
           </div>
         </div>
-
-        {/* Mobile logout button */}
-        <button
-          onClick={onLogout}
-          className="md:hidden flex items-center gap-2 px-4 py-2 text-xs transition-colors"
-          style={{ border: "1px solid rgba(185,28,28,0.3)", color: "#b91c1c", borderRadius: "999px" }}
-        >
-          Sign Out
-        </button>
       </div>
     </header>
   );

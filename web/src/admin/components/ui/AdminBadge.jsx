@@ -1,45 +1,58 @@
-const badgeStyles = {
-  ACTIVE: "bg-[var(--gold)]/15 text-[var(--gold-dark)]",
-  INACTIVE: "bg-[#0b0805]/10 text-[#0b0805]",
-  PENDING: "bg-[#b88545]/15 text-[#8f5f24]",
-  CONFIRMED: "bg-[var(--gold)]/15 text-[var(--gold-dark)]",
-  PROCESSING: "bg-[#c9a96e]/15 text-[#8f6a32]",
-  DELIVERED: "bg-[var(--gold)]/20 text-[var(--gold-dark)]",
-  CANCELLED: "bg-[#0b0805]/10 text-[#0b0805]",
-  PAID: "bg-[var(--gold)]/20 text-[var(--gold-dark)]",
-  UNPAID: "bg-[#b88545]/15 text-[#8f5f24]",
-  BEST_SELLER: "bg-[var(--gold)]/20 text-[var(--gold-dark)]",
-  NEW: "bg-[#f5f0e8] text-[var(--gold-dark)]",
-  LIMITED: "bg-[#b88545]/15 text-[#8f5f24]",
-  PREMIUM: "bg-[#0b0805] text-[var(--gold)]",
-  PRIVATE_CLIENT: "bg-[#0b0805] text-[var(--gold)]",
-  GOLD_COLLECTOR: "bg-[var(--gold)]/20 text-[var(--gold-dark)]",
-  EMERALD_MEMBER: "bg-[#d8c7a6]/35 text-[#8f6a32]",
-  NEW_DISCOVERY: "bg-[var(--warm)] text-[var(--gold-dark)]",
-  ADMIN: "bg-[#0b0805] text-[var(--gold)]",
-  CUSTOMER: "bg-[var(--warm)] text-[var(--gold-dark)]",
-  BLOCKED: "bg-[#9b3a3a]/12 text-[#9b3a3a]",
-  DELETED: "bg-[#9b3a3a]/15 text-[#7a2c2c]",
+// ─── Status → tone mapping ──────────────────────────────────
+// Soft, low-contrast badges (Stripe/Linear style): tinted background,
+// matching text, no border noise.
+const tones = {
+  green:  "bg-green-50 text-green-700",
+  red:    "bg-red-50 text-red-600",
+  amber:  "bg-amber-50 text-amber-700",
+  gray:   "bg-gray-100 text-gray-600",
+  blue:   "bg-blue-50 text-blue-700",
+  ink:    "bg-gray-900 text-white",
+  gold:   "bg-[#c9a96e]/15 text-[var(--gold-dark)]",
 };
 
-export default function AdminBadge({ value }) {
+const statusTone = {
+  ACTIVE: "green",
+  CONFIRMED: "blue",
+  PROCESSING: "blue",
+  DELIVERED: "green",
+  PAID: "green",
+  BEST_SELLER: "gold",
+  PREMIUM: "ink",
+  PRIVATE_CLIENT: "ink",
+  ADMIN: "ink",
+  GOLD_COLLECTOR: "gold",
+  NEW: "blue",
+
+  PENDING: "amber",
+  UNPAID: "amber",
+  DRAFT: "amber",
+  LOW_STOCK: "amber",
+  LIMITED: "amber",
+
+  INACTIVE: "gray",
+  CUSTOMER: "gray",
+  NEW_DISCOVERY: "gray",
+  EMERALD_MEMBER: "gray",
+
+  CANCELLED: "red",
+  BLOCKED: "red",
+  DELETED: "red",
+  OUT_OF_STOCK: "red",
+  FAILED: "red",
+  REFUNDED: "red",
+  ARCHIVED: "red",
+  SHIPPED: "blue",
+};
+
+export default function AdminBadge({ value, tone }) {
   const label = String(value || "-").replaceAll("_", " ");
-  const classes = badgeStyles[value] || "bg-[var(--warm)] text-[var(--mist)]";
+  const resolvedTone = tone || statusTone[value] || "gray";
+  const classes = tones[resolvedTone] || tones.gray;
 
   return (
     <span
-      className={`
-        inline-flex
-        items-center
-        rounded-full
-        px-3
-        py-1
-        text-[11px]
-        font-medium
-        uppercase
-        tracking-[0.14em]
-        ${classes}
-      `}
+      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ${classes}`}
     >
       {label}
     </span>

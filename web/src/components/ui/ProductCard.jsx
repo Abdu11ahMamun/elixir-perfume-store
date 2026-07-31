@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { getDefaultSize, getPrimaryImage, getStartingPrice } from "../../utils/price";
+import { FALLBACK_IMAGE } from "../../constants/brand";
 import Button from "./Button";
 
 /* ─── ProductCard ────────────────────────────────────────
@@ -49,9 +50,10 @@ export default function ProductCard({ product, onOpen, rank }) {
       {/* ── Image area ── */}
       <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
         <img
-          src={primaryImage}
+          src={primaryImage || FALLBACK_IMAGE}
           alt={product.name}
           className="card-img w-full h-full object-cover"
+          onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
         />
         <div className="card-overlay" />
 

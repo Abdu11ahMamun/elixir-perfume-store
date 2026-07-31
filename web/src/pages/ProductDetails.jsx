@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { REGULAR_PRODUCTS, COMBO_PRODUCTS } from "../constants/brand";
+import { REGULAR_PRODUCTS, COMBO_PRODUCTS, FALLBACK_IMAGE } from "../constants/brand";
 import {
   formatPrice,
   getDefaultSize,
@@ -32,13 +32,14 @@ function ImageSlider({ images, alt }) {
       <AnimatePresence mode="wait">
         <motion.img
           key={idx}
-          src={images[idx]}
+          src={images[idx] || FALLBACK_IMAGE}
           alt={`${alt} ${idx + 1}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
           className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
         />
       </AnimatePresence>
 
@@ -99,7 +100,12 @@ function ImageSlider({ images, alt }) {
                   cursor: "none",
                 }}
               >
-                <img src={img} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={img || FALLBACK_IMAGE}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
+                />
               </button>
             ))}
           </div>

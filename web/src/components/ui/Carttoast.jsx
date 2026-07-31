@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { formatPrice } from "../../utils/price";
+import { FALLBACK_IMAGE } from "../../constants/brand";
 
 /* ─── CartToast ──────────────────────────────────────────
    Shows a brief animated toast when an item is added to bag.
@@ -30,9 +31,10 @@ export default function CartToast({ toast, onViewBag }) {
             {/* Product image */}
             <div className="w-14 h-16 overflow-hidden shrink-0" style={{ border: "1px solid rgba(201,169,110,0.2)" }}>
               <img
-                src={toast.product?.image}
+                src={toast.product?.image || FALLBACK_IMAGE}
                 alt={toast.product?.name}
                 className="w-full h-full object-cover"
+                onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
               />
             </div>
 

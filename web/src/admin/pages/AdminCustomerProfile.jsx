@@ -1,6 +1,8 @@
 import AdminBadge from "../components/ui/AdminBadge";
 import AdminCard from "../components/ui/AdminCard";
 import AdminPageHeader from "../components/ui/AdminPageHeader";
+import AdminButton from "../components/ui/AdminButton";
+import { AdminToggle } from "../components/ui/AdminInput";
 import { formatCurrency, formatDate } from "../utils/adminFormat";
 
 const customer = {
@@ -34,41 +36,37 @@ const favoriteFragrances = [
 
 export default function AdminCustomerProfile() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Client Dossier"
+        eyebrow="Customer"
         title={customer.name}
         description="Customer profile, purchase history, fragrance preferences, VIP tier, and private admin notes."
-        action={
-          <button className="rounded-full bg-[#0b0805] px-6 py-3 text-sm font-medium text-[var(--gold)] shadow-xl shadow-black/10 transition hover:-translate-y-0.5">
-            Send Offer
-          </button>
-        }
+        action={<AdminButton variant="primary">Send Offer</AdminButton>}
       />
 
-      <section className="grid gap-8 xl:grid-cols-[0.85fr_1.4fr]">
-        <div className="space-y-8">
+      <section className="grid gap-6 xl:grid-cols-[0.85fr_1.4fr]">
+        <div className="space-y-6">
           <AdminCard>
             <div className="text-center">
-              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] bg-[var(--warm)] font-display text-5xl text-[var(--gold-dark)] shadow-sm">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-2xl font-semibold text-gray-500">
                 AR
               </div>
 
-              <h2 className="mt-5 font-display text-5xl font-light">
+              <h2 className="mt-4 text-xl font-semibold text-gray-900">
                 {customer.name}
               </h2>
 
-              <p className="mt-2 text-sm text-[var(--mist)]">
+              <p className="mt-1 text-sm text-gray-500">
                 {customer.email}
               </p>
 
-              <div className="mt-5 flex justify-center gap-2">
+              <div className="mt-4 flex justify-center gap-2">
                 <AdminBadge value={customer.tier} />
                 <AdminBadge value={customer.status} />
               </div>
             </div>
 
-            <div className="mt-8 space-y-4">
+            <div className="mt-6 space-y-3">
               <InfoRow label="Phone" value={customer.phone} />
               <InfoRow label="Address" value={customer.address} />
               <InfoRow label="Joined" value={formatDate(customer.joinedAt)} />
@@ -76,23 +74,16 @@ export default function AdminCustomerProfile() {
             </div>
           </AdminCard>
 
-          <AdminCard>
-            <div className="mb-7">
-              <p className="eyebrow mb-3">Fragrance Taste</p>
-              <h2 className="font-display text-4xl font-light">
-                Preferences
-              </h2>
-            </div>
-
-            <p className="text-sm leading-7 text-[var(--mist)]">
+          <AdminCard title="Preferences">
+            <p className="text-sm leading-6 text-gray-500">
               {customer.preference}
             </p>
 
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               {favoriteFragrances.map((item) => (
                 <span
                   key={item}
-                  className="rounded-full bg-[var(--warm)] px-4 py-2 text-xs text-[var(--gold-dark)]"
+                  className="rounded-md bg-gray-100 px-3 py-1.5 text-xs text-gray-600"
                 >
                   {item}
                 </span>
@@ -100,63 +91,47 @@ export default function AdminCustomerProfile() {
             </div>
           </AdminCard>
 
-          <AdminCard>
-            <div className="mb-7">
-              <p className="eyebrow mb-3">Private Note</p>
-              <h2 className="font-display text-4xl font-light">
-                Admin Notes
-              </h2>
-            </div>
-
+          <AdminCard title="Admin Notes">
             <textarea
               rows="5"
               placeholder="Add private customer note..."
-              className="w-full resize-none rounded-2xl border border-[var(--gold)]/20 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-[var(--mist)]/50 focus:border-[var(--gold)]"
+              className="w-full resize-none rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[var(--gold)] focus:ring-2 focus:ring-[#c9a96e]/20"
             />
 
-            <button className="mt-4 rounded-full bg-[var(--gold)] px-5 py-3 text-sm text-[#0b0805] transition hover:brightness-95">
-              Save Note
-            </button>
+            <AdminButton variant="primary" size="sm" className="mt-3">Save Note</AdminButton>
           </AdminCard>
         </div>
 
-        <div className="space-y-8">
-          <div className="grid gap-6 md:grid-cols-3">
+        <div className="space-y-6">
+          <div className="grid gap-5 md:grid-cols-3">
             <MiniStat label="Lifetime Spend" value={formatCurrency(customer.spent)} />
             <MiniStat label="Orders" value={customer.orders} />
             <MiniStat label="Favorite" value={customer.favorite} />
           </div>
 
-          <AdminCard>
-            <div className="mb-7">
-              <p className="eyebrow mb-3">Purchase History</p>
-              <h2 className="font-display text-4xl font-light">
-                Orders
-              </h2>
-            </div>
-
-            <div className="space-y-4">
+          <AdminCard title="Orders">
+            <div className="space-y-3">
               {orderHistory.map((order) => (
                 <div
                   key={order.id}
-                  className="flex items-center justify-between rounded-2xl border border-[var(--gold)]/10 bg-[#fffcf8] p-4 transition hover:bg-[var(--warm)]/40"
+                  className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/60 p-3.5 transition hover:border-gray-200"
                 >
                   <div>
-                    <p className="font-semibold text-[var(--ink)]">
+                    <p className="text-sm font-medium text-gray-900">
                       {order.id}
                     </p>
 
-                    <p className="mt-1 text-xs text-[var(--mist)]">
+                    <p className="mt-0.5 text-xs text-gray-400">
                       {formatDate(order.date)}
                     </p>
                   </div>
 
                   <div className="text-right">
-                    <p className="font-semibold text-[var(--gold-dark)]">
+                    <p className="text-sm font-semibold text-gray-900">
                       {formatCurrency(order.total)}
                     </p>
 
-                    <div className="mt-2">
+                    <div className="mt-1.5">
                       <AdminBadge value={order.status} />
                     </div>
                   </div>
@@ -165,15 +140,8 @@ export default function AdminCustomerProfile() {
             </div>
           </AdminCard>
 
-          <AdminCard>
-            <div className="mb-7">
-              <p className="eyebrow mb-3">Clienteling</p>
-              <h2 className="font-display text-4xl font-light">
-                Marketing Permissions
-              </h2>
-            </div>
-
-            <div className="space-y-4">
+          <AdminCard title="Marketing Permissions">
+            <div className="space-y-3">
               <ToggleRow label="Email campaigns" active />
               <ToggleRow label="SMS offers" active />
               <ToggleRow label="VIP launch invitations" active />
@@ -188,9 +156,9 @@ export default function AdminCustomerProfile() {
 
 function InfoRow({ label, value }) {
   return (
-    <div className="flex items-start justify-between gap-5 border-b border-[var(--gold)]/10 pb-4 last:border-b-0">
-      <span className="text-sm text-[var(--mist)]">{label}</span>
-      <span className="max-w-[60%] text-right text-sm font-medium text-[var(--ink)]">
+    <div className="flex items-start justify-between gap-5 border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+      <span className="text-sm text-gray-500">{label}</span>
+      <span className="max-w-[60%] text-right text-sm font-medium text-gray-900">
         {value}
       </span>
     </div>
@@ -199,31 +167,20 @@ function InfoRow({ label, value }) {
 
 function MiniStat({ label, value }) {
   return (
-    <AdminCard>
-      <p className="text-sm text-[var(--mist)]">{label}</p>
-      <p className="mt-3 font-display text-4xl font-light text-[var(--gold-dark)]">
-        {value}
-      </p>
+    <AdminCard padding={false}>
+      <div className="p-5">
+        <p className="text-sm text-gray-500">{label}</p>
+        <p className="mt-2 text-2xl font-semibold text-gray-900">{value}</p>
+      </div>
     </AdminCard>
   );
 }
 
 function ToggleRow({ label, active = false }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-[var(--gold)]/10 bg-[#fffcf8] px-4 py-3">
-      <span className="text-sm text-[var(--mist)]">{label}</span>
-
-      <button
-        className={`relative h-7 w-12 rounded-full transition ${
-          active ? "bg-[var(--gold)]" : "bg-[var(--warm)]"
-        }`}
-      >
-        <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${
-            active ? "right-1" : "left-1"
-          }`}
-        />
-      </button>
+    <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/60 px-4 py-3">
+      <span className="text-sm text-gray-600">{label}</span>
+      <AdminToggle value={active} onChange={() => {}} />
     </div>
   );
 }

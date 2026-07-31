@@ -49,7 +49,7 @@ export default function AdminApp() {
   // ── Loading check ──
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--ink)" }}>
+      <div className="admin-area flex min-h-screen items-center justify-center bg-gray-50">
         <div
           className="w-8 h-8 border-2 rounded-full animate-spin"
           style={{ borderColor: "rgba(201,169,110,0.3)", borderTopColor: "var(--gold)" }}
@@ -95,9 +95,9 @@ export default function AdminApp() {
         return <AdminMarketing />;
       default:
         return (
-          <div className="rounded-3xl border border-[var(--gold)]/20 bg-white p-10">
-            <h1 className="font-display text-5xl font-light">{activePage}</h1>
-            <p className="mt-3 text-[var(--mist)]">This module is under construction.</p>
+          <div className="rounded-xl border border-gray-200 bg-white p-10">
+            <h1 className="text-2xl font-semibold capitalize text-gray-900">{activePage}</h1>
+            <p className="mt-2 text-sm text-gray-500">This module is under construction.</p>
           </div>
         );
     }

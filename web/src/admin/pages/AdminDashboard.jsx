@@ -1,13 +1,24 @@
 import { useEffect, useState } from "react";
 import AdminCard  from "../components/ui/AdminCard";
 import AdminBadge from "../components/ui/AdminBadge";
+import AdminStatCard from "../components/ui/AdminStatCard";
+import { AdminRowSkeleton } from "../components/ui/AdminSkeleton";
+import AdminEmptyState from "../components/ui/AdminEmptyState";
 import {
   getDashboardSummary,
   getAdminOrders,
   getAdminProducts,
 } from "../../services/adminService";
+import { buildImageUrl } from "../../services/apiClient";
 import { formatCurrency, formatDate } from "../utils/adminFormat";
 import { salesChartData, adminStats as fallbackStats } from "../data/mockAdminData";
+
+// Same resolution as AdminProducts.jsx — backend returns relative paths on sizes[].imageUrls
+const primaryImg = (p) => {
+  const first = (p.sizes || [])[0];
+  const url   = first?.imageUrls?.[0] || first?.images?.[0] || p.image || p.primaryImage || "";
+  return buildImageUrl(url);
+};
 
 /* ─── Hooks ─── */
 function useDashboard() {
@@ -56,37 +67,33 @@ export default function AdminDashboard() {
 
   // Build stat cards from API or fallback
   const stats = summary ? [
-    { id: "products", label: "Total Products", value: summary.totalProducts,  description: "All catalog items",     change: "", trend: "up" },
-    { id: "orders",   label: "Total Orders",   value: summary.totalOrders,    description: "All time orders",       change: "", trend: "up" },
-    { id: "pending",  label: "Pending Orders", value: summary.pendingOrders,  description: "Awaiting confirmation", change: "", trend: "warning" },
-    { id: "revenue",  label: "Total Revenue",  value: formatCurrency(summary.totalRevenue), description: "Lifetime revenue", change: "", trend: "up" },
-  ] : fallbackStats;
+    { id: "products", label: "Total Products", value: summary.totalProducts,  helper: "All catalog items",     icon: "◈" },
+    { id: "orders",   label: "Total Orders",   value: summary.totalOrders,    helper: "All time orders",       icon: "◎" },
+    { id: "pending",  label: "Pending Orders", value: summary.pendingOrders,  helper: "Awaiting confirmation", icon: "!", tone: "bronze" },
+    { id: "revenue",  label: "Total Revenue",  value: formatCurrency(summary.totalRevenue), helper: "Lifetime revenue", icon: "✦" },
+  ] : fallbackStats.map((s) => ({ id: s.id, label: s.label, value: s.value, helper: s.description, icon: "✦" }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden rounded-[2.5rem] border border-[var(--gold)]/20 bg-[#0b0805] p-8 text-[var(--parchment)] shadow-[0_32px_100px_rgba(14,12,10,0.22)] lg:p-10">
-        <div className="absolute right-[-140px] top-[-180px] h-[420px] w-[420px] rounded-full blur-[120px] opacity-30"
-          style={{ background: "var(--gold)" }} />
-
-        <div className="relative grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+      <section className="relative overflow-hidden rounded-xl border border-gray-200 bg-[var(--ink)] p-7 text-white lg:p-9">
+        <div className="relative grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-end">
           <div>
-            <p className="eyebrow mb-5">ÉLIXIR Atelier</p>
-            <h1 className="font-display text-6xl font-light leading-none md:text-7xl">
-              {loading ? "Loading..." : "Store Overview"}
+            <p className="text-xs font-medium uppercase tracking-wider text-[var(--gold)]">Store Overview</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">
+              {loading ? "Loading..." : "Welcome back"}
             </h1>
-            <div className="mt-8 flex flex-wrap items-end gap-5">
-              <p className="font-display text-7xl font-light text-[var(--gold)]">
+            <div className="mt-6 flex flex-wrap items-end gap-4">
+              <p className="text-4xl font-semibold text-[var(--gold)] md:text-5xl">
                 {loading ? "—" : summary ? formatCurrency(summary.totalRevenue) : "৳0"}
               </p>
-              <span className="mb-3 rounded-full border border-[var(--gold)]/30 bg-[var(--gold)]/10 px-4 py-2 text-sm text-[var(--gold)]">
+              <span className="mb-1.5 rounded-md bg-white/10 px-3 py-1 text-xs text-white/80">
                 Total Revenue
               </span>
             </div>
-            <div className="mt-8 h-px w-full bg-gradient-to-r from-[var(--gold)] via-[var(--gold)]/30 to-transparent" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <HeroMiniMetric label="Total Orders"    value={loading ? "—" : summary?.totalOrders    ?? "—"} />
             <HeroMiniMetric label="Pending Orders"  value={loading ? "—" : summary?.pendingOrders  ?? "—"} />
             <HeroMiniMetric label="Total Products"  value={loading ? "—" : summary?.totalProducts  ?? "—"} />
@@ -96,49 +103,47 @@ export default function AdminDashboard() {
       </section>
 
       {/* ── Stat cards ── */}
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat, i) => (
-          <AdminCard key={stat.id}>
-            <div className="space-y-5">
+          <AdminCard key={stat.id} padding={false}>
+            <div className="space-y-4 p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm text-[var(--mist)]">{stat.label}</p>
-                  <h3 className="mt-3 font-display text-5xl font-light text-[var(--gold-dark)]">
+                  <p className="text-sm text-gray-500">{stat.label}</p>
+                  <h3 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900">
                     {loading ? "—" : stat.value}
                   </h3>
                 </div>
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--warm)] text-[var(--gold-dark)]">✦</span>
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#c9a96e]/12 text-[var(--gold-dark)]">✦</span>
               </div>
               <Sparkline variant={i} />
-              <p className="text-xs text-[var(--mist)]">{stat.description}</p>
+              <p className="text-xs text-gray-400">{stat.helper}</p>
             </div>
           </AdminCard>
         ))}
       </section>
 
       {/* ── Chart + metrics ── */}
-      <section className="grid gap-6 xl:grid-cols-3">
-        <AdminCard className="xl:col-span-2">
-          <div className="mb-8">
-            <p className="eyebrow mb-3">Revenue Intelligence</p>
-            <h2 className="font-display text-5xl leading-none text-[var(--ink)]">Revenue Overview</h2>
-            <p className="mt-3 text-sm text-[var(--mist)]">Monthly sales performance (sample data).</p>
-            <div className="mt-5 h-px w-24 bg-gradient-to-r from-[var(--gold)] to-transparent" />
-          </div>
-          <div className="h-[350px]">
+      <section className="grid gap-5 xl:grid-cols-3">
+        <AdminCard
+          className="xl:col-span-2"
+          title="Revenue Overview"
+          description="Monthly sales performance (sample data)."
+        >
+          <div className="h-[300px]">
             <div className="flex h-full items-end gap-3">
               {salesChartData.map((item) => {
-                const height = Math.max(42, (item.revenue / maxRevenue) * 300);
+                const height = Math.max(36, (item.revenue / maxRevenue) * 260);
                 return (
                   <div key={item.month} className="group flex flex-1 flex-col items-center justify-end">
-                    <div className="mb-3 opacity-0 transition group-hover:opacity-100">
-                      <span className="rounded-full bg-[#0b0805] px-3 py-1 text-xs text-[var(--gold)]">
+                    <div className="mb-2 opacity-0 transition group-hover:opacity-100">
+                      <span className="rounded-md bg-gray-900 px-2 py-1 text-[11px] text-white">
                         {formatCurrency(item.revenue)}
                       </span>
                     </div>
-                    <div className="w-full rounded-t-2xl bg-gradient-to-t from-[#8f6a32] via-[#c9a96e] to-[#f1ddad] shadow-[0_10px_30px_rgba(201,169,110,0.35)] transition duration-300 group-hover:scale-y-105"
+                    <div className="w-full rounded-t-md bg-[#c9a96e]/70 transition duration-200 group-hover:bg-[var(--gold)]"
                       style={{ height }} />
-                    <span className="mt-3 text-xs text-[var(--mist)]">{item.month}</span>
+                    <span className="mt-2.5 text-xs text-gray-400">{item.month}</span>
                   </div>
                 );
               })}
@@ -146,13 +151,8 @@ export default function AdminDashboard() {
           </div>
         </AdminCard>
 
-        <AdminCard>
-          <div className="mb-8">
-            <p className="eyebrow mb-3">Atelier Metrics</p>
-            <h2 className="font-display text-5xl leading-none text-[var(--ink)]">Top Metrics</h2>
-            <div className="mt-5 h-px w-20 bg-gradient-to-r from-[var(--gold)] to-transparent" />
-          </div>
-          <div className="space-y-5">
+        <AdminCard title="Top Metrics">
+          <div className="space-y-4">
             <MetricRow label="Total Products"  value={loading ? "—" : summary?.totalProducts  ?? "—"} />
             <MetricRow label="Active Products" value={loading ? "—" : summary?.activeProducts ?? "—"} />
             <MetricRow label="Total Orders"    value={loading ? "—" : summary?.totalOrders    ?? "—"} />
@@ -163,39 +163,29 @@ export default function AdminDashboard() {
       </section>
 
       {/* ── Tables ── */}
-      <section className="grid gap-6 xl:grid-cols-2">
+      <section className="grid gap-5 xl:grid-cols-2">
         {/* Recent orders */}
-        <AdminCard>
-          <div className="mb-7">
-            <p className="eyebrow mb-3">Order Atelier</p>
-            <h2 className="font-display text-4xl font-light">Recent Orders</h2>
-            <p className="mt-2 text-sm text-[var(--mist)]">Latest customer purchases.</p>
-          </div>
-
+        <AdminCard title="Recent Orders" description="Latest customer purchases.">
           {loading ? (
-            <div className="space-y-3">
-              {[1,2,3].map(i => (
-                <div key={i} className="animate-pulse h-16 rounded-2xl bg-[var(--warm)]" />
-              ))}
-            </div>
+            <div className="-mx-6 -mb-6"><AdminRowSkeleton count={3} /></div>
           ) : orders.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {orders.map((order) => (
                 <div key={order.orderNumber || order.id}
-                  className="flex items-center justify-between rounded-2xl border border-[var(--gold)]/10 bg-[#fffcf8] p-4 transition hover:border-[var(--gold)]/30 hover:shadow-lg">
+                  className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/60 p-3.5 transition hover:border-gray-200">
                   <div>
-                    <p className="font-mono font-semibold text-[var(--ink)]">
+                    <p className="font-mono text-sm font-medium text-gray-900">
                       {order.orderNumber || order.id}
                     </p>
-                    <p className="text-sm text-[var(--mist)]">
+                    <p className="text-xs text-gray-500">
                       {order.customerName} · {formatDate(order.createdAt)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-[var(--gold-dark)]">
+                    <p className="text-sm font-semibold text-gray-900">
                       {formatCurrency(order.grandTotal || order.total)}
                     </p>
-                    <div className="mt-2">
+                    <div className="mt-1.5">
                       <AdminBadge value={order.orderStatus} />
                     </div>
                   </div>
@@ -203,26 +193,16 @@ export default function AdminDashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-[var(--mist)] py-8 text-center">No orders yet.</p>
+            <AdminEmptyState icon="◎" title="No orders yet" />
           )}
         </AdminCard>
 
         {/* Low stock */}
-        <AdminCard>
-          <div className="mb-7">
-            <p className="eyebrow mb-3">Inventory Watch</p>
-            <h2 className="font-display text-4xl font-light">Low Stock Products</h2>
-            <p className="mt-2 text-sm text-[var(--mist)]">Fragrances requiring immediate restock.</p>
-          </div>
-
+        <AdminCard title="Low Stock Products" description="Fragrances requiring immediate restock.">
           {loading ? (
-            <div className="space-y-3">
-              {[1,2,3].map(i => (
-                <div key={i} className="animate-pulse h-20 rounded-2xl bg-[var(--warm)]" />
-              ))}
-            </div>
+            <div className="-mx-6 -mb-6"><AdminRowSkeleton count={3} /></div>
           ) : products.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {products.map((product) => {
                 // Find lowest stock size
                 const minStock = product.sizes
@@ -230,24 +210,25 @@ export default function AdminDashboard() {
                   : product.stock;
                 return (
                   <div key={product.id}
-                    className="flex items-center gap-4 rounded-2xl border border-[var(--gold)]/10 bg-[#fffcf8] p-4 transition hover:border-[var(--gold)]/30 hover:shadow-lg">
-                    <img src={product.image || product.primaryImage}
+                    className="flex items-center gap-4 rounded-lg border border-gray-100 bg-gray-50/60 p-3.5 transition hover:border-gray-200">
+                    <img src={primaryImg(product)}
                       alt={product.name}
-                      className="h-16 w-16 rounded-2xl object-cover shadow-md" />
+                      className="h-12 w-12 rounded-lg object-cover bg-gray-100"
+                      onError={(e) => { e.target.src = ""; e.target.style.background = "#f3f4f6"; }} />
                     <div className="flex-1">
-                      <p className="font-semibold text-[var(--ink)]">{product.name}</p>
-                      <p className="text-sm text-[var(--mist)]">{product.categoryName || product.category}</p>
+                      <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                      <p className="text-xs text-gray-500">{product.categoryName || product.category}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-display text-3xl text-[var(--gold-dark)]">{minStock}</p>
-                      <p className="text-xs text-[var(--mist)]">remaining</p>
+                      <p className="text-lg font-semibold text-amber-600">{minStock}</p>
+                      <p className="text-[11px] text-gray-400">remaining</p>
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <p className="text-sm text-[var(--mist)] py-8 text-center">All stock levels are good.</p>
+            <AdminEmptyState icon="✦" title="All stock levels are good" />
           )}
         </AdminCard>
       </section>
@@ -257,18 +238,18 @@ export default function AdminDashboard() {
 
 function HeroMiniMetric({ label, value }) {
   return (
-    <div className="rounded-3xl border border-[var(--gold)]/15 bg-white/5 p-5 backdrop-blur">
-      <p className="text-[10px] uppercase tracking-[0.25em] text-[var(--gold)]">{label}</p>
-      <p className="mt-3 font-display text-4xl font-light text-[var(--parchment)]">{value}</p>
+    <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+      <p className="text-[11px] uppercase tracking-wider text-white/50">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
     </div>
   );
 }
 
 function MetricRow({ label, value }) {
   return (
-    <div className="flex items-center justify-between border-b border-[var(--gold)]/10 pb-4 last:border-b-0">
-      <span className="text-sm text-[var(--mist)]">{label}</span>
-      <span className="font-semibold text-[var(--gold-dark)]">{value}</span>
+    <div className="flex items-center justify-between border-b border-gray-100 pb-3.5 last:border-b-0 last:pb-0">
+      <span className="text-sm text-gray-500">{label}</span>
+      <span className="text-sm font-semibold text-gray-900">{value}</span>
     </div>
   );
 }
@@ -282,7 +263,7 @@ function Sparkline({ variant = 0 }) {
   ];
   return (
     <svg viewBox="0 0 100 32" className="h-10 w-full overflow-visible" preserveAspectRatio="none">
-      <path d={paths[variant % paths.length]} fill="none" stroke="rgba(201,169,110,0.85)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={paths[variant % paths.length]} fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <path d={`${paths[variant % paths.length]} L96 32 L2 32 Z`} fill="rgba(201,169,110,0.08)" />
     </svg>
   );

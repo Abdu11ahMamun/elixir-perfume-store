@@ -5,7 +5,13 @@ import AdminCard from "../components/ui/AdminCard";
 import AdminPageHeader from "../components/ui/AdminPageHeader";
 import AdminSearchBar from "../components/ui/AdminSearchBar";
 import AdminStatCard from "../components/ui/AdminStatCard";
+import AdminButton from "../components/ui/AdminButton";
+import AdminEmptyState from "../components/ui/AdminEmptyState";
+import { AdminSelect } from "../components/ui/AdminInput";
+import { AdminTable, AdminTableHead, AdminTableBody, AdminTableRow } from "../components/ui/AdminTable";
 import { formatCurrency, formatDate } from "../utils/adminFormat";
+
+const COLUMNS = "1.6fr 1fr 0.7fr 1fr 1fr auto";
 
 const customers = [
   {
@@ -101,96 +107,51 @@ export default function AdminCustomers({setActivePage}) {
     customers.length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Client Atelier"
+        eyebrow="Clientele"
         title="Customers"
         description="Understand buyers, VIP collectors, purchase behavior, favorite fragrances, and customer lifetime value."
-        action={
-          <button className="rounded-full bg-[#0b0805] px-6 py-3 text-sm font-medium text-[var(--gold)] shadow-xl shadow-black/10 transition hover:-translate-y-0.5">
-            Export Clients
-          </button>
-        }
+        action={<AdminButton variant="primary">Export Clients</AdminButton>}
       />
 
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <AdminStatCard
-          label="Total Customers"
-          value={customers.length}
-          helper="All registered buyers"
-          icon="☉"
-        />
-
-        <AdminStatCard
-          label="VIP Collectors"
-          value={vipCustomers}
-          helper="Private and gold clients"
-          icon="✦"
-        />
-
-        <AdminStatCard
-          label="Returning Buyers"
-          value={returningCustomers}
-          helper="More than one order"
-          icon="↺"
-          tone="bronze"
-        />
-
-        <AdminStatCard
-          label="Average LTV"
-          value={formatCurrency(lifetimeValue)}
-          helper="Lifetime value per customer"
-          icon="◈"
-        />
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <AdminStatCard label="Total Customers" value={customers.length} helper="All registered buyers" icon="☉" />
+        <AdminStatCard label="VIP Collectors" value={vipCustomers} helper="Private and gold clients" icon="✦" />
+        <AdminStatCard label="Returning Buyers" value={returningCustomers} helper="More than one order" icon="↺" tone="bronze" />
+        <AdminStatCard label="Average LTV" value={formatCurrency(lifetimeValue)} helper="Lifetime value per customer" icon="◈" />
       </section>
 
       <AdminCard>
-        <div className="mb-7 grid gap-4 xl:grid-cols-[1fr_auto]">
+        <div className="mb-6 grid gap-3 xl:grid-cols-[1fr_auto]">
           <AdminSearchBar
             value={search}
             onChange={setSearch}
             placeholder="Search by customer, email, phone, or favorite scent..."
           />
-
-          <select
-            value={tier}
-            onChange={(event) => setTier(event.target.value)}
-            className="rounded-full border border-[var(--gold)]/20 bg-white px-5 py-3 text-sm outline-none focus:border-[var(--gold)]"
-          >
-            {tiers.map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </select>
+          <AdminSelect value={tier} onChange={(e) => setTier(e.target.value)} options={tiers} />
         </div>
 
-        <div className="overflow-hidden rounded-[2rem] border border-[var(--gold)]/10">
-          <div className="hidden grid-cols-[1.6fr_1fr_1fr_1fr_1fr_auto] gap-4 bg-[#0b0805] px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-[var(--gold)] xl:grid">
+        <AdminTable>
+          <AdminTableHead columns={COLUMNS}>
             <span>Customer</span>
             <span>Favorite</span>
             <span>Orders</span>
             <span>Spent</span>
             <span>Tier</span>
             <span className="text-right">Actions</span>
-          </div>
+          </AdminTableHead>
 
-          <div className="divide-y divide-[var(--gold)]/10 bg-[#fffcf8]">
+          <AdminTableBody>
             {filteredCustomers.map((customer) => (
               <CustomerRow key={customer.id} customer={customer} setActivePage={setActivePage} />
             ))}
 
             {filteredCustomers.length === 0 && (
-              <div className="p-10 text-center">
-                <h3 className="font-display text-4xl font-light">
-                  No customers found
-                </h3>
-
-                <p className="mt-2 text-sm text-[var(--mist)]">
-                  Try changing your search or tier filter.
-                </p>
-              </div>
+              <AdminEmptyState icon="☉" title="No customers found" description="Try changing your search or tier filter." />
             )}
-          </div>
-        </div>
+          </AdminTableBody>
+        </AdminTable>
       </AdminCard>
     </div>
   );
@@ -204,59 +165,36 @@ function CustomerRow({ customer, setActivePage }) {
     .join("");
 
   return (
-    <div className="grid gap-5 px-6 py-5 transition hover:bg-[var(--warm)]/40 xl:grid-cols-[1.6fr_1fr_1fr_1fr_1fr_auto] xl:items-center">
-      <div className="flex items-center gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--warm)] font-display text-2xl text-[var(--gold-dark)] shadow-sm">
+    <AdminTableRow columns={COLUMNS}>
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-500">
           {initials}
         </div>
 
-        <div>
-          <p className="font-semibold text-[var(--ink)]">
-            {customer.name}
-          </p>
-
-          <p className="mt-1 text-xs text-[var(--mist)]">
-            {customer.email}
-          </p>
-
-          <p className="mt-1 text-xs text-[var(--mist)]">
-            {customer.phone}
-          </p>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-gray-900">{customer.name}</p>
+          <p className="mt-0.5 truncate text-xs text-gray-500">{customer.email}</p>
+          <p className="truncate text-xs text-gray-400">{customer.phone}</p>
         </div>
       </div>
 
       <div>
-        <p className="font-semibold text-[var(--gold-dark)]">
-          {customer.favorite}
-        </p>
-
-        <p className="mt-1 text-xs text-[var(--mist)]">
-          Last order {formatDate(customer.lastOrder)}
-        </p>
+        <p className="text-sm font-medium text-gray-900">{customer.favorite}</p>
+        <p className="mt-0.5 text-xs text-gray-400">Last order {formatDate(customer.lastOrder)}</p>
       </div>
 
-      <p className="font-semibold text-[var(--ink)]">
-        {customer.orders}
-      </p>
+      <p className="text-sm font-medium text-gray-900">{customer.orders}</p>
 
-      <p className="font-semibold text-[var(--gold-dark)]">
-        {formatCurrency(customer.spent)}
-      </p>
+      <p className="text-sm font-semibold text-gray-900">{formatCurrency(customer.spent)}</p>
 
       <AdminBadge value={customer.tier} />
 
-      <div className="flex justify-end gap-2">
-       <button
-          onClick={() => setActivePage("customerProfile")}
-          className="rounded-full border border-[var(--gold)]/20 px-4 py-2 text-xs text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)]"
-        >
+      <div className="flex items-center justify-end gap-2">
+        <AdminButton size="sm" variant="secondary" onClick={() => setActivePage("customerProfile")}>
           View
-        </button>
-
-        <button className="rounded-full bg-[#0b0805] px-4 py-2 text-xs text-[var(--gold)] transition hover:-translate-y-0.5">
-          Notes
-        </button>
+        </AdminButton>
+        <AdminButton size="sm" variant="ghost">Notes</AdminButton>
       </div>
-    </div>
+    </AdminTableRow>
   );
 }

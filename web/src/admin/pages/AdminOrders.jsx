@@ -4,18 +4,23 @@ import AdminCard       from "../components/ui/AdminCard";
 import AdminPageHeader from "../components/ui/AdminPageHeader";
 import AdminSearchBar  from "../components/ui/AdminSearchBar";
 import AdminStatCard   from "../components/ui/AdminStatCard";
+import AdminButton     from "../components/ui/AdminButton";
+import AdminEmptyState from "../components/ui/AdminEmptyState";
+import { AdminRowSkeleton } from "../components/ui/AdminSkeleton";
+import { AdminSelect } from "../components/ui/AdminInput";
+import { AdminTable, AdminTableHead, AdminTableBody, AdminTableRow } from "../components/ui/AdminTable";
 import { getAdminOrders, updateOrderStatus, updatePaymentStatus } from "../../services/adminService";
 import { formatCurrency, formatDate } from "../utils/adminFormat";
 
 const ORDER_STATUSES  = ["All","PENDING","CONFIRMED","PROCESSING","SHIPPED","DELIVERED","CANCELLED"];
 const PAYMENT_STATUSES = ["All","UNPAID","PAID","FAILED","REFUNDED"];
+const COLUMNS = "0.9fr 1.6fr 1fr 0.9fr 1fr 1fr auto";
 
 function PriorityBadge({ ml }) {
-  const map = { 30: { label: "P1 · 30ml", color: "#c9a96e" }, 15: { label: "P2 · 15ml", color: "#8a8075" }, 6: { label: "P3 · 6ml", color: "#0e0c0a" } };
-  const cfg = map[ml] || { label: `${ml}ml`, color: "#8a8075" };
+  const map = { 30: "P1 · 30ml", 15: "P2 · 15ml", 6: "P3 · 6ml" };
   return (
-    <span style={{ display:"inline-flex", alignItems:"center", padding:"2px 10px", background:"rgba(14,12,10,0.07)", fontSize:"0.65rem", letterSpacing:"0.12em", textTransform:"uppercase", color: cfg.color, fontWeight:500 }}>
-      {cfg.label}
+    <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-[11px] font-medium text-gray-600">
+      {map[ml] || `${ml}ml`}
     </span>
   );
 }
@@ -77,20 +82,16 @@ export default function AdminOrders({ setActivePage }) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Order Atelier"
+        eyebrow="Fulfillment"
         title="Orders"
         description="Track customer purchases sorted by priority — 30ml orders appear first."
-        action={
-          <button className="rounded-full bg-[#0b0805] px-6 py-3 text-sm font-medium text-[var(--gold)] shadow-xl transition hover:-translate-y-0.5">
-            Export Orders
-          </button>
-        }
+        action={<AdminButton variant="primary">Export Orders</AdminButton>}
       />
 
       {/* Stats */}
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <AdminStatCard label="Total Orders"  value={orders.length}             helper="All customer orders"   icon="◎" />
         <AdminStatCard label="Pending"       value={pendingCount}              helper="Awaiting confirmation" icon="!" tone="bronze" />
         <AdminStatCard label="Delivered"     value={deliveredCount}            helper="Completed orders"      icon="✦" />
@@ -99,39 +100,30 @@ export default function AdminOrders({ setActivePage }) {
 
       <AdminCard>
         {/* Filters */}
-        <div className="mb-6 space-y-4">
-          <div className="grid gap-4 xl:grid-cols-[1fr_auto_auto]">
+        <div className="mb-5 space-y-3">
+          <div className="grid gap-3 xl:grid-cols-[1fr_auto_auto]">
             <AdminSearchBar value={search} onChange={setSearch} placeholder="Search by order ID, customer, phone…" />
-            <select value={status} onChange={e => { setStatus(e.target.value); }}
-              className="rounded-full border border-[var(--gold)]/20 bg-white px-5 py-3 text-sm outline-none focus:border-[var(--gold)]">
-              {ORDER_STATUSES.map(s => <option key={s}>{s}</option>)}
-            </select>
-            <select value={payment} onChange={e => setPayment(e.target.value)}
-              className="rounded-full border border-[var(--gold)]/20 bg-white px-5 py-3 text-sm outline-none focus:border-[var(--gold)]">
-              {PAYMENT_STATUSES.map(s => <option key={s}>{s}</option>)}
-            </select>
+            <AdminSelect value={status} onChange={e => setStatus(e.target.value)} options={ORDER_STATUSES} />
+            <AdminSelect value={payment} onChange={e => setPayment(e.target.value)} options={PAYMENT_STATUSES} />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs uppercase tracking-[0.18em] text-[var(--mist)]">Date Range:</span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="text-xs font-medium uppercase tracking-wide text-gray-400">Date Range:</span>
             <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-              className="rounded-full border border-[var(--gold)]/20 bg-white px-4 py-2 text-sm outline-none focus:border-[var(--gold)]" />
-            <span className="text-[var(--mist)]">→</span>
+              className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[#c9a96e]/20" />
+            <span className="text-gray-400">→</span>
             <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-              className="rounded-full border border-[var(--gold)]/20 bg-white px-4 py-2 text-sm outline-none focus:border-[var(--gold)]" />
+              className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 outline-none focus:border-[var(--gold)] focus:ring-2 focus:ring-[#c9a96e]/20" />
             {hasFilter && (
-              <button onClick={clearFilters}
-                className="rounded-full border border-[var(--gold)]/20 px-4 py-2 text-xs text-[var(--mist)] hover:border-[var(--gold)] hover:text-[var(--gold-dark)]">
-                Clear filters
-              </button>
+              <AdminButton size="sm" variant="ghost" onClick={clearFilters}>Clear filters</AdminButton>
             )}
-            <span className="ml-auto text-xs text-[var(--mist)]">{filtered.length} order{filtered.length !== 1 ? "s" : ""}</span>
+            <span className="ml-auto text-xs text-gray-400">{filtered.length} order{filtered.length !== 1 ? "s" : ""}</span>
           </div>
         </div>
 
         {/* Table */}
-        <div className="overflow-hidden rounded-[2rem] border border-[var(--gold)]/10">
-          <div className="hidden grid-cols-[1fr_1.5fr_1fr_0.8fr_1fr_1fr_auto] gap-4 bg-[#0b0805] px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-[var(--gold)] xl:grid">
+        <AdminTable>
+          <AdminTableHead columns={COLUMNS}>
             <span>Order ID</span>
             <span>Customer</span>
             <span>Total</span>
@@ -139,16 +131,11 @@ export default function AdminOrders({ setActivePage }) {
             <span>Status</span>
             <span>Date</span>
             <span className="text-right">Actions</span>
-          </div>
+          </AdminTableHead>
 
-          <div className="divide-y divide-[var(--gold)]/10 bg-[#fffcf8]">
+          <AdminTableBody>
             {loading ? (
-              [1,2,3].map(i => (
-                <div key={i} className="animate-pulse h-20 px-6 py-4">
-                  <div className="h-4 bg-[var(--warm)] rounded w-1/3 mb-2" />
-                  <div className="h-3 bg-[var(--warm)] rounded w-1/2" />
-                </div>
-              ))
+              <AdminRowSkeleton count={3} />
             ) : filtered.length > 0 ? (
               filtered.map(order => (
                 <OrderRow
@@ -160,20 +147,16 @@ export default function AdminOrders({ setActivePage }) {
                 />
               ))
             ) : (
-              <div className="p-10 text-center">
-                <h3 className="font-display text-4xl font-light">No orders found</h3>
-                <p className="mt-2 text-sm text-[var(--mist)]">Try adjusting your filters.</p>
-              </div>
+              <AdminEmptyState icon="◎" title="No orders found" description="Try adjusting your filters." />
             )}
-          </div>
-        </div>
+          </AdminTableBody>
+        </AdminTable>
       </AdminCard>
     </div>
   );
 }
 
 function OrderRow({ order, setActivePage, updating, onStatusUpdate }) {
-  const [showUpdate, setShowUpdate] = useState(false);
   const orderNum = order.orderNumber || order.id;
   const initials = (order.customerName || "?").split(" ").map(p => p[0]).slice(0, 2).join("");
 
@@ -186,26 +169,26 @@ function OrderRow({ order, setActivePage, updating, onStatusUpdate }) {
   const nextStatus = NEXT_STATUS[order.orderStatus];
 
   return (
-    <div className="grid gap-4 px-6 py-5 transition hover:bg-[var(--warm)]/40 xl:grid-cols-[1fr_1.5fr_1fr_0.8fr_1fr_1fr_auto] xl:items-center">
+    <AdminTableRow columns={COLUMNS}>
       {/* Order ID */}
       <div>
-        <p className="font-mono font-semibold text-sm tracking-wider text-[var(--ink)]">{orderNum}</p>
-        <p className="mt-0.5 text-[10px] text-[var(--mist)]">Online order</p>
+        <p className="font-mono text-sm font-medium text-gray-900">{orderNum}</p>
+        <p className="mt-0.5 text-[11px] text-gray-400">Online order</p>
       </div>
 
       {/* Customer */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--warm)] font-display text-base text-[var(--gold-dark)]">
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-500">
           {initials}
         </div>
-        <div>
-          <p className="font-semibold text-sm text-[var(--ink)]">{order.customerName}</p>
-          <p className="mt-0.5 text-xs text-[var(--mist)]">{order.customerPhone || order.phone}</p>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-gray-900">{order.customerName}</p>
+          <p className="text-xs text-gray-400">{order.customerPhone || order.phone}</p>
         </div>
       </div>
 
       {/* Total */}
-      <p className="font-semibold text-[var(--gold-dark)]">
+      <p className="text-sm font-semibold text-gray-900">
         {formatCurrency(order.grandTotal || order.total)}
       </p>
 
@@ -216,24 +199,24 @@ function OrderRow({ order, setActivePage, updating, onStatusUpdate }) {
       <AdminBadge value={order.orderStatus} />
 
       {/* Date */}
-      <p className="text-sm text-[var(--mist)]">{formatDate(order.createdAt)}</p>
+      <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
 
       {/* Actions */}
-      <div className="flex justify-end gap-2 flex-wrap">
-        <button
-          onClick={() => setActivePage("orderDetails")}
-          className="rounded-full border border-[var(--gold)]/20 px-4 py-2 text-xs text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)]">
+      <div className="flex items-center justify-end gap-1.5">
+        <AdminButton size="sm" variant="secondary" onClick={() => setActivePage("orderDetails")}>
           View
-        </button>
+        </AdminButton>
         {nextStatus && (
-          <button
-            disabled={updating === orderNum}
+          <AdminButton
+            size="sm"
+            variant="primary"
+            loading={updating === orderNum}
             onClick={() => onStatusUpdate(orderNum, nextStatus)}
-            className="rounded-full bg-[#0b0805] px-4 py-2 text-xs text-[var(--gold)] transition hover:-translate-y-0.5 disabled:opacity-50">
-            {updating === orderNum ? "…" : `→ ${nextStatus}`}
-          </button>
+          >
+            {updating === orderNum ? "" : `→ ${nextStatus}`}
+          </AdminButton>
         )}
       </div>
-    </div>
+    </AdminTableRow>
   );
 }

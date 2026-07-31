@@ -4,6 +4,13 @@ import AdminCard       from "../components/ui/AdminCard";
 import AdminPageHeader from "../components/ui/AdminPageHeader";
 import AdminSearchBar  from "../components/ui/AdminSearchBar";
 import AdminStatCard   from "../components/ui/AdminStatCard";
+import AdminButton     from "../components/ui/AdminButton";
+import AdminModal      from "../components/ui/AdminModal";
+import AdminActionMenu from "../components/ui/AdminActionMenu";
+import AdminEmptyState from "../components/ui/AdminEmptyState";
+import { AdminRowSkeleton } from "../components/ui/AdminSkeleton";
+import { AdminField, AdminTextArea, AdminSelect } from "../components/ui/AdminInput";
+import { AdminTable, AdminTableHead, AdminTableBody, AdminTableRow } from "../components/ui/AdminTable";
 import {
   getAdminCategories,
   createCategory,
@@ -16,6 +23,7 @@ import { buildImageUrl } from "../../services/apiClient";
 import { formatDate } from "../utils/adminFormat";
 
 const STATUSES = ["All", "ACTIVE", "INACTIVE"];
+const COLUMNS = "1.8fr 1.2fr 0.9fr 0.9fr auto";
 
 // ─── Extract a clean, user-facing message from any API error ──
 function getErrorMessage(err) {
@@ -135,23 +143,20 @@ export default function AdminCategories() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Catalog Atelier"
+        eyebrow="Catalog"
         title="Categories"
         description="Manage storefront categories, descriptions, and their display image."
         action={
-          <button
-            onClick={openCreate}
-            className="rounded-full bg-[#0b0805] px-6 py-3 text-sm font-medium text-[var(--gold)] shadow-xl transition hover:-translate-y-0.5"
-          >
+          <AdminButton variant="primary" onClick={openCreate}>
             + Create Category
-          </button>
+          </AdminButton>
         }
       />
 
       {/* Stats */}
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <AdminStatCard label="Total Categories" value={categories.length} helper="All categories"        icon="◈" />
         <AdminStatCard label="Active"           value={activeCount}      helper="Visible in storefront"  icon="✦" />
         <AdminStatCard label="Inactive"         value={inactiveCount}    helper="Hidden from storefront" icon="!" tone="bronze" />
@@ -160,56 +165,42 @@ export default function AdminCategories() {
 
       <AdminCard>
         {rowError && (
-          <div className="mb-6 rounded-2xl p-4 text-sm" style={{ background: "rgba(185,28,28,0.08)", border: "1px solid rgba(185,28,28,0.2)", color: "#b91c1c" }}>
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
             {rowError}
           </div>
         )}
 
         {/* Filters */}
-        <div className="mb-7 grid gap-4 xl:grid-cols-[1fr_auto]">
+        <div className="mb-6 grid gap-3 xl:grid-cols-[1fr_auto]">
           <AdminSearchBar
             value={search}
             onChange={setSearch}
             placeholder="Search by name or slug..."
           />
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-full border border-[var(--gold)]/20 bg-white px-5 py-3 text-sm outline-none focus:border-[var(--gold)]">
-            {STATUSES.map((s) => <option key={s}>{s}</option>)}
-          </select>
+          <AdminSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} options={STATUSES} />
         </div>
 
         {/* Table */}
-        <div className="overflow-hidden rounded-[2rem] border border-[var(--gold)]/10">
-          <div className="hidden grid-cols-[1.8fr_1.4fr_1fr_1fr_auto] gap-4 bg-[#0b0805] px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-[var(--gold)] xl:grid">
+        <AdminTable>
+          <AdminTableHead columns={COLUMNS}>
             <span>Category</span>
             <span>Slug</span>
             <span>Status</span>
             <span>Created</span>
             <span className="text-right">Actions</span>
-          </div>
+          </AdminTableHead>
 
-          <div className="divide-y divide-[var(--gold)]/10 bg-[#fffcf8]">
+          <AdminTableBody>
             {loading ? (
-              [1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse flex gap-4 px-6 py-5">
-                  <div className="w-14 h-14 rounded-2xl bg-[var(--warm)]" />
-                  <div className="flex-1 space-y-2 py-1">
-                    <div className="h-4 bg-[var(--warm)] rounded w-1/3" />
-                    <div className="h-3 bg-[var(--warm)] rounded w-1/4" />
-                  </div>
-                </div>
-              ))
+              <AdminRowSkeleton count={3} />
             ) : loadError ? (
-              <div className="p-10 text-center">
-                <h3 className="font-display text-4xl font-light">Couldn't load categories</h3>
-                <p className="mt-2 text-sm text-[var(--mist)]">{loadError}</p>
-                <button
-                  onClick={fetchCategories}
-                  className="mt-5 rounded-full bg-[#0b0805] px-6 py-2.5 text-xs text-[var(--gold)] transition hover:-translate-y-0.5"
-                >
-                  Try again
-                </button>
-              </div>
+              <AdminEmptyState
+                icon="!"
+                title="Couldn't load categories"
+                description={loadError}
+                actionLabel="Try again"
+                onAction={fetchCategories}
+              />
             ) : filtered.length > 0 ? (
               filtered.map((category) => (
                 <CategoryRow
@@ -223,18 +214,12 @@ export default function AdminCategories() {
                 />
               ))
             ) : categories.length === 0 ? (
-              <div className="p-10 text-center">
-                <h3 className="font-display text-4xl font-light">No categories yet</h3>
-                <p className="mt-2 text-sm text-[var(--mist)]">Create the first category to get started.</p>
-              </div>
+              <AdminEmptyState icon="◈" title="No categories yet" description="Create the first category to get started." />
             ) : (
-              <div className="p-10 text-center">
-                <h3 className="font-display text-4xl font-light">No categories found</h3>
-                <p className="mt-2 text-sm text-[var(--mist)]">Try changing your search or filter options.</p>
-              </div>
+              <AdminEmptyState icon="◈" title="No categories found" description="Try changing your search or filter options." />
             )}
-          </div>
-        </div>
+          </AdminTableBody>
+        </AdminTable>
       </AdminCard>
 
       {modalMode && (
@@ -251,56 +236,41 @@ export default function AdminCategories() {
 
 function CategoryRow({ category, toggling, deleting, onEdit, onToggleStatus, onDelete }) {
   return (
-    <div className="grid gap-4 px-6 py-5 transition hover:bg-[var(--warm)]/40 xl:grid-cols-[1.8fr_1.4fr_1fr_1fr_auto] xl:items-center">
+    <AdminTableRow columns={COLUMNS}>
       {/* Category */}
-      <div className="flex items-center gap-4 min-w-0">
+      <div className="flex min-w-0 items-center gap-3">
         <img
           src={buildImageUrl(category.imageUrl)}
           alt={category.name}
-          className="w-14 h-14 rounded-2xl object-cover shadow-md bg-[var(--warm)] shrink-0"
-          onError={(e) => { e.target.src = ""; e.target.style.background = "var(--warm)"; }}
+          className="h-11 w-11 shrink-0 rounded-lg bg-gray-100 object-cover"
+          onError={(e) => { e.target.src = ""; e.target.style.background = "#f3f4f6"; }}
         />
         <div className="min-w-0">
-          <p className="font-semibold text-[var(--ink)] truncate">{category.name}</p>
-          <p className="mt-0.5 text-xs text-[var(--mist)] truncate">{category.description || "—"}</p>
+          <p className="truncate text-sm font-medium text-gray-900">{category.name}</p>
+          <p className="mt-0.5 truncate text-xs text-gray-500">{category.description || "—"}</p>
         </div>
       </div>
 
       {/* Slug */}
-      <p className="text-sm text-[var(--mist)] font-mono">{category.slug}</p>
+      <p className="truncate font-mono text-sm text-gray-500">{category.slug}</p>
 
       {/* Status */}
       <div><AdminBadge value={category.active ? "ACTIVE" : "INACTIVE"} /></div>
 
       {/* Created */}
-      <p className="text-sm text-[var(--mist)]">{formatDate(category.createdAt)}</p>
+      <p className="text-sm text-gray-500">{formatDate(category.createdAt)}</p>
 
       {/* Actions */}
-      <div className="flex justify-end gap-2 flex-wrap">
-        <button
-          onClick={onEdit}
-          className="rounded-full bg-[#0b0805] px-4 py-2 text-xs text-[var(--gold)] transition hover:-translate-y-0.5"
-        >
-          Edit
-        </button>
-
-        <button
-          disabled={toggling}
-          onClick={onToggleStatus}
-          className="rounded-full border border-[var(--gold)]/20 px-4 py-2 text-xs text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)] disabled:opacity-50"
-        >
-          {toggling ? "…" : category.active ? "Deactivate" : "Activate"}
-        </button>
-
-        <button
-          disabled={deleting}
-          onClick={onDelete}
-          className="rounded-full border border-red-200 px-4 py-2 text-xs text-red-400 transition hover:border-red-400 hover:text-red-600 disabled:opacity-50"
-        >
-          {deleting ? "…" : "Delete"}
-        </button>
+      <div className="flex items-center justify-end gap-1.5">
+        <AdminButton size="sm" variant="secondary" onClick={onEdit}>Edit</AdminButton>
+        <AdminActionMenu
+          items={[
+            { label: toggling ? "Working…" : category.active ? "Deactivate" : "Activate", onClick: onToggleStatus, disabled: toggling },
+            { label: deleting ? "Working…" : "Delete", onClick: onDelete, disabled: deleting, danger: true },
+          ]}
+        />
       </div>
-    </div>
+    </AdminTableRow>
   );
 }
 
@@ -412,130 +382,71 @@ function CategoryFormModal({ mode, category, onClose, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center px-4 py-8">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={saving ? undefined : onClose}
-      />
-
-      {/* Modal card */}
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[2rem] border border-[var(--gold)]/15 bg-[#fffcf8] shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-[var(--gold)]/10 px-7 py-6">
-          <div>
-            <h3 className="font-display text-3xl font-light text-[var(--ink)]">
-              {isEdit ? "Edit Category" : "Create Category"}
-            </h3>
-            <p className="mt-1 text-sm text-[var(--mist)]">
-              {isEdit ? `Update details for ${category?.name}.` : "Add a new storefront category."}
-            </p>
+    <AdminModal
+      title={isEdit ? "Edit Category" : "Create Category"}
+      description={isEdit ? `Update details for ${category?.name}.` : "Add a new storefront category."}
+      onClose={onClose}
+      closeDisabled={saving}
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 p-6">
+        {formError && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {formError}
           </div>
-          <button
-            type="button"
-            onClick={saving ? undefined : onClose}
-            className="rounded-full border border-[var(--gold)]/20 w-9 h-9 flex items-center justify-center text-[var(--mist)] hover:border-[var(--gold)] hover:text-[var(--gold-dark)] transition shrink-0"
-          >
-            ×
-          </button>
-        </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="p-7 space-y-5">
-          {formError && (
-            <div className="rounded-2xl p-4 text-sm" style={{ background: "rgba(185,28,28,0.08)", border: "1px solid rgba(185,28,28,0.2)", color: "#b91c1c" }}>
-              {formError}
+        <AdminField label="Name" value={form.name} onChange={handleNameChange} placeholder="For Him" required error={fieldErrors.name} />
+
+        <AdminField label="Slug" value={form.slug} onChange={handleSlugChange} placeholder="for-him" required error={fieldErrors.slug} />
+
+        <AdminTextArea label="Description (optional)" rows={3} value={form.description} onChange={setField("description")} placeholder="Perfumes for men" />
+
+        {/* Image upload */}
+        <div>
+          <span className="mb-1.5 block text-xs font-medium text-gray-600">Category Image</span>
+
+          {preview && (
+            <div className="relative mb-3 inline-block">
+              <img src={preview} alt="" className="h-20 w-20 rounded-lg object-cover" />
+              {uploading && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/30">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                </div>
+              )}
+              {!uploading && (
+                <button type="button" onClick={removeImage}
+                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                  ×
+                </button>
+              )}
             </div>
           )}
 
-          <Field label="Name" value={form.name} onChange={handleNameChange} placeholder="For Him" required error={fieldErrors.name} />
-
-          <Field label="Slug" value={form.slug} onChange={handleSlugChange} placeholder="for-him" required error={fieldErrors.slug} />
-
-          <label className="block">
-            <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-[var(--gold-dark)]">Description (optional)</span>
-            <textarea
-              rows={3}
-              value={form.description}
-              onChange={setField("description")}
-              placeholder="Perfumes for men"
-              className="w-full resize-none rounded-2xl border border-[var(--gold)]/20 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-[var(--mist)]/50 focus:border-[var(--gold)]"
+          <label className="flex items-center gap-3 cursor-pointer">
+            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm text-gray-500 transition hover:border-gray-400">
+              {uploading ? (
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#c9a96e]/30 border-t-[var(--gold)]" />
+              ) : "📎"}
+              {uploading ? "Uploading…" : preview ? "Replace Image" : "Upload Image"}
+            </div>
+            <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+              onChange={(e) => e.target.files[0] && handleImageUpload(e.target.files[0])}
             />
           </label>
+          <p className="mt-1.5 text-[11px] text-gray-400">
+            JPG, PNG, WebP · Max 5MB · Falls back to a default image when omitted
+          </p>
+        </div>
 
-          {/* Image upload */}
-          <div>
-            <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-[var(--gold-dark)]">Category Image</span>
-
-            {preview && (
-              <div className="relative inline-block mb-3">
-                <img src={preview} alt="" className="w-24 h-24 rounded-2xl object-cover shadow-md" />
-                {uploading && (
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center rounded-2xl">
-                    <span className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: "rgba(245,240,232,0.4)", borderTopColor: "#fff" }} />
-                  </div>
-                )}
-                {!uploading && (
-                  <button type="button" onClick={removeImage}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
-                    ×
-                  </button>
-                )}
-              </div>
-            )}
-
-            <label className="flex items-center gap-3 cursor-pointer">
-              <div className="flex items-center gap-2 rounded-2xl border border-[var(--gold)]/20 bg-white px-4 py-2.5 text-sm text-[var(--mist)] hover:border-[var(--gold)] transition">
-                {uploading ? (
-                  <span className="w-4 h-4 border-2 rounded-full animate-spin"
-                    style={{ borderColor: "rgba(201,169,110,0.3)", borderTopColor: "var(--gold)" }} />
-                ) : "📎"}
-                {uploading ? "Uploading…" : preview ? "Replace Image" : "Upload Image"}
-              </div>
-              <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-                onChange={(e) => e.target.files[0] && handleImageUpload(e.target.files[0])}
-              />
-            </label>
-            <p className="mt-1.5 text-[10px] text-[var(--mist)]">
-              JPG, PNG, WebP · Max 5MB · Falls back to a default image when omitted
-            </p>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-              className="rounded-full border border-[var(--gold)]/20 px-6 py-3 text-sm text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)] disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving || uploading}
-              className="rounded-full bg-[#0b0805] px-6 py-3 text-sm font-medium text-[var(--gold)] shadow-xl transition hover:-translate-y-0.5 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : isEdit ? "Save Changes" : "Create Category"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, placeholder, required, error }) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-[var(--gold-dark)]">{label}</span>
-      <input
-        type="text"
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        required={required}
-        className="w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-[var(--mist)]/50 focus:border-[var(--gold)]"
-        style={{ borderColor: error ? "#e08a8a" : "rgba(201,169,110,0.2)" }}
-      />
-      {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
-    </label>
+        <div className="flex justify-end gap-3 pt-2">
+          <AdminButton type="button" variant="secondary" onClick={onClose} disabled={saving}>
+            Cancel
+          </AdminButton>
+          <AdminButton type="submit" variant="primary" loading={saving} disabled={uploading}>
+            {saving ? "Saving…" : isEdit ? "Save Changes" : "Create Category"}
+          </AdminButton>
+        </div>
+      </form>
+    </AdminModal>
   );
 }

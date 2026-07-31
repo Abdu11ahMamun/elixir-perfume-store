@@ -4,6 +4,12 @@ import AdminCard       from "../components/ui/AdminCard";
 import AdminPageHeader from "../components/ui/AdminPageHeader";
 import AdminSearchBar  from "../components/ui/AdminSearchBar";
 import AdminStatCard   from "../components/ui/AdminStatCard";
+import AdminButton     from "../components/ui/AdminButton";
+import AdminActionMenu from "../components/ui/AdminActionMenu";
+import AdminEmptyState from "../components/ui/AdminEmptyState";
+import { AdminRowSkeleton } from "../components/ui/AdminSkeleton";
+import { AdminSelect } from "../components/ui/AdminInput";
+import { AdminTable, AdminTableHead, AdminTableBody, AdminTableRow } from "../components/ui/AdminTable";
 import {
   getAdminProducts,
   updateProductStatus,
@@ -13,6 +19,7 @@ import { buildImageUrl } from "../../services/apiClient";
 import { formatCurrency, formatDate } from "../utils/adminFormat";
 
 const STATUSES = ["All", "ACTIVE", "INACTIVE", "DRAFT", "ARCHIVED"];
+const COLUMNS = "2fr 1fr 1.4fr 1.4fr 1fr auto";
 
 // ─── Helpers ──────────────────────────────────────────────
 const getSizes    = (p) => p.sizes || [];
@@ -83,23 +90,20 @@ export default function AdminProducts({ setActivePage }) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Catalog Atelier"
+        eyebrow="Catalog"
         title="Products"
-        description="Manage fragrance catalog with sizes (6ml / 15ml / 30ml), ML stock, and inspired-by details."
+        description="Manage fragrance catalog with sizes (6ml / 15ml / 30ml), stock, and inspired-by details."
         action={
-          <button
-            onClick={() => setActivePage?.("addProduct")}
-            className="rounded-full bg-[#0b0805] px-6 py-3 text-sm font-medium text-[var(--gold)] shadow-xl transition hover:-translate-y-0.5"
-          >
+          <AdminButton variant="primary" onClick={() => setActivePage?.("addProduct")}>
             + Add Product
-          </button>
+          </AdminButton>
         }
       />
 
       {/* Stats */}
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <AdminStatCard label="Total Products" value={products.length}  helper="All catalog items"       icon="◈" />
         <AdminStatCard label="Active"         value={activeCount}      helper="Visible in storefront"   icon="✦" />
         <AdminStatCard label="Low Stock"      value={lowStockCount}    helper="Any size below 10 units" icon="!" tone="bronze" />
@@ -108,40 +112,29 @@ export default function AdminProducts({ setActivePage }) {
 
       <AdminCard>
         {/* Filters */}
-        <div className="mb-7 grid gap-4 xl:grid-cols-[1fr_auto]">
+        <div className="mb-6 grid gap-3 xl:grid-cols-[1fr_auto]">
           <AdminSearchBar
             value={search}
             onChange={setSearch}
             placeholder="Search by name, inspired by, or category..."
           />
-          <select value={status} onChange={e => setStatus(e.target.value)}
-            className="rounded-full border border-[var(--gold)]/20 bg-white px-5 py-3 text-sm outline-none focus:border-[var(--gold)]">
-            {STATUSES.map(s => <option key={s}>{s}</option>)}
-          </select>
+          <AdminSelect value={status} onChange={e => setStatus(e.target.value)} options={STATUSES} />
         </div>
 
         {/* Table */}
-        <div className="overflow-hidden rounded-[2rem] border border-[var(--gold)]/10">
-          <div className="hidden grid-cols-[2fr_1fr_1.5fr_1.5fr_1fr_auto] gap-4 bg-[#0b0805] px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-[var(--gold)] xl:grid">
+        <AdminTable>
+          <AdminTableHead columns={COLUMNS}>
             <span>Product</span>
             <span>Category</span>
             <span>Inspired By</span>
             <span>Sizes & Stock</span>
             <span>Status</span>
             <span className="text-right">Actions</span>
-          </div>
+          </AdminTableHead>
 
-          <div className="divide-y divide-[var(--gold)]/10 bg-[#fffcf8]">
+          <AdminTableBody>
             {loading ? (
-              [1,2,3].map(i => (
-                <div key={i} className="animate-pulse flex gap-4 px-6 py-5">
-                  <div className="w-16 h-16 rounded-2xl bg-[var(--warm)]" />
-                  <div className="flex-1 space-y-2 py-1">
-                    <div className="h-4 bg-[var(--warm)] rounded w-1/3" />
-                    <div className="h-3 bg-[var(--warm)] rounded w-1/4" />
-                  </div>
-                </div>
-              ))
+              <AdminRowSkeleton count={3} />
             ) : filtered.length > 0 ? (
               filtered.map(product => (
                 <ProductRow
@@ -155,13 +148,10 @@ export default function AdminProducts({ setActivePage }) {
                 />
               ))
             ) : (
-              <div className="p-10 text-center">
-                <h3 className="font-display text-4xl font-light">No products found</h3>
-                <p className="mt-2 text-sm text-[var(--mist)]">Try changing search or filter options.</p>
-              </div>
+              <AdminEmptyState icon="◈" title="No products found" description="Try changing search or filter options." />
             )}
-          </div>
-        </div>
+          </AdminTableBody>
+        </AdminTable>
       </AdminCard>
     </div>
   );
@@ -173,30 +163,25 @@ function ProductRow({ product, setActivePage, toggling, deleting, onToggleStatus
   const sizes = getSizes(product);
 
   return (
-    <div className="grid gap-5 px-6 py-5 transition hover:bg-[var(--warm)]/40 xl:grid-cols-[2fr_1fr_1.5fr_1.5fr_1fr_auto] xl:items-center">
-
+    <AdminTableRow columns={COLUMNS}>
       {/* Product info */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <img
           src={primaryImg(product)}
           alt={product.name}
-          className="h-16 w-16 rounded-2xl object-cover shadow-md bg-[var(--warm)]"
-          onError={e => { e.target.src = ""; e.target.style.background = "var(--warm)"; }}
+          className="h-12 w-12 shrink-0 rounded-lg bg-gray-100 object-cover"
+          onError={e => { e.target.src = ""; e.target.style.background = "#f3f4f6"; }}
         />
-        <div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-semibold text-[var(--ink)]">{product.name}</p>
-            {product.combo && (
-              <span style={{ fontSize: "0.55rem", padding: "1px 7px", background: "var(--plum)", color: "var(--gold)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
-                Combo
-              </span>
-            )}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="truncate text-sm font-medium text-gray-900">{product.name}</p>
+            {product.combo && <AdminBadge value="COMBO" tone="gold" />}
           </div>
-          <p className="mt-0.5 text-xs text-[var(--mist)]">
+          <p className="mt-0.5 text-xs text-gray-400">
             #{product.id} · Added {formatDate(product.createdAt)}
           </p>
           {sizes.length > 0 && (
-            <p className="mt-0.5 text-xs italic" style={{ color: "var(--gold-dark)" }}>
+            <p className="mt-0.5 text-xs text-[var(--gold-dark)]">
               from {formatCurrency(minPrice(product))}
             </p>
           )}
@@ -204,73 +189,53 @@ function ProductRow({ product, setActivePage, toggling, deleting, onToggleStatus
       </div>
 
       {/* Category */}
-      <p className="text-sm text-[var(--mist)]">
+      <p className="text-sm text-gray-500">
         {product.categoryName || product.category || "—"}
       </p>
 
       {/* Inspired by */}
-      <p className="text-xs text-[var(--mist)] italic leading-5">
+      <p className="text-xs italic leading-5 text-gray-500">
         {product.inspiredBy || "—"}
       </p>
 
       {/* Sizes & stock */}
       <div className="flex flex-col gap-1">
         {sizes.length > 0 ? sizes.map(s => (
-          <div key={s.ml || s.id} className="flex items-center gap-2">
-            <span style={{ fontFamily: "monospace", fontSize: "0.68rem", fontWeight: 600, color: "var(--ink)", minWidth: "28px" }}>
+          <div key={s.ml || s.id} className="flex items-center gap-2 text-xs">
+            <span className="min-w-[28px] font-mono font-semibold text-gray-700">
               {s.ml}ml
             </span>
-            <span style={{
-              fontSize: "0.7rem", fontWeight: 500,
-              color: s.stock === 0 ? "#9b3a3a" : s.stock < 10 ? "#8f5f24" : "var(--gold-dark)",
-            }}>
+            <span className={`font-medium ${s.stock === 0 ? "text-red-600" : s.stock < 10 ? "text-amber-600" : "text-gray-600"}`}>
               {s.stock === 0 ? "Sold out" : `${s.stock} units`}
             </span>
-            <span style={{ fontSize: "0.65rem", color: "var(--mist)" }}>
+            <span className="text-gray-400">
               · {formatCurrency(s.price)}
             </span>
           </div>
         )) : (
-          <p className="text-xs text-[var(--mist)]">No sizes</p>
+          <p className="text-xs text-gray-400">No sizes</p>
         )}
       </div>
 
       {/* Status badges */}
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col items-start gap-1.5">
         <AdminBadge value={product.status} />
         {out && <AdminBadge value="OUT_OF_STOCK" />}
         {!out && low && <AdminBadge value="LOW_STOCK" />}
       </div>
 
       {/* Actions */}
-      <div className="flex justify-end gap-2 flex-wrap">
-        {/* Toggle active/inactive */}
-        <button
-          disabled={toggling === product.id}
-          onClick={() => onToggleStatus(product)}
-          className="rounded-full border border-[var(--gold)]/20 px-4 py-2 text-xs text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)] disabled:opacity-50"
-        >
-          {toggling === product.id ? "…"
-            : product.status === "ACTIVE" ? "Deactivate" : "Activate"}
-        </button>
-
-        {/* Edit */}
-        <button
-          onClick={() => setActivePage?.("addProduct")}
-          className="rounded-full bg-[#0b0805] px-4 py-2 text-xs text-[var(--gold)] transition hover:-translate-y-0.5"
-        >
+      <div className="flex items-center justify-end gap-1.5">
+        <AdminButton size="sm" variant="secondary" onClick={() => setActivePage?.("addProduct")}>
           Edit
-        </button>
-
-        {/* Delete */}
-        <button
-          disabled={deleting === product.id}
-          onClick={() => onDelete(product)}
-          className="rounded-full border border-red-200 px-4 py-2 text-xs text-red-400 transition hover:border-red-400 hover:text-red-600 disabled:opacity-50"
-        >
-          {deleting === product.id ? "…" : "Delete"}
-        </button>
+        </AdminButton>
+        <AdminActionMenu
+          items={[
+            { label: toggling === product.id ? "Working…" : product.status === "ACTIVE" ? "Deactivate" : "Activate", onClick: () => onToggleStatus(product), disabled: toggling === product.id },
+            { label: deleting === product.id ? "Working…" : "Delete", onClick: () => onDelete(product), disabled: deleting === product.id, danger: true },
+          ]}
+        />
       </div>
-    </div>
+    </AdminTableRow>
   );
 }

@@ -4,32 +4,23 @@ export default function AdminCard({
   title,
   description,
   action,
+  padding = true,
 }) {
   return (
     <section
-      className={`
-        rounded-[2rem]
-        border
-        border-[var(--gold)]/15
-        bg-[#fffcf8]
-        shadow-[0_24px_80px_rgba(14,12,10,0.06)]
-        backdrop-blur
-        ${className}
-      `}
+      className={`rounded-xl border border-gray-200 bg-white shadow-sm ${className}`}
     >
       {(title || description || action) && (
-        <div className="flex items-start justify-between gap-4 border-b border-[var(--gold)]/10 px-7 py-6">
+        <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
           <div>
             {title && (
-              <h3 className="font-display text-3xl font-light text-[var(--ink)]">
+              <h3 className="text-base font-semibold text-gray-900">
                 {title}
               </h3>
             )}
 
             {description && (
-              <p className="mt-1 text-sm text-[var(--mist)]">
-                {description}
-              </p>
+              <p className="mt-1 text-sm text-gray-500">{description}</p>
             )}
           </div>
 
@@ -37,7 +28,7 @@ export default function AdminCard({
         </div>
       )}
 
-      <div className="p-7">{children}</div>
+      <div className={padding ? "p-6" : ""}>{children}</div>
     </section>
   );
 }

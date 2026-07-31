@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { formatPrice } from "../../utils/price";
 import { placeOrder } from "../../services/orderService";
+import { FALLBACK_IMAGE } from "../../constants/brand";
 import Button  from "../ui/Button";
 import Eyebrow from "../ui/Eyebrow";
 
@@ -269,7 +270,12 @@ function CartItem({ item, removeFromCart, updateQuantity }) {
   return (
     <div className="flex gap-4 py-5" style={{ borderBottom: "1px solid var(--warm)" }}>
       <div className="w-20 h-24 sm:w-16 sm:h-20 overflow-hidden shrink-0">
-        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+        <img
+          src={item.image || FALLBACK_IMAGE}
+          alt={item.name}
+          className="w-full h-full object-cover"
+          onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
+        />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">

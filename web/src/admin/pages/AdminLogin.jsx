@@ -24,64 +24,28 @@ export default function AdminLogin({ onLoginSuccess }) {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: "var(--ink)" }}
-    >
-      {/* Background grain */}
-      <div className="grain fixed inset-0 pointer-events-none" />
-
-      <div className="relative w-full max-w-sm">
+    <div className="admin-area flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="text-center mb-10">
-          <h1
-            className="font-display tracking-[0.42em] font-light"
-            style={{ fontSize: "2rem", color: "var(--parchment)" }}
-          >
-            ÉLIXIR
-          </h1>
-          <p
-            className="eyebrow mt-1"
-            style={{ fontSize: "0.5rem", letterSpacing: "0.45em", color: "var(--mist)" }}
-          >
-            Admin Panel
-          </p>
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--ink)] text-lg font-semibold text-[var(--gold)]">
+            É
+          </div>
+          <h1 className="text-lg font-semibold tracking-tight text-gray-900">ÉLIXIR Admin</h1>
+          <p className="mt-1 text-sm text-gray-400">Sign in to manage your store</p>
         </div>
 
         {/* Card */}
-        <div
-          className="p-8"
-          style={{ background: "var(--cream)", border: "1px solid rgba(201,169,110,0.2)" }}
-        >
-          <h2
-            className="font-display font-light mb-6"
-            style={{ fontSize: "1.8rem", color: "var(--ink)" }}
-          >
-            Sign In
-          </h2>
-
-          {/* Error message */}
+        <div className="rounded-xl border border-gray-200 bg-white p-7 shadow-sm">
           {error && (
-            <div
-              className="mb-5 p-4 text-sm"
-              style={{
-                background: "rgba(185,28,28,0.08)",
-                border: "1px solid rgba(185,28,28,0.25)",
-                color: "#b91c1c",
-                fontFamily: "var(--font-body)",
-              }}
-            >
+            <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
             <div>
-              <label
-                className="block mb-2"
-                style={{ fontFamily: "var(--font-body)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--mist)" }}
-              >
+              <label className="mb-1.5 block text-xs font-medium text-gray-600">
                 Email Address
               </label>
               <input
@@ -90,18 +54,13 @@ export default function AdminLogin({ onLoginSuccess }) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@elixir.com"
                 required
-                className="cart-input"
-                style={{ background: "var(--warm)" }}
                 autoComplete="email"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[var(--gold)] focus:ring-2 focus:ring-[#c9a96e]/20"
               />
             </div>
 
-            {/* Password */}
             <div>
-              <label
-                className="block mb-2"
-                style={{ fontFamily: "var(--font-body)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--mist)" }}
-              >
+              <label className="mb-1.5 block text-xs font-medium text-gray-600">
                 Password
               </label>
               <input
@@ -110,34 +69,19 @@ export default function AdminLogin({ onLoginSuccess }) {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="cart-input"
-                style={{ background: "var(--warm)" }}
                 autoComplete="current-password"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[var(--gold)] focus:ring-2 focus:ring-[#c9a96e]/20"
               />
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 mt-2 transition-all duration-300"
-              style={{
-                background: loading ? "var(--mist)" : "var(--ink)",
-                color: "var(--parchment)",
-                fontFamily: "var(--font-body)",
-                fontSize: "0.72rem",
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                border: "none",
-                cursor: loading ? "not-allowed" : "pointer",
-              }}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--gold)] py-2.5 text-sm font-medium text-[#1a1408] transition hover:brightness-95 disabled:opacity-60"
             >
               {loading ? (
                 <>
-                  <span
-                    className="w-4 h-4 border-2 rounded-full animate-spin"
-                    style={{ borderColor: "rgba(245,240,232,0.3)", borderTopColor: "var(--gold)" }}
-                  />
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#1a1408]/30 border-t-[#1a1408]" />
                   Signing in...
                 </>
               ) : (
@@ -147,11 +91,7 @@ export default function AdminLogin({ onLoginSuccess }) {
           </form>
         </div>
 
-        {/* Footer note */}
-        <p
-          className="text-center mt-6"
-          style={{ fontFamily: "var(--font-body)", fontSize: "0.7rem", color: "rgba(245,240,232,0.25)" }}
-        >
+        <p className="mt-6 text-center text-xs text-gray-400">
           ÉLIXIR Admin · Restricted Access
         </p>
       </div>

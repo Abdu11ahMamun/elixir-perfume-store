@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient, { buildImageUrl } from "./apiClient";
 
 // ─── Public Product APIs ──────────────────────────────────
 
@@ -91,13 +91,16 @@ export function adaptProduct(backendProduct) {
     status:      backendProduct.status,
 
     // Sizes — map imageUrls to images for existing components
+    // Backend returns relative paths ("/uploads/products/x.png"); resolve
+    // to absolute URLs here so every consumer (cards, detail, cart) gets a
+    // working <img src> the same way the admin panel does.
     sizes: (backendProduct.sizes || []).map((s) => ({
       id:       s.id,           // productSizeId — needed for order
       ml:       s.ml,
       price:    s.price,
       stock:    s.stock,
       sku:      s.sku,
-      images:   s.imageUrls || [], // renamed to match frontend expectation
+      images:   (s.imageUrls || []).map(buildImageUrl), // renamed + resolved to absolute URL
     })),
   };
 }

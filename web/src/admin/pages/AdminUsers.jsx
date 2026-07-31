@@ -4,6 +4,13 @@ import AdminCard       from "../components/ui/AdminCard";
 import AdminPageHeader from "../components/ui/AdminPageHeader";
 import AdminSearchBar  from "../components/ui/AdminSearchBar";
 import AdminStatCard   from "../components/ui/AdminStatCard";
+import AdminButton     from "../components/ui/AdminButton";
+import AdminModal      from "../components/ui/AdminModal";
+import AdminActionMenu from "../components/ui/AdminActionMenu";
+import AdminEmptyState from "../components/ui/AdminEmptyState";
+import { AdminRowSkeleton } from "../components/ui/AdminSkeleton";
+import { AdminField, AdminSelectField, AdminSelect } from "../components/ui/AdminInput";
+import { AdminTable, AdminTableHead, AdminTableBody, AdminTableRow } from "../components/ui/AdminTable";
 import {
   getAdminUsers,
   createUser,
@@ -15,6 +22,7 @@ import { formatDate } from "../utils/adminFormat";
 
 const ROLES    = ["All", "ADMIN", "CUSTOMER"];
 const STATUSES = ["All", "ACTIVE", "BLOCKED", "DELETED"];
+const COLUMNS  = "1.6fr 1fr 0.8fr 0.9fr 1fr auto";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -99,7 +107,6 @@ export default function AdminUsers() {
   // ── Block / Unblock ──
   const handleToggleStatus = async (user) => {
     const blocking = user.status === "ACTIVE";
-    const verb = blocking ? "block" : "unblock";
     if (!window.confirm(`${blocking ? "Block" : "Unblock"} "${user.name}"? ${blocking ? "They will immediately lose access to their account." : "They will regain access to their account."}`)) {
       return;
     }
@@ -135,23 +142,20 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Access Atelier"
+        eyebrow="Access"
         title="Users"
         description="Manage admin and customer accounts, roles, and access status."
         action={
-          <button
-            onClick={openCreate}
-            className="rounded-full bg-[#0b0805] px-6 py-3 text-sm font-medium text-[var(--gold)] shadow-xl transition hover:-translate-y-0.5"
-          >
+          <AdminButton variant="primary" onClick={openCreate}>
             + Create User
-          </button>
+          </AdminButton>
         }
       />
 
       {/* Stats */}
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <AdminStatCard label="Total Users" value={users.length}    helper="All non-deleted accounts" icon="☉" />
         <AdminStatCard label="Admins"      value={adminCount}      helper="Staff with panel access"  icon="✦" tone="dark" />
         <AdminStatCard label="Customers"   value={customerCount}   helper="Registered buyers"        icon="◈" />
@@ -161,61 +165,44 @@ export default function AdminUsers() {
       <AdminCard>
         {/* Row-action error banner (block/delete failures — self-lockout, last-admin protection, etc.) */}
         {rowError && (
-          <div className="mb-6 rounded-2xl p-4 text-sm" style={{ background: "rgba(185,28,28,0.08)", border: "1px solid rgba(185,28,28,0.2)", color: "#b91c1c" }}>
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
             {rowError}
           </div>
         )}
 
         {/* Filters */}
-        <div className="mb-7 grid gap-4 xl:grid-cols-[1fr_auto_auto]">
+        <div className="mb-6 grid gap-3 xl:grid-cols-[1fr_auto_auto]">
           <AdminSearchBar
             value={search}
             onChange={setSearch}
             placeholder="Search by name, email, or phone..."
           />
-          <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
-            className="rounded-full border border-[var(--gold)]/20 bg-white px-5 py-3 text-sm outline-none focus:border-[var(--gold)]">
-            {ROLES.map((r) => <option key={r}>{r}</option>)}
-          </select>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-full border border-[var(--gold)]/20 bg-white px-5 py-3 text-sm outline-none focus:border-[var(--gold)]">
-            {STATUSES.map((s) => <option key={s}>{s}</option>)}
-          </select>
+          <AdminSelect value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} options={ROLES} />
+          <AdminSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} options={STATUSES} />
         </div>
 
         {/* Table */}
-        <div className="overflow-hidden rounded-[2rem] border border-[var(--gold)]/10">
-          <div className="hidden grid-cols-[1.6fr_1fr_1fr_1fr_1fr_auto] gap-4 bg-[#0b0805] px-6 py-4 text-[11px] uppercase tracking-[0.2em] text-[var(--gold)] xl:grid">
+        <AdminTable>
+          <AdminTableHead columns={COLUMNS}>
             <span>User</span>
             <span>Phone</span>
             <span>Role</span>
             <span>Status</span>
             <span>Created</span>
             <span className="text-right">Actions</span>
-          </div>
+          </AdminTableHead>
 
-          <div className="divide-y divide-[var(--gold)]/10 bg-[#fffcf8]">
+          <AdminTableBody>
             {loading ? (
-              [1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse flex gap-4 px-6 py-5">
-                  <div className="w-12 h-12 rounded-2xl bg-[var(--warm)]" />
-                  <div className="flex-1 space-y-2 py-1">
-                    <div className="h-4 bg-[var(--warm)] rounded w-1/3" />
-                    <div className="h-3 bg-[var(--warm)] rounded w-1/4" />
-                  </div>
-                </div>
-              ))
+              <AdminRowSkeleton count={3} />
             ) : loadError ? (
-              <div className="p-10 text-center">
-                <h3 className="font-display text-4xl font-light">Couldn't load users</h3>
-                <p className="mt-2 text-sm text-[var(--mist)]">{loadError}</p>
-                <button
-                  onClick={fetchUsers}
-                  className="mt-5 rounded-full bg-[#0b0805] px-6 py-2.5 text-xs text-[var(--gold)] transition hover:-translate-y-0.5"
-                >
-                  Try again
-                </button>
-              </div>
+              <AdminEmptyState
+                icon="!"
+                title="Couldn't load users"
+                description={loadError}
+                actionLabel="Try again"
+                onAction={fetchUsers}
+              />
             ) : filtered.length > 0 ? (
               filtered.map((user) => (
                 <UserRow
@@ -229,18 +216,12 @@ export default function AdminUsers() {
                 />
               ))
             ) : users.length === 0 ? (
-              <div className="p-10 text-center">
-                <h3 className="font-display text-4xl font-light">No users yet</h3>
-                <p className="mt-2 text-sm text-[var(--mist)]">Create the first admin or customer account to get started.</p>
-              </div>
+              <AdminEmptyState icon="☉" title="No users yet" description="Create the first admin or customer account to get started." />
             ) : (
-              <div className="p-10 text-center">
-                <h3 className="font-display text-4xl font-light">No users found</h3>
-                <p className="mt-2 text-sm text-[var(--mist)]">Try changing your search or filter options.</p>
-              </div>
+              <AdminEmptyState icon="☉" title="No users found" description="Try changing your search or filter options." />
             )}
-          </div>
-        </div>
+          </AdminTableBody>
+        </AdminTable>
       </AdminCard>
 
       {modalMode && (
@@ -260,20 +241,20 @@ function UserRow({ user, toggling, deleting, onEdit, onToggleStatus, onDelete })
   const isDeleted = user.status === "DELETED";
 
   return (
-    <div className="grid gap-4 px-6 py-5 transition hover:bg-[var(--warm)]/40 xl:grid-cols-[1.6fr_1fr_1fr_1fr_1fr_auto] xl:items-center">
+    <AdminTableRow columns={COLUMNS}>
       {/* User */}
-      <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--warm)] font-display text-xl text-[var(--gold-dark)]">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-500">
           {initials}
         </div>
         <div className="min-w-0">
-          <p className="font-semibold text-[var(--ink)] truncate">{user.name}</p>
-          <p className="mt-0.5 text-xs text-[var(--mist)] truncate">{user.email || "—"}</p>
+          <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
+          <p className="mt-0.5 truncate text-xs text-gray-500">{user.email || "—"}</p>
         </div>
       </div>
 
       {/* Phone */}
-      <p className="text-sm text-[var(--mist)]">{user.phone || "—"}</p>
+      <p className="text-sm text-gray-500">{user.phone || "—"}</p>
 
       {/* Role */}
       <div><AdminBadge value={user.role} /></div>
@@ -282,35 +263,21 @@ function UserRow({ user, toggling, deleting, onEdit, onToggleStatus, onDelete })
       <div><AdminBadge value={user.status} /></div>
 
       {/* Created */}
-      <p className="text-sm text-[var(--mist)]">{formatDate(user.createdAt)}</p>
+      <p className="text-sm text-gray-500">{formatDate(user.createdAt)}</p>
 
       {/* Actions */}
-      <div className="flex justify-end gap-2 flex-wrap">
-        <button
-          onClick={onEdit}
-          disabled={isDeleted}
-          className="rounded-full bg-[#0b0805] px-4 py-2 text-xs text-[var(--gold)] transition hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0"
-        >
+      <div className="flex items-center justify-end gap-1.5">
+        <AdminButton size="sm" variant="secondary" onClick={onEdit} disabled={isDeleted}>
           Edit
-        </button>
-
-        <button
-          disabled={toggling || isDeleted}
-          onClick={onToggleStatus}
-          className="rounded-full border border-[var(--gold)]/20 px-4 py-2 text-xs text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)] disabled:opacity-50"
-        >
-          {toggling ? "…" : user.status === "ACTIVE" ? "Block" : "Unblock"}
-        </button>
-
-        <button
-          disabled={deleting || isDeleted}
-          onClick={onDelete}
-          className="rounded-full border border-red-200 px-4 py-2 text-xs text-red-400 transition hover:border-red-400 hover:text-red-600 disabled:opacity-50"
-        >
-          {deleting ? "…" : "Delete"}
-        </button>
+        </AdminButton>
+        <AdminActionMenu
+          items={[
+            { label: toggling ? "Working…" : user.status === "ACTIVE" ? "Block" : "Unblock", onClick: onToggleStatus, disabled: toggling || isDeleted },
+            { label: deleting ? "Working…" : "Delete", onClick: onDelete, disabled: deleting || isDeleted, danger: true },
+          ]}
+        />
       </div>
-    </div>
+    </AdminTableRow>
   );
 }
 
@@ -387,114 +354,59 @@ function UserFormModal({ mode, user, onClose, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center px-4 py-8">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={saving ? undefined : onClose}
-      />
-
-      {/* Modal card */}
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[2rem] border border-[var(--gold)]/15 bg-[#fffcf8] shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-[var(--gold)]/10 px-7 py-6">
-          <div>
-            <h3 className="font-display text-3xl font-light text-[var(--ink)]">
-              {isEdit ? "Edit User" : "Create User"}
-            </h3>
-            <p className="mt-1 text-sm text-[var(--mist)]">
-              {isEdit ? `Update details for ${user?.name}.` : "Add a new admin or customer account."}
-            </p>
+    <AdminModal
+      title={isEdit ? "Edit User" : "Create User"}
+      description={isEdit ? `Update details for ${user?.name}.` : "Add a new admin or customer account."}
+      onClose={onClose}
+      closeDisabled={saving}
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 p-6">
+        {formError && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {formError}
           </div>
-          <button
-            type="button"
-            onClick={saving ? undefined : onClose}
-            className="rounded-full border border-[var(--gold)]/20 w-9 h-9 flex items-center justify-center text-[var(--mist)] hover:border-[var(--gold)] hover:text-[var(--gold-dark)] transition shrink-0"
-          >
-            ×
-          </button>
+        )}
+
+        <AdminField label="Name" value={form.name} onChange={set("name")} placeholder="Jane Doe" required error={fieldErrors.name} />
+
+        <AdminField
+          label={`Email${form.role === "ADMIN" ? " (required for admins)" : " (optional)"}`}
+          type="email"
+          value={form.email}
+          onChange={set("email")}
+          placeholder="jane@elixir.com"
+          error={fieldErrors.email}
+        />
+
+        <AdminField label="Phone" value={form.phone} onChange={set("phone")} placeholder="+8801700000000" required error={fieldErrors.phone} />
+
+        {!isEdit && (
+          <AdminField label="Password" type="password" value={form.password} onChange={set("password")} placeholder="Minimum 8 characters" required error={fieldErrors.password} />
+        )}
+
+        <AdminSelectField
+          label="Role"
+          value={form.role}
+          onChange={set("role")}
+          options={[{ value: "CUSTOMER", label: "CUSTOMER" }, { value: "ADMIN", label: "ADMIN" }]}
+          error={fieldErrors.role}
+        />
+
+        {isEdit && (
+          <p className="text-xs text-gray-400">
+            Password and account status are managed separately — use Block/Unblock in the user list to change status.
+          </p>
+        )}
+
+        <div className="flex justify-end gap-3 pt-2">
+          <AdminButton type="button" variant="secondary" onClick={onClose} disabled={saving}>
+            Cancel
+          </AdminButton>
+          <AdminButton type="submit" variant="primary" loading={saving}>
+            {saving ? "Saving…" : isEdit ? "Save Changes" : "Create User"}
+          </AdminButton>
         </div>
-
-        <form onSubmit={handleSubmit} className="p-7 space-y-5">
-          {formError && (
-            <div className="rounded-2xl p-4 text-sm" style={{ background: "rgba(185,28,28,0.08)", border: "1px solid rgba(185,28,28,0.2)", color: "#b91c1c" }}>
-              {formError}
-            </div>
-          )}
-
-          <Field label="Name" value={form.name} onChange={set("name")} placeholder="Jane Doe" required error={fieldErrors.name} />
-
-          <Field
-            label={`Email${form.role === "ADMIN" ? " (required for admins)" : " (optional)"}`}
-            type="email"
-            value={form.email}
-            onChange={set("email")}
-            placeholder="jane@elixir.com"
-            error={fieldErrors.email}
-          />
-
-          <Field label="Phone" value={form.phone} onChange={set("phone")} placeholder="+8801700000000" required error={fieldErrors.phone} />
-
-          {!isEdit && (
-            <Field label="Password" type="password" value={form.password} onChange={set("password")} placeholder="Minimum 8 characters" required error={fieldErrors.password} />
-          )}
-
-          <label className="block">
-            <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-[var(--gold-dark)]">Role</span>
-            <select
-              value={form.role}
-              onChange={set("role")}
-              className="w-full rounded-2xl border border-[var(--gold)]/20 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--gold)]"
-            >
-              <option value="CUSTOMER">CUSTOMER</option>
-              <option value="ADMIN">ADMIN</option>
-            </select>
-            {fieldErrors.role && <p className="mt-1.5 text-xs text-red-500">{fieldErrors.role}</p>}
-          </label>
-
-          {isEdit && (
-            <p className="text-xs text-[var(--mist)]">
-              Password and account status are managed separately — use Block/Unblock in the user list to change status.
-            </p>
-          )}
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-              className="rounded-full border border-[var(--gold)]/20 px-6 py-3 text-sm text-[var(--mist)] transition hover:border-[var(--gold)] hover:text-[var(--gold-dark)] disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-full bg-[#0b0805] px-6 py-3 text-sm font-medium text-[var(--gold)] shadow-xl transition hover:-translate-y-0.5 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : isEdit ? "Save Changes" : "Create User"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, placeholder, type = "text", required, error }) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-[var(--gold-dark)]">{label}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        required={required}
-        autoComplete={type === "password" ? "new-password" : "off"}
-        className="w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition placeholder:text-[var(--mist)]/50 focus:border-[var(--gold)]"
-        style={{ borderColor: error ? "#e08a8a" : "rgba(201,169,110,0.2)" }}
-      />
-      {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
-    </label>
+      </form>
+    </AdminModal>
   );
 }
