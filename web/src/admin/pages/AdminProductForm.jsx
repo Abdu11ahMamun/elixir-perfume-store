@@ -2,29 +2,49 @@ import { useEffect, useState } from "react";
 import AdminCard       from "../components/ui/AdminCard";
 import AdminPageHeader from "../components/ui/AdminPageHeader";
 import AdminButton     from "../components/ui/AdminButton";
+import { AdminCardSkeleton } from "../components/ui/AdminSkeleton";
 import { AdminField, AdminTextArea, AdminSelectField, AdminToggle, AdminToggleRow } from "../components/ui/AdminInput";
 import {
   createProduct,
+  updateProduct,
+  getAdminProductById,
   addProductSize,
+  updateProductSize,
   uploadImage,
   getAdminCategories,
 } from "../../services/adminService";
+import { buildImageUrl } from "../../services/apiClient";
 
 const STATUSES     = ["ACTIVE", "DRAFT", "INACTIVE"];
 const SIZE_OPTIONS = [6, 15, 30];
 
-const defaultSizeEntry = (ml) => ({
-  ml,
-  enabled:  false,
-  price:    "",
-  stock:    "",
-  sku:      "",
-  imageUrls: [],           // relative paths from upload API
-  _previews:  [],          // local blob URLs for preview only
-  _uploading: false,
-});
+// `existing` is the matching entry from product.sizes (or undefined for a
+// size the product doesn't have yet). sizeRecordId tracks the backend
+// ProductSize id so save() knows whether to update or create it.
+const buildSizeEntry = (ml, existing) => {
+  if (!existing) {
+    return {
+      ml, enabled: false, price: "", stock: "", sku: "",
+      imageUrls: [], _previews: [], _uploading: false, sizeRecordId: null,
+    };
+  }
+  const imgs = existing.imageUrls || existing.images || [];
+  return {
+    ml,
+    enabled:  true,
+    price:    existing.price ?? "",
+    stock:    existing.stock ?? "",
+    sku:      existing.sku || "",
+    imageUrls: imgs,                     // relative paths — resubmitted as-is
+    _previews: imgs.map(buildImageUrl),  // resolved for on-screen preview
+    _uploading: false,
+    sizeRecordId: existing.id,
+  };
+};
 
-export default function AdminProductForm({ onSaved }) {
+export default function AdminProductForm({ productId, onSaved, onCancel }) {
+  const isEditMode = !!productId;
+
   // ── Basic fields ──
   const [name,        setName]        = useState("");
   const [inspiredBy,  setInspiredBy]  = useState("");
@@ -37,7 +57,7 @@ export default function AdminProductForm({ onSaved }) {
   const [isFeatured,  setIsFeatured]  = useState(false);
 
   // ── Size entries ──
-  const [sizes, setSizes] = useState(SIZE_OPTIONS.map(defaultSizeEntry));
+  const [sizes, setSizes] = useState(SIZE_OPTIONS.map(ml => buildSizeEntry(ml, null)));
 
   // ── Categories from API ──
   const [categories, setCategories] = useState([]);
@@ -46,6 +66,36 @@ export default function AdminProductForm({ onSaved }) {
       .then(setCategories)
       .catch(() => setCategories([]));
   }, []);
+
+  // ── Load existing product when editing ──
+  const [loadingProduct, setLoadingProduct] = useState(isEditMode);
+  const [loadError,      setLoadError]      = useState("");
+
+  useEffect(() => {
+    if (!productId) return;
+    setLoadingProduct(true);
+    setLoadError("");
+
+    getAdminProductById(productId)
+      .then((product) => {
+        setName(product.name || "");
+        setInspiredBy(product.inspiredBy || "");
+        setCategoryId(product.categoryId ?? "");
+        setStatus(product.status || "ACTIVE");
+        setDescription(product.description || "");
+        setNote(product.note || "");
+        setIsCombo(!!product.combo);
+        setOfferTagId(product.offerTagId ?? "");
+        setIsFeatured(!!product.isFeatured);
+
+        const sizeByMl = Object.fromEntries((product.sizes || []).map(s => [s.ml, s]));
+        setSizes(SIZE_OPTIONS.map(ml => buildSizeEntry(ml, sizeByMl[ml])));
+      })
+      .catch((err) => {
+        setLoadError(err.response?.data?.message || err.message || "Failed to load product.");
+      })
+      .finally(() => setLoadingProduct(false));
+  }, [productId]);
 
   // ── Submission state ──
   const [saving,  setSaving]  = useState(false);
@@ -109,8 +159,7 @@ export default function AdminProductForm({ onSaved }) {
 
     setSaving(true);
     try {
-      // Step 1: Create product
-      const product = await createProduct({
+      const payload = {
         name,
         inspiredBy,
         description,
@@ -120,30 +169,47 @@ export default function AdminProductForm({ onSaved }) {
         categoryId:  Number(categoryId),
         offerTagId:  offerTagId ? Number(offerTagId) : null,
         isFeatured,
-      });
+      };
 
-      // Step 2: Add each enabled size
+      // Step 1: Create or update the product itself
+      const product = isEditMode
+        ? await updateProduct(productId, payload)
+        : await createProduct(payload);
+
+      // Step 2: Sync sizes — update ones that already exist, create newly
+      // enabled ones, and deactivate (not delete) ones the admin turned off.
       await Promise.all(
-        enabledSizes.map(s =>
-          addProductSize(product.id, {
-            ml:        s.ml,
-            price:     Number(s.price),
-            stock:     Number(s.stock),
-            sku:       s.sku || `ELX-${product.id}-${s.ml}`,
-            imageUrls: s.imageUrls,
-            active:    true,
-          })
-        )
+        sizes.map(s => {
+          if (s.enabled) {
+            const sizeData = {
+              ml:        s.ml,
+              price:     Number(s.price),
+              stock:     Number(s.stock),
+              sku:       s.sku || `ELX-${product.id}-${s.ml}`,
+              imageUrls: s.imageUrls,
+              active:    true,
+            };
+            return s.sizeRecordId
+              ? updateProductSize(s.sizeRecordId, sizeData)
+              : addProductSize(product.id, sizeData);
+          }
+          if (!s.enabled && s.sizeRecordId) {
+            return updateProductSize(s.sizeRecordId, { active: false });
+          }
+          return null;
+        })
       );
 
-      setSuccess(`"${product.name}" created successfully!`);
-
-      // Reset form
-      setName(""); setInspiredBy(""); setCategoryId(""); setDescription("");
-      setNote(""); setIsCombo(false); setOfferTagId(""); setIsFeatured(false);
-      setSizes(SIZE_OPTIONS.map(defaultSizeEntry));
-
-      onSaved?.();
+      if (isEditMode) {
+        setSuccess(`"${product.name}" updated successfully!`);
+        onSaved?.();
+      } else {
+        setSuccess(`"${product.name}" created successfully!`);
+        // Reset form so the admin can add another product right away.
+        setName(""); setInspiredBy(""); setCategoryId(""); setDescription("");
+        setNote(""); setIsCombo(false); setOfferTagId(""); setIsFeatured(false);
+        setSizes(SIZE_OPTIONS.map(ml => buildSizeEntry(ml, null)));
+      }
     } catch (err) {
       const msg = err.response?.data?.message || err.message || "Failed to save product.";
       setError(msg);
@@ -152,17 +218,51 @@ export default function AdminProductForm({ onSaved }) {
     }
   };
 
+  if (loadingProduct) {
+    return (
+      <div className="space-y-6">
+        <AdminCardSkeleton className="h-20" />
+        <div className="grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
+          <div className="space-y-6">
+            <AdminCardSkeleton className="h-64" />
+            <AdminCardSkeleton className="h-96" />
+          </div>
+          <div className="space-y-6">
+            <AdminCardSkeleton className="h-28" />
+            <AdminCardSkeleton className="h-28" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white p-10 text-center">
+        <p className="text-lg font-medium text-gray-400">{loadError}</p>
+        <AdminButton variant="secondary" className="mt-4" onClick={() => onCancel?.()}>Back to Products</AdminButton>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSave}>
       <div className="space-y-6">
         <AdminPageHeader
           eyebrow="Catalog"
-          title="Add Product"
-          description="Create a fragrance with sizes (6ml / 15ml / 30ml), stock, and media."
+          title={isEditMode ? "Update Product" : "Add Product"}
+          description={
+            isEditMode
+              ? `Editing "${name}" — update details, sizes, pricing, stock, and media.`
+              : "Create a fragrance with sizes (6ml / 15ml / 30ml), stock, and media."
+          }
           action={
-            <AdminButton type="submit" variant="primary" loading={saving}>
-              {saving ? "Saving…" : "Save Product"}
-            </AdminButton>
+            <div className="flex items-center gap-2">
+              <AdminButton type="button" variant="secondary" onClick={() => onCancel?.()}>Cancel</AdminButton>
+              <AdminButton type="submit" variant="primary" loading={saving}>
+                {saving ? (isEditMode ? "Updating…" : "Saving…") : (isEditMode ? "Update Product" : "Save Product")}
+              </AdminButton>
+            </div>
           }
         />
 

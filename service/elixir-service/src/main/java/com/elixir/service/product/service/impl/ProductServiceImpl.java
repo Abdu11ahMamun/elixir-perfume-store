@@ -97,7 +97,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponse> getAll() {
-        return productRepository.findAll().stream().map(this::toResponse).toList();
+        return productRepository.findAll().stream()
+            .filter(product -> product.getDeletedAt() == null)
+            .map(this::toResponse).toList();
     }
 
     @Override

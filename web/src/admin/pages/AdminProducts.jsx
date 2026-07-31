@@ -15,7 +15,7 @@ import {
   updateProductStatus,
   deleteProduct,
 } from "../../services/adminService";
-import { buildImageUrl } from "../../services/apiClient";
+import { getProductThumbnail } from "../utils/productImage";
 import { formatCurrency, formatDate } from "../utils/adminFormat";
 
 const STATUSES = ["All", "ACTIVE", "INACTIVE", "DRAFT", "ARCHIVED"];
@@ -26,13 +26,9 @@ const getSizes    = (p) => p.sizes || [];
 const minPrice    = (p) => getSizes(p).length ? Math.min(...getSizes(p).map(s => s.price)) : 0;
 const isLowStock  = (p) => getSizes(p).some(s => s.stock > 0 && s.stock < 10);
 const isOutOfStock= (p) => getSizes(p).length > 0 && getSizes(p).every(s => s.stock === 0);
-const primaryImg  = (p) => {
-  const first = getSizes(p)[0];
-  const url   = first?.imageUrls?.[0] || first?.images?.[0] || p.image || p.primaryImage || "";
-  return buildImageUrl(url);
-};
+const primaryImg  = getProductThumbnail;
 
-export default function AdminProducts({ setActivePage }) {
+export default function AdminProducts({ setActivePage, onEdit }) {
   const [products, setProducts] = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState("");
@@ -140,7 +136,7 @@ export default function AdminProducts({ setActivePage }) {
                 <ProductRow
                   key={product.id}
                   product={product}
-                  setActivePage={setActivePage}
+                  onEdit={onEdit}
                   toggling={toggling}
                   deleting={deleting}
                   onToggleStatus={handleToggleStatus}
@@ -157,7 +153,7 @@ export default function AdminProducts({ setActivePage }) {
   );
 }
 
-function ProductRow({ product, setActivePage, toggling, deleting, onToggleStatus, onDelete }) {
+function ProductRow({ product, onEdit, toggling, deleting, onToggleStatus, onDelete }) {
   const out  = isOutOfStock(product);
   const low  = isLowStock(product);
   const sizes = getSizes(product);
@@ -226,7 +222,7 @@ function ProductRow({ product, setActivePage, toggling, deleting, onToggleStatus
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-1.5">
-        <AdminButton size="sm" variant="secondary" onClick={() => setActivePage?.("addProduct")}>
+        <AdminButton size="sm" variant="secondary" onClick={() => onEdit?.(product.id)}>
           Edit
         </AdminButton>
         <AdminActionMenu

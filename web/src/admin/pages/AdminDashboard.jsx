@@ -9,16 +9,9 @@ import {
   getAdminOrders,
   getAdminProducts,
 } from "../../services/adminService";
-import { buildImageUrl } from "../../services/apiClient";
+import { getProductThumbnail } from "../utils/productImage";
 import { formatCurrency, formatDate } from "../utils/adminFormat";
 import { salesChartData, adminStats as fallbackStats } from "../data/mockAdminData";
-
-// Same resolution as AdminProducts.jsx — backend returns relative paths on sizes[].imageUrls
-const primaryImg = (p) => {
-  const first = (p.sizes || [])[0];
-  const url   = first?.imageUrls?.[0] || first?.images?.[0] || p.image || p.primaryImage || "";
-  return buildImageUrl(url);
-};
 
 /* ─── Hooks ─── */
 function useDashboard() {
@@ -211,7 +204,7 @@ export default function AdminDashboard() {
                 return (
                   <div key={product.id}
                     className="flex items-center gap-4 rounded-lg border border-gray-100 bg-gray-50/60 p-3.5 transition hover:border-gray-200">
-                    <img src={primaryImg(product)}
+                    <img src={getProductThumbnail(product)}
                       alt={product.name}
                       className="h-12 w-12 rounded-lg object-cover bg-gray-100"
                       onError={(e) => { e.target.src = ""; e.target.style.background = "#f3f4f6"; }} />

@@ -19,9 +19,23 @@ import AdminMarketing       from "./pages/AdminMarketing";
 import { isAdminLoggedIn, getAdminUser, adminLogout } from "../services/authService";
 
 export default function AdminApp() {
-  const [activePage, setActivePage] = useState("dashboard");
-  const [admin, setAdmin]           = useState(null);
-  const [checking, setChecking]     = useState(true);
+  const [activePage, setActivePage]         = useState("dashboard");
+  const [admin, setAdmin]                   = useState(null);
+  const [checking, setChecking]             = useState(true);
+  const [editingProductId, setEditingProductId] = useState(null);
+
+  // Generic navigation (sidebar, "+ Add Product", etc.) — always clears any
+  // pending edit target so "Add Product" never silently reopens in edit mode.
+  const navigate = (page) => {
+    setEditingProductId(null);
+    setActivePage(page);
+  };
+
+  // Opens the product form pre-loaded for a specific product.
+  const editProduct = (id) => {
+    setEditingProductId(id);
+    setActivePage("addProduct");
+  };
 
   // ── Check auth on mount ──
   useEffect(() => {
@@ -76,9 +90,15 @@ export default function AdminApp() {
       case "categories":
         return <AdminCategories />;
       case "products":
-        return <AdminProducts setActivePage={setActivePage} />;
+        return <AdminProducts setActivePage={navigate} onEdit={editProduct} />;
       case "addProduct":
-        return <AdminProductForm />;
+        return (
+          <AdminProductForm
+            productId={editingProductId}
+            onSaved={() => navigate("products")}
+            onCancel={() => navigate("products")}
+          />
+        );
       case "orders":
         return <AdminOrders setActivePage={setActivePage} />;
       case "orderDetails":
@@ -108,7 +128,7 @@ export default function AdminApp() {
       <Cursor />
       <AdminLayout
         activePage={activePage}
-        setActivePage={setActivePage}
+        setActivePage={navigate}
         admin={admin}
         onLogout={handleLogout}
       >
