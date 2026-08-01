@@ -76,7 +76,7 @@ export default function Navbar({
             <img
               src={primaryLogo}
               alt={BRAND.name}
-              className="hidden lg:block w-[200px] h-auto object-contain -mb-10"
+              className="hidden lg:block w-[250px] h-auto object-contain -mb-10"
             />
             <img
               src={primaryLogo}
@@ -85,13 +85,13 @@ export default function Navbar({
             />
             <div className="hidden lg:block">
               <p
-                className="eyebrow -translate-y-1"
-                style={{
-                  fontSize: "0.48rem",
-                  letterSpacing: "0.5em",
-                  color: "var(--mist)",
-                  lineHeight: 1,
-                  margin: 0
+             className="eyebrow -translate-y-7"
+              style={{
+                fontSize: "0.48rem",
+                letterSpacing: "0.5em",
+                color: "var(--mist)",
+                margin: 0,
+                lineHeight: 1,
                 }}
               >
                 {BRAND.tagline}
