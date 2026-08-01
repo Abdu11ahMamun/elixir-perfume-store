@@ -1,7 +1,20 @@
+import { useState } from "react";
 import Button from "./Button";
 import Eyebrow from "./Eyebrow";
 
 export default function Newsletter() {
+  const [email, setEmail]         = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    // No newsletter backend endpoint exists yet — acknowledge locally
+    // instead of leaving the form silently broken.
+    setSubscribed(true);
+    setEmail("");
+  };
+
   return (
     <section className="relative overflow-hidden bg-[var(--ink)] py-28 px-6">
       <div
@@ -52,25 +65,34 @@ export default function Newsletter() {
           recommendations delivered directly to your inbox.
         </p>
 
-        <form className="max-w-xl mx-auto flex flex-col sm:flex-row border border-[var(--gold)]/40">
-          <input
-            type="email"
-            placeholder="Enter your email"
-            className="
-              flex-1
-              bg-white/5
-              px-6
-              py-4
-              outline-none
-              text-[var(--parchment)]
-              placeholder:text-white/30
-            "
-          />
+        {subscribed ? (
+          <p className="max-w-xl mx-auto py-4 text-[var(--gold)]" style={{ fontFamily: "var(--font-body)" }}>
+            Thanks — you're on the list.
+          </p>
+        ) : (
+          <form onSubmit={handleSubmit} className="max-w-xl mx-auto flex flex-col sm:flex-row border border-[var(--gold)]/40">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="
+                flex-1
+                bg-white/5
+                px-6
+                py-4
+                outline-none
+                text-[var(--parchment)]
+                placeholder:text-white/30
+              "
+            />
 
-          <Button type="submit" className="justify-center">
-            Subscribe
-          </Button>
-        </form>
+            <Button type="submit" className="justify-center">
+              Subscribe
+            </Button>
+          </form>
+        )}
 
         <p className="text-white/25 text-xs uppercase tracking-[0.25em] mt-5">
           No spam. Unsubscribe anytime.

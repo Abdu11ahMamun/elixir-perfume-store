@@ -8,7 +8,13 @@ const pageMeta = {
   products:   { title: "Products",   description: "Manage fragrance catalog, stock, pricing, and visibility." },
   addProduct: { title: "Add Product",description: "Create a new perfume with notes, gallery, pricing, and SEO." },
   orders:     { title: "Orders",     description: "Track purchases, payment, delivery, and customer requests." },
+  orderDetails: { title: "Order Details", description: "Read-only order review." },
+  editOrder:  { title: "Edit Order", description: "Update buyer details, address, and status." },
+  deliveryAreas: { title: "Delivery Areas", description: "Configure districts, upazilas, and delivery charges." },
   customers:  { title: "Customers",  description: "Understand buyers, repeat customers, and fragrance preferences." },
+  customerProfile: { title: "Customer Profile", description: "Read-only customer review." },
+  editCustomer: { title: "Edit Customer", description: "Update profile details and customer type." },
+  customerTypes: { title: "Customer Types", description: "Configure customer-type options." },
   users:      { title: "Users",      description: "Manage admin and customer accounts, roles, and access status." },
   reports:    { title: "Reports",    description: "Monthly sales, top fragrances, revenue, and growth insights." },
   marketing:  { title: "Marketing",  description: "Feature products, campaigns, banners, and promotions." },
@@ -21,6 +27,7 @@ export default function AdminLayout({
   children,
   admin,       // ← { name, email, role }
   onLogout,    // ← () => void
+  onExit,      // ← () => void — return to the public storefront
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const meta = useMemo(() => pageMeta[activePage] || pageMeta.dashboard, [activePage]);
@@ -39,6 +46,8 @@ export default function AdminLayout({
           title={meta.title}
           description={meta.description}
           setSidebarOpen={setSidebarOpen}
+          setActivePage={setActivePage}
+          onExit={onExit}
           admin={admin}
           onLogout={onLogout}
         />

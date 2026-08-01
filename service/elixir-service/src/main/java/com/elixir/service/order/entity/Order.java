@@ -1,6 +1,8 @@
 package com.elixir.service.order.entity;
 
 import com.elixir.service.common.entity.BaseEntity;
+import com.elixir.service.customer.entity.Customer;
+import com.elixir.service.delivery.entity.DeliveryArea;
 import com.elixir.service.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -28,9 +30,17 @@ public class Order extends BaseEntity {
     @Column(name = "order_number", nullable = false, unique = true, length = 30)
     private String orderNumber;
 
+    // Legacy FK to the admin/login User entity — never actually populated
+    // (checkout is guest-only, see OrderServiceImpl.placeOrder). Left as-is;
+    // customerRef below is the real link used by the Sprint 6 customer
+    // feature, since Customer is a separate domain from the login User.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private User customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_ref_id")
+    private Customer customerRef;
 
     @Column(name = "customer_name", nullable = false, length = 120)
     private String customerName;
@@ -43,6 +53,19 @@ public class Order extends BaseEntity {
 
     @Column(name = "delivery_address", nullable = false, columnDefinition = "TEXT")
     private String deliveryAddress;
+
+    // District/upazila are snapshotted as plain text (like order_items'
+    // product_name_snapshot) so an order keeps showing what was selected at
+    // placement time even if the delivery area is later renamed or removed.
+    @Column(name = "delivery_district", length = 100)
+    private String deliveryDistrict;
+
+    @Column(name = "delivery_upazila", length = 100)
+    private String deliveryUpazila;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_area_id")
+    private DeliveryArea deliveryArea;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false, length = 30)

@@ -22,15 +22,24 @@ const PAYMENT_METHOD_MAP = {
  * @param {string} orderData.customerPhone
  * @param {string} [orderData.customerEmail]
  * @param {string} orderData.deliveryAddress
+ * @param {string} orderData.deliveryDistrict
+ * @param {string} [orderData.deliveryUpazila]
  * @param {string} orderData.paymentMethod  — frontend label or backend enum
  * @param {Array}  orderData.items          — cart items from useCart
  *
  * Cart item shape (from useCart):
  * { id, selectedMl, price, image, quantity, cartKey, orderId, ... }
  * We need to find the productSizeId from the product sizes
+ *
+ * Delivery charge is NEVER sent — the backend resolves and validates it
+ * server-side from deliveryDistrict/deliveryUpazila.
  */
 export async function placeOrder(orderData) {
-  const { customerName, customerPhone, customerEmail, deliveryAddress, paymentMethod, items } = orderData;
+  const {
+    customerName, customerPhone, customerEmail,
+    deliveryAddress, deliveryDistrict, deliveryUpazila,
+    paymentMethod, items,
+  } = orderData;
 
   // Map payment method to backend enum
   const mappedPayment = PAYMENT_METHOD_MAP[paymentMethod] || "COD";
@@ -47,6 +56,8 @@ export async function placeOrder(orderData) {
     customerPhone,
     customerEmail:   customerEmail || undefined,
     deliveryAddress,
+    deliveryDistrict,
+    deliveryUpazila: deliveryUpazila || undefined,
     paymentMethod:   mappedPayment,
     items:           orderItems,
   };

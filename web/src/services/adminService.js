@@ -11,6 +11,16 @@ export async function getDashboardSummary() {
 }
 
 // ═══════════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════════
+
+export async function getAdminReportSummary({ startDate, endDate, signal }) {
+  const query = new URLSearchParams({ startDate, endDate });
+  const res = await apiClient.get(`/api/v1/admin/reports/summary?${query}`, { signal });
+  return res.data.data;
+}
+
+// ═══════════════════════════════════════════
 // CATEGORIES
 // ═══════════════════════════════════════════
 
@@ -180,6 +190,16 @@ export async function updatePaymentStatus(orderNumber, paymentStatus) {
   return res.data.data;
 }
 
+/**
+ * Update buyer/contact and delivery-address fields on an existing order.
+ * @param {string} orderNumber
+ * @param {object} data — { customerName, customerPhone, customerEmail, deliveryAddress }
+ */
+export async function updateOrderDetails(orderNumber, data) {
+  const res = await apiClient.patch(`/api/v1/admin/orders/${orderNumber}`, data);
+  return res.data.data;
+}
+
 // ═══════════════════════════════════════════
 // USERS
 // ═══════════════════════════════════════════
@@ -213,5 +233,88 @@ export async function toggleUserStatus(id) {
 
 export async function deleteUser(id) {
   const res = await apiClient.delete(`/api/v1/admin/users/${id}`);
+  return res.data;
+}
+
+// ═══════════════════════════════════════════
+// DELIVERY AREAS
+// ═══════════════════════════════════════════
+
+export async function getAdminDeliveryAreas() {
+  const res = await apiClient.get("/api/v1/admin/delivery-areas");
+  return res.data.data;
+}
+
+export async function createDeliveryArea(data) {
+  // data: { district, upazila, charge, active }
+  const res = await apiClient.post("/api/v1/admin/delivery-areas", data);
+  return res.data.data;
+}
+
+export async function updateDeliveryArea(id, data) {
+  const res = await apiClient.put(`/api/v1/admin/delivery-areas/${id}`, data);
+  return res.data.data;
+}
+
+export async function toggleDeliveryAreaStatus(id) {
+  const res = await apiClient.patch(`/api/v1/admin/delivery-areas/${id}/toggle-status`);
+  return res.data.data;
+}
+
+export async function deleteDeliveryArea(id) {
+  const res = await apiClient.delete(`/api/v1/admin/delivery-areas/${id}`);
+  return res.data;
+}
+
+// ═══════════════════════════════════════════
+// CUSTOMERS
+// ═══════════════════════════════════════════
+// Customers are generated/kept in sync from placed orders — there is no
+// create endpoint here; only list/get/update.
+
+export async function getAdminCustomers() {
+  const res = await apiClient.get("/api/v1/admin/customers");
+  return res.data.data;
+}
+
+export async function getCustomerById(id) {
+  const res = await apiClient.get(`/api/v1/admin/customers/${id}`);
+  return res.data.data;
+}
+
+export async function updateCustomer(id, data) {
+  // data: { name, email, district, upazila, address, customerTypeId }
+  // phone and active are not editable — see CustomerUpdateRequest.
+  const res = await apiClient.put(`/api/v1/admin/customers/${id}`, data);
+  return res.data.data;
+}
+
+// ═══════════════════════════════════════════
+// CUSTOMER TYPES
+// ═══════════════════════════════════════════
+
+export async function getAdminCustomerTypes() {
+  const res = await apiClient.get("/api/v1/admin/customer-types");
+  return res.data.data;
+}
+
+export async function createCustomerType(data) {
+  // data: { name, displayOrder, active }
+  const res = await apiClient.post("/api/v1/admin/customer-types", data);
+  return res.data.data;
+}
+
+export async function updateCustomerType(id, data) {
+  const res = await apiClient.put(`/api/v1/admin/customer-types/${id}`, data);
+  return res.data.data;
+}
+
+export async function toggleCustomerTypeStatus(id) {
+  const res = await apiClient.patch(`/api/v1/admin/customer-types/${id}/toggle-status`);
+  return res.data.data;
+}
+
+export async function deleteCustomerType(id) {
+  const res = await apiClient.delete(`/api/v1/admin/customer-types/${id}`);
   return res.data;
 }

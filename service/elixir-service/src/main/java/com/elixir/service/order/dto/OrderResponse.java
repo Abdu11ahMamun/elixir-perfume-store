@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -17,6 +18,8 @@ public class OrderResponse {
 
     private String orderNumber;
 
+    private LocalDateTime createdAt;
+
     private String customerName;
 
     private String customerPhone;
@@ -24,6 +27,10 @@ public class OrderResponse {
     private String customerEmail;
 
     private String deliveryAddress;
+
+    private String deliveryDistrict;
+
+    private String deliveryUpazila;
 
     private PaymentMethod paymentMethod;
 

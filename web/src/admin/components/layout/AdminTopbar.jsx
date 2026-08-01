@@ -4,6 +4,8 @@ export default function AdminTopbar({
   title,
   description,
   setSidebarOpen,
+  setActivePage, // (page) => void
+  onExit,        // () => void — return to the public storefront
   admin,      // { name, email, role }
   onLogout,   // () => void
 }) {
@@ -88,10 +90,17 @@ export default function AdminTopbar({
 
                   <div className="py-1.5">
                     <button
-                      onClick={() => { setShowMenu(false); }}
+                      onClick={() => { setShowMenu(false); setActivePage?.("settings"); }}
                       className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-gray-600 transition hover:bg-gray-50"
                     >
                       Settings
+                    </button>
+
+                    <button
+                      onClick={() => { setShowMenu(false); onExit?.(); }}
+                      className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-gray-600 transition hover:bg-gray-50"
+                    >
+                      View Storefront
                     </button>
 
                     <button

@@ -3,68 +3,37 @@ import AdminBadge      from "../components/ui/AdminBadge";
 import AdminCard       from "../components/ui/AdminCard";
 import AdminPageHeader from "../components/ui/AdminPageHeader";
 import AdminButton     from "../components/ui/AdminButton";
+import AdminCopyButton from "../components/ui/AdminCopyButton";
 import { AdminCardSkeleton } from "../components/ui/AdminSkeleton";
-import {
-  getAdminOrders,
-  updateOrderStatus,
-  updatePaymentStatus,
-} from "../../services/adminService";
+import { getAdminOrderByNumber } from "../../services/adminService";
 import { buildImageUrl } from "../../services/apiClient";
 import { formatCurrency, formatDate } from "../utils/adminFormat";
 
-// Status flow for timeline
-const STATUS_FLOW = ["PENDING","CONFIRMED","PROCESSING","SHIPPED","DELIVERED"];
-const ORDER_STATUSES   = ["PENDING","CONFIRMED","PROCESSING","SHIPPED","DELIVERED","CANCELLED"];
-const PAYMENT_STATUSES = ["UNPAID","PAID","FAILED","REFUNDED"];
+// Status flow for the read-only progress timeline
+const STATUS_FLOW = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
 
-export default function AdminOrderDetails({ orderNumber: propOrderNumber }) {
-  const [order,    setOrder]   = useState(null);
-  const [loading,  setLoading] = useState(true);
-  const [updating, setUpdating]= useState(false);
-  const [error,    setError]   = useState(null);
+/**
+ * Read-only order view. No text input, select, editable status, or save
+ * button belongs here — all mutation happens on AdminOrderEdit.
+ */
+export default function AdminOrderDetails({ orderNumber, onEdit, onBack }) {
+  const [order,   setOrder]   = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
 
-  // If no orderNumber prop, load the most recent order as demo
   useEffect(() => {
-    setLoading(true);
-    if (propOrderNumber) {
-      // fetch specific order
-      // GET /api/v1/admin/orders/{orderNumber}
-      import("../../services/adminService")
-        .then(({ getAdminOrderByNumber }) => getAdminOrderByNumber(propOrderNumber))
-        .then(setOrder)
-        .catch(() => setError("Order not found"))
-        .finally(() => setLoading(false));
-    } else {
-      // fallback: load first order from list
-      getAdminOrders({ page: 0, size: 1, sort: "createdAt,desc" })
-        .then((data) => {
-          const first = data?.content?.[0] || data?.[0] || null;
-          setOrder(first);
-        })
-        .catch(() => setError("No orders found"))
-        .finally(() => setLoading(false));
+    if (!orderNumber) {
+      setError("No order selected");
+      setLoading(false);
+      return;
     }
-  }, [propOrderNumber]);
-
-  const handleOrderStatus = async (newStatus) => {
-    if (!order) return;
-    setUpdating(true);
-    try {
-      await updateOrderStatus(order.orderNumber || order.id, newStatus);
-      setOrder(prev => ({ ...prev, orderStatus: newStatus }));
-    } catch { alert("Failed to update order status"); }
-    finally { setUpdating(false); }
-  };
-
-  const handlePaymentStatus = async (newStatus) => {
-    if (!order) return;
-    setUpdating(true);
-    try {
-      await updatePaymentStatus(order.orderNumber || order.id, newStatus);
-      setOrder(prev => ({ ...prev, paymentStatus: newStatus }));
-    } catch { alert("Failed to update payment status"); }
-    finally { setUpdating(false); }
-  };
+    setLoading(true);
+    setError(null);
+    getAdminOrderByNumber(orderNumber)
+      .then(setOrder)
+      .catch(() => setError("Order not found"))
+      .finally(() => setLoading(false));
+  }, [orderNumber]);
 
   if (loading) {
     return (
@@ -88,6 +57,7 @@ export default function AdminOrderDetails({ orderNumber: propOrderNumber }) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-10 text-center">
         <p className="text-lg font-medium text-gray-400">{error || "No order selected"}</p>
+        <AdminButton variant="secondary" className="mt-4" onClick={() => onBack?.()}>Back to Orders</AdminButton>
       </div>
     );
   }
@@ -95,6 +65,29 @@ export default function AdminOrderDetails({ orderNumber: propOrderNumber }) {
   const orderNum  = order.orderNumber || order.id;
   const items     = order.items || [];
   const initials  = (order.customerName || "?").split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase();
+
+  const addressSummary = order.deliveryAddress || order.address || "—";
+  const buyerSummary = [
+    order.customerName,
+    order.customerPhone,
+    order.customerEmail,
+    addressSummary,
+  ].filter(Boolean).join("\n");
+
+  const orderSummary = [
+    `Order ${orderNum}`,
+    `Date: ${formatDate(order.createdAt)}`,
+    `Customer: ${order.customerName} · ${order.customerPhone}${order.customerEmail ? ` · ${order.customerEmail}` : ""}`,
+    `Address: ${addressSummary}`,
+    "",
+    ...items.map((item) => `${item.productNameSnapshot} (${item.selectedMlSnapshot}ml) × ${item.quantity} — ${formatCurrency(item.lineTotal)}`),
+    "",
+    `Subtotal: ${formatCurrency(order.subtotal)}`,
+    `Delivery: ${formatCurrency(order.deliveryCharge)}`,
+    `Total: ${formatCurrency(order.grandTotal)}`,
+    `Payment: ${order.paymentMethod} · ${order.paymentStatus}`,
+    `Status: ${order.orderStatus}`,
+  ].join("\n");
 
   // Build timeline from status flow
   const currentIdx = STATUS_FLOW.indexOf(order.orderStatus);
@@ -112,8 +105,14 @@ export default function AdminOrderDetails({ orderNumber: propOrderNumber }) {
       <AdminPageHeader
         eyebrow="Order"
         title={orderNum}
-        description="Review customer details, ordered fragrances, payment state, and fulfillment timeline."
-        action={<AdminButton variant="primary">Print Invoice</AdminButton>}
+        description="Read-only order review. Use Edit Order to change buyer details, address, or status."
+        action={
+          <div className="flex items-center gap-2">
+            <AdminButton variant="secondary" onClick={() => onBack?.()}>Back to Orders</AdminButton>
+            <AdminButton variant="outline" onClick={() => window.print()}>Print Invoice</AdminButton>
+            <AdminButton variant="primary" onClick={() => onEdit?.(orderNum)}>Edit Order</AdminButton>
+          </div>
+        }
       />
 
       <section className="grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
@@ -122,7 +121,10 @@ export default function AdminOrderDetails({ orderNumber: propOrderNumber }) {
           {/* Order items */}
           <AdminCard>
             <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <h2 className="text-base font-semibold text-gray-900">Order Items</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-semibold text-gray-900">Order Items</h2>
+                <AdminCopyButton value={orderNum} label="Copy order #" />
+              </div>
               <AdminBadge value={order.orderStatus} />
             </div>
 
@@ -151,7 +153,7 @@ export default function AdminOrderDetails({ orderNumber: propOrderNumber }) {
             )}
           </AdminCard>
 
-          {/* Timeline */}
+          {/* Timeline (read-only) */}
           <AdminCard title="Order Progress">
             <div className="space-y-5">
               {timeline.map((event, index) => (
@@ -180,37 +182,25 @@ export default function AdminOrderDetails({ orderNumber: propOrderNumber }) {
                 </div>
               ))}
             </div>
-
-            {/* Status update */}
-            <div className="mt-5 border-t border-gray-100 pt-5">
-              <p className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">Update Order Status</p>
-              <div className="flex flex-wrap gap-2">
-                {ORDER_STATUSES.map(s => (
-                  <AdminButton
-                    key={s}
-                    size="sm"
-                    variant={s === order.orderStatus ? "primary" : "outline"}
-                    disabled={s === order.orderStatus || updating}
-                    onClick={() => handleOrderStatus(s)}
-                  >
-                    {s}
-                  </AdminButton>
-                ))}
-              </div>
-            </div>
           </AdminCard>
         </div>
 
         <div className="space-y-6">
-          {/* Customer */}
-          <AdminCard title="Buyer Details">
+          {/* Buyer details */}
+          <AdminCard
+            title="Buyer Details"
+            action={<AdminCopyButton value={buyerSummary} label="Copy details" />}
+          >
             <div className="flex items-center gap-3 rounded-lg bg-gray-50/60 p-3.5">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-base font-semibold text-gray-500">
                 {initials}
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-900">{order.customerName}</p>
-                <p className="text-xs text-gray-500">{order.customerPhone || order.phone}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs text-gray-500">{order.customerPhone}</p>
+                  <AdminCopyButton value={order.customerPhone} label="" copiedLabel="✓" className="px-1 py-0.5" />
+                </div>
                 {order.customerEmail && (
                   <p className="text-xs text-gray-500">{order.customerEmail}</p>
                 )}
@@ -218,50 +208,35 @@ export default function AdminOrderDetails({ orderNumber: propOrderNumber }) {
             </div>
             <div className="mt-5 space-y-3">
               <InfoRow label="Order Date"     value={formatDate(order.createdAt)} />
-              <InfoRow label="Address"        value={order.deliveryAddress || order.address || "—"} />
+              <InfoRow
+                label="Address"
+                value={
+                  <span className="inline-flex items-center gap-1.5">
+                    <span>{addressSummary}</span>
+                    <AdminCopyButton value={addressSummary} label="" copiedLabel="✓" className="px-1 py-0.5" />
+                  </span>
+                }
+              />
               <InfoRow label="Payment Method" value={order.paymentMethod} />
               <InfoRow label="Payment Status" value={<AdminBadge value={order.paymentStatus} />} />
-            </div>
-
-            {/* Payment status update */}
-            <div className="mt-5 border-t border-gray-100 pt-5">
-              <p className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">Update Payment</p>
-              <div className="flex flex-wrap gap-2">
-                {PAYMENT_STATUSES.map(s => (
-                  <AdminButton
-                    key={s}
-                    size="sm"
-                    variant={s === order.paymentStatus ? "primary" : "outline"}
-                    disabled={s === order.paymentStatus || updating}
-                    onClick={() => handlePaymentStatus(s)}
-                  >
-                    {s}
-                  </AdminButton>
-                ))}
-              </div>
             </div>
           </AdminCard>
 
           {/* Payment summary */}
-          <AdminCard title="Payment Summary">
+          <AdminCard
+            title="Payment Summary"
+            action={<AdminCopyButton value={orderSummary} label="Copy summary" />}
+          >
             <div className="space-y-3">
               <InfoRow label="Subtotal"      value={formatCurrency(order.subtotal)} />
-              <InfoRow label="Delivery"      value={formatCurrency(order.deliveryCharge || order.deliveryFee || 100)} />
+              <InfoRow label="Delivery"      value={formatCurrency(order.deliveryCharge)} />
               {order.discount > 0 && (
                 <InfoRow label="Discount" value={`-${formatCurrency(order.discount)}`} />
               )}
               <div className="border-t border-gray-100 pt-3">
-                <InfoRow label="Total" value={formatCurrency(order.grandTotal || order.total)} strong />
+                <InfoRow label="Total" value={formatCurrency(order.grandTotal)} strong />
               </div>
             </div>
-          </AdminCard>
-
-          {/* Admin note */}
-          <AdminCard title="Admin Notes">
-            <textarea rows={5} placeholder="Add a private note for this order…"
-              className="w-full resize-none rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[var(--gold)] focus:ring-2 focus:ring-[#c9a96e]/20"
-            />
-            <AdminButton variant="primary" size="sm" className="mt-3">Save Note</AdminButton>
           </AdminCard>
         </div>
       </section>

@@ -9,9 +9,12 @@ import AdminEmptyState from "../components/ui/AdminEmptyState";
 import { AdminRowSkeleton } from "../components/ui/AdminSkeleton";
 import { AdminSelect } from "../components/ui/AdminInput";
 import { AdminTable, AdminTableHead, AdminTableBody, AdminTableRow } from "../components/ui/AdminTable";
-import { getAdminOrders, updateOrderStatus, updatePaymentStatus } from "../../services/adminService";
+import { getAdminOrders } from "../../services/adminService";
 import { formatCurrency, formatDate } from "../utils/adminFormat";
 
+// DELIVERED stays available as a *filter* (historical orders can already
+// carry that status and admins need to find them) even though it's no
+// longer offered as a status you can set — see AdminOrderEdit.jsx.
 const ORDER_STATUSES  = ["All","PENDING","CONFIRMED","PROCESSING","SHIPPED","DELIVERED","CANCELLED"];
 const PAYMENT_STATUSES = ["All","UNPAID","PAID","FAILED","REFUNDED"];
 const COLUMNS = "0.9fr 1.6fr 1fr 0.9fr 1fr 1fr auto";
@@ -25,7 +28,7 @@ function PriorityBadge({ ml }) {
   );
 }
 
-export default function AdminOrders({ setActivePage }) {
+export default function AdminOrders({ onView, onEdit }) {
   const [orders,   setOrders]   = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState("");
@@ -33,7 +36,6 @@ export default function AdminOrders({ setActivePage }) {
   const [payment,  setPayment]  = useState("All");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo,   setDateTo]   = useState("");
-  const [updating, setUpdating] = useState(null);
 
   const fetchOrders = () => {
     setLoading(true);
@@ -69,17 +71,6 @@ export default function AdminOrders({ setActivePage }) {
 
   const hasFilter = search || status !== "All" || payment !== "All" || dateFrom || dateTo;
   const clearFilters = () => { setSearch(""); setStatus("All"); setPayment("All"); setDateFrom(""); setDateTo(""); };
-
-  const handleStatusUpdate = async (orderNumber, newStatus) => {
-    setUpdating(orderNumber);
-    try {
-      await updateOrderStatus(orderNumber, newStatus);
-      setOrders(prev => prev.map(o =>
-        (o.orderNumber || o.id) === orderNumber ? { ...o, orderStatus: newStatus } : o
-      ));
-    } catch (e) { alert("Failed to update status"); }
-    finally { setUpdating(null); }
-  };
 
   return (
     <div className="space-y-6">
@@ -141,9 +132,8 @@ export default function AdminOrders({ setActivePage }) {
                 <OrderRow
                   key={order.orderNumber || order.id}
                   order={order}
-                  setActivePage={setActivePage}
-                  updating={updating}
-                  onStatusUpdate={handleStatusUpdate}
+                  onView={onView}
+                  onEdit={onEdit}
                 />
               ))
             ) : (
@@ -156,17 +146,9 @@ export default function AdminOrders({ setActivePage }) {
   );
 }
 
-function OrderRow({ order, setActivePage, updating, onStatusUpdate }) {
+function OrderRow({ order, onView, onEdit }) {
   const orderNum = order.orderNumber || order.id;
   const initials = (order.customerName || "?").split(" ").map(p => p[0]).slice(0, 2).join("");
-
-  const NEXT_STATUS = {
-    PENDING:    "CONFIRMED",
-    CONFIRMED:  "PROCESSING",
-    PROCESSING: "SHIPPED",
-    SHIPPED:    "DELIVERED",
-  };
-  const nextStatus = NEXT_STATUS[order.orderStatus];
 
   return (
     <AdminTableRow columns={COLUMNS}>
@@ -203,19 +185,12 @@ function OrderRow({ order, setActivePage, updating, onStatusUpdate }) {
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-1.5">
-        <AdminButton size="sm" variant="secondary" onClick={() => setActivePage("orderDetails")}>
+        <AdminButton size="sm" variant="secondary" onClick={() => onView?.(orderNum)}>
           View
         </AdminButton>
-        {nextStatus && (
-          <AdminButton
-            size="sm"
-            variant="primary"
-            loading={updating === orderNum}
-            onClick={() => onStatusUpdate(orderNum, nextStatus)}
-          >
-            {updating === orderNum ? "" : `→ ${nextStatus}`}
-          </AdminButton>
-        )}
+        <AdminButton size="sm" variant="outline" onClick={() => onEdit?.(orderNum)}>
+          Edit
+        </AdminButton>
       </div>
     </AdminTableRow>
   );

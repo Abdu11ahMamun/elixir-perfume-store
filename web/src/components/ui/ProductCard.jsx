@@ -37,6 +37,9 @@ export default function ProductCard({ product, onOpen, rank }) {
   return (
     <article
       ref={ref}
+      role="button"
+      tabIndex={0}
+      aria-label={`View details for ${product.name}`}
       className="product-card"
       style={{
         background: "var(--cream)",
@@ -46,6 +49,12 @@ export default function ProductCard({ product, onOpen, rank }) {
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
       onClick={() => onOpen(product)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen(product);
+        }
+      }}
     >
       {/* ── Image area ── */}
       <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>

@@ -26,6 +26,9 @@ import { generateOrderId, getOrderPriority } from "../utils/price";
 export function useCart() {
   const [cart, setCart]           = useState([]);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  // Resolved from the selected delivery district/upazila (see CartDrawer) —
+  // never a flat guess; 0 until a location is chosen and a charge resolves.
+  const [deliveryFee, setDeliveryFee] = useState(0);
 
   // ─── ADD ──────────────────────────────────────────────
   // Expects: { ...product, selectedMl, price, image, quantity? }
@@ -81,7 +84,7 @@ export function useCart() {
   }, []);
 
   // ─── CLEAR ────────────────────────────────────────────
-  const clearCart = useCallback(() => setCart([]), []);
+  const clearCart = useCallback(() => { setCart([]); setDeliveryFee(0); }, []);
 
   // ─── SUBMIT ───────────────────────────────────────────
   const handleSubmitOrder = useCallback((e) => {
@@ -96,9 +99,7 @@ export function useCart() {
     [cart]
   );
 
-  const deliveryFee = cart.length > 0 ? 100 : 0; // ৳100 flat delivery
-
-  const total = subtotal + deliveryFee;
+  const total = subtotal + (cart.length > 0 ? deliveryFee : 0);
 
   const cartCount = useMemo(
     () => cart.reduce((sum, i) => sum + i.quantity, 0),
@@ -117,6 +118,7 @@ export function useCart() {
     cartCount,
     subtotal,
     deliveryFee,
+    setDeliveryFee,
     total,
     orderPlaced,
     addToCart,

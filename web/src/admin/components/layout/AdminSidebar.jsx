@@ -27,6 +27,12 @@ const icons = {
   marketing: (
     <svg viewBox="0 0 20 20" fill="none"><path d="M3 8v4l4 1V7l-4 1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><path d="M7 7.5l7-3.5v12l-7-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><path d="M5.5 13.5L6.5 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
   ),
+  deliveryAreas: (
+    <svg viewBox="0 0 20 20" fill="none"><path d="M3 15.5V8.2a1 1 0 01.45-.83l6-4a1 1 0 011.1 0l6 4a1 1 0 01.45.83v7.3" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><path d="M2 15.5h16M7.5 15.5V11h5v4.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>
+  ),
+  customerTypes: (
+    <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3" width="15" height="4.5" rx="1.2" stroke="currentColor" strokeWidth="1.5" /><rect x="2.5" y="9.5" width="15" height="4.5" rx="1.2" stroke="currentColor" strokeWidth="1.5" /><path d="M6 5.25h.01M6 11.75h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+  ),
   settings: (
     <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.6" stroke="currentColor" strokeWidth="1.5" /><path d="M10 3v1.6M10 15.4V17M17 10h-1.6M4.6 10H3M14.8 5.2l-1.1 1.1M6.3 13.7l-1.1 1.1M14.8 14.8l-1.1-1.1M6.3 6.3L5.2 5.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
   ),
@@ -48,6 +54,8 @@ const navGroups = [
       { id: "categories", label: "Categories", icon: "categories" },
       { id: "orders", label: "Orders", icon: "orders" },
       { id: "customers", label: "Customers", icon: "customers" },
+      { id: "customerTypes", label: "Customer Types", icon: "customerTypes" },
+      { id: "deliveryAreas", label: "Delivery Areas", icon: "deliveryAreas" },
     ],
   },
   {
@@ -88,7 +96,10 @@ export default function AdminSidebar({
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        <div className="flex h-16 items-center gap-3 border-b border-gray-100 px-5">
+        <button
+          onClick={() => handleClick("dashboard")}
+          className="flex h-16 w-full items-center gap-3 border-b border-gray-100 px-5 text-left transition-colors hover:bg-gray-50"
+        >
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ink)] text-sm font-semibold text-[var(--gold)]">
             É
           </div>
@@ -96,7 +107,7 @@ export default function AdminSidebar({
             <p className="text-sm font-semibold text-gray-900">ÉLIXIR</p>
             <p className="text-[11px] text-gray-400">Admin</p>
           </div>
-        </div>
+        </button>
 
         <nav className="h-[calc(100%-4rem)] overflow-y-auto px-3 py-5">
           {navGroups.map((group) => (

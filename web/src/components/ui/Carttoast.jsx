@@ -18,8 +18,13 @@ export default function CartToast({ toast, onViewBag }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 30, scale: 0.97 }}
           transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="fixed bottom-6 left-1/2 z-[3000] w-[calc(100%-2rem)] max-w-sm"
-          style={{ transform: "translateX(-50%)" }}
+          className="fixed left-1/2 z-[3000] w-[calc(100%-2rem)] max-w-sm"
+          style={{
+            // Raised above the sticky cart bubble (bottom-6 right-6) so the
+            // two never overlap, and clears the iOS home-indicator safe area.
+            bottom: "calc(6rem + env(safe-area-inset-bottom, 0px))",
+            transform: "translateX(-50%)",
+          }}
         >
           <div
             className="flex items-center gap-4 p-4 shadow-2xl"

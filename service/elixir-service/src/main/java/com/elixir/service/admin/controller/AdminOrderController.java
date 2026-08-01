@@ -4,6 +4,7 @@ import com.elixir.service.common.dto.ApiResponse;
 import com.elixir.service.common.dto.PageResponse;
 import com.elixir.service.order.dto.OrderResponse;
 import com.elixir.service.order.dto.OrderStatusUpdateRequest;
+import com.elixir.service.order.dto.OrderUpdateRequest;
 import com.elixir.service.order.dto.PaymentStatusUpdateRequest;
 import com.elixir.service.order.entity.OrderStatus;
 import com.elixir.service.order.entity.PaymentStatus;
@@ -103,6 +104,24 @@ public class AdminOrderController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Payment status updated successfully",
+                        order,
+                        request.getRequestURI()
+                )
+        );
+    }
+
+    @PatchMapping("/{orderNumber}")
+    @Operation(summary = "Update order details", description = "Updates buyer/contact and delivery-address fields on an existing order.")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrderDetails(
+            @PathVariable String orderNumber,
+            @Valid @RequestBody OrderUpdateRequest requestBody,
+            HttpServletRequest request
+    ) {
+        OrderResponse order = orderService.updateOrderDetails(orderNumber, requestBody);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Order details updated successfully",
                         order,
                         request.getRequestURI()
                 )

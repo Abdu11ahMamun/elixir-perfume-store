@@ -15,6 +15,43 @@ import About          from "./pages/About";
 
 import AdminApp from "./admin/AdminApp";
 import { useCart } from "./hooks/useCart";
+import { getProductById, adaptProduct } from "./services/productService";
+
+// ── URL <-> app-state mapping ─────────────────────────────
+// Small History API layer (no router dependency) so the storefront gets
+// real back/forward support without a larger architectural rewrite.
+// The app is served from a sub-path (Vite `base`), so every built/parsed
+// path has to account for it or a refresh on a deep link would 404.
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, ""); // e.g. "/elixir-perfume-store" or ""
+
+const buildPath = ({ page, category, productId }) => {
+  let path;
+  if (productId) path = `/perfumes/${productId}`;
+  else switch (page) {
+    case "products":    path = category && category !== "All" ? `/perfumes?category=${encodeURIComponent(category)}` : "/perfumes"; break;
+    case "bestSellers": path = "/best-sellers"; break;
+    case "offers":      path = "/offers"; break;
+    case "about":       path = "/about"; break;
+    case "admin":       path = "/admin"; break;
+    default:            path = "/";
+  }
+  return BASE + path;
+};
+
+const parseLocation = () => {
+  let path = window.location.pathname;
+  if (BASE && path.startsWith(BASE)) path = path.slice(BASE.length) || "/";
+  const params = new URLSearchParams(window.location.search);
+  const productMatch = path.match(/^\/perfumes\/(.+)$/);
+
+  if (productMatch) return { page: "products", productId: productMatch[1], category: params.get("category") || "All" };
+  if (path === "/perfumes")    return { page: "products", category: params.get("category") || "All" };
+  if (path === "/best-sellers") return { page: "bestSellers" };
+  if (path === "/offers")      return { page: "offers" };
+  if (path === "/about")       return { page: "about" };
+  if (path === "/admin")       return { page: "admin" };
+  return { page: "home" };
+};
 
 export default function App() {
   const [activePage, setActivePage]     = useState("home");
@@ -43,28 +80,87 @@ export default function App() {
     }, 3000);
   }, [cart.addToCart]);
 
+  // ── History sync helper ──
+  // Pushes a history entry for a real forward navigation; skipped when the
+  // target URL already matches (avoids duplicate consecutive entries).
+  const pushHistory = useCallback((state, { replace = false } = {}) => {
+    const path    = buildPath(state);
+    const current = window.location.pathname + window.location.search;
+    if (!replace && path === current) return;
+    window.history[replace ? "replaceState" : "pushState"](state, "", path);
+  }, []);
+
   // ── Navigation helpers ──
   const openPage = useCallback((page) => {
     setActivePage(page);
+    setModalProduct(null);
+    document.body.style.overflow = "";
+    pushHistory({ page, category: activeCategory });
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  }, [activeCategory, pushHistory]);
 
   const openProductsPage = useCallback((category = "All") => {
     setActiveCategory(category);
     setActivePage("products");
+    setModalProduct(null);
+    document.body.style.overflow = "";
+    pushHistory({ page: "products", category });
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  }, [pushHistory]);
 
   // ── Modal helpers ──
   const openModal  = useCallback((product) => {
     setModalProduct(product);
     document.body.style.overflow = "hidden";
-  }, []);
+    pushHistory({ page: activePage, category: activeCategory, productId: product.id });
+  }, [activePage, activeCategory, pushHistory]);
 
   const closeModal = useCallback(() => {
-    setModalProduct(null);
-    document.body.style.overflow = "";
+    // Go back rather than clearing state directly, so the URL stays in
+    // sync — the popstate handler below applies the resulting state.
+    window.history.back();
   }, []);
+
+  // ── Browser history sync ──
+  // Applies a parsed/pushed location to app state. Used for both the
+  // initial page load and every popstate (back/forward) event.
+  const applyLocation = useCallback(async (state) => {
+    const parsed = state || parseLocation();
+    setActivePage(parsed.page || "home");
+    if (parsed.category) setActiveCategory(parsed.category);
+
+    if (parsed.productId) {
+      try {
+        const raw = await getProductById(parsed.productId);
+        setModalProduct(adaptProduct(raw));
+        document.body.style.overflow = "hidden";
+      } catch {
+        setModalProduct(null);
+        document.body.style.overflow = "";
+      }
+    } else {
+      setModalProduct(null);
+      document.body.style.overflow = "";
+    }
+  }, []);
+
+  useEffect(() => {
+    // Normalize whatever URL the app was loaded on into a proper history
+    // entry (so a first Back press has somewhere real to go), then apply it.
+    const initial = parseLocation();
+    if (initial.productId) {
+      const basePage = { page: "products", category: initial.category || "All" };
+      window.history.replaceState(basePage, "", buildPath(basePage));
+      window.history.pushState(initial, "", buildPath(initial));
+    } else {
+      window.history.replaceState(initial, "", buildPath(initial));
+    }
+    applyLocation(initial);
+
+    const onPopState = (e) => applyLocation(e.state);
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [applyLocation]);
 
   // ── Admin keyboard shortcut: Ctrl+Shift+A ──
   useEffect(() => {
@@ -158,6 +254,7 @@ export default function App() {
         updateQuantity={cart.updateQuantity}
         subtotal={cart.subtotal}
         deliveryFee={cart.deliveryFee}
+        setDeliveryFee={cart.setDeliveryFee}
         total={cart.total}
         clearCart={cart.clearCart}
       />

@@ -10,24 +10,37 @@ import AdminProducts        from "./pages/AdminProducts";
 import AdminProductForm     from "./pages/AdminProductForm";
 import AdminOrders          from "./pages/AdminOrders";
 import AdminOrderDetails    from "./pages/AdminOrderDetails";
+import AdminOrderEdit       from "./pages/AdminOrderEdit";
 import AdminCustomers       from "./pages/AdminCustomers";
 import AdminCustomerProfile from "./pages/AdminCustomerProfile";
+import AdminCustomerEdit    from "./pages/AdminCustomerEdit";
+import AdminCustomerTypes   from "./pages/AdminCustomerTypes";
 import AdminUsers           from "./pages/AdminUsers";
 import AdminReports         from "./pages/AdminReports";
 import AdminMarketing       from "./pages/AdminMarketing";
+import AdminDeliveryAreas   from "./pages/AdminDeliveryAreas";
 
 import { isAdminLoggedIn, getAdminUser, adminLogout } from "../services/authService";
 
-export default function AdminApp() {
+export default function AdminApp({ onExit }) {
   const [activePage, setActivePage]         = useState("dashboard");
   const [admin, setAdmin]                   = useState(null);
   const [checking, setChecking]             = useState(true);
   const [editingProductId, setEditingProductId] = useState(null);
+  const [viewingOrderNumber, setViewingOrderNumber] = useState(null);
+  const [editingOrderNumber, setEditingOrderNumber] = useState(null);
+  const [viewingCustomerId, setViewingCustomerId] = useState(null);
+  const [editingCustomerId, setEditingCustomerId] = useState(null);
 
   // Generic navigation (sidebar, "+ Add Product", etc.) — always clears any
-  // pending edit target so "Add Product" never silently reopens in edit mode.
+  // pending edit/view target so a fresh nav click never silently reopens a
+  // stale product edit or order/customer view/edit.
   const navigate = (page) => {
     setEditingProductId(null);
+    setViewingOrderNumber(null);
+    setEditingOrderNumber(null);
+    setViewingCustomerId(null);
+    setEditingCustomerId(null);
     setActivePage(page);
   };
 
@@ -35,6 +48,30 @@ export default function AdminApp() {
   const editProduct = (id) => {
     setEditingProductId(id);
     setActivePage("addProduct");
+  };
+
+  // Opens the read-only order view for a specific order.
+  const viewOrder = (orderNumber) => {
+    setViewingOrderNumber(orderNumber);
+    setActivePage("orderDetails");
+  };
+
+  // Opens the dedicated order edit form for a specific order.
+  const editOrder = (orderNumber) => {
+    setEditingOrderNumber(orderNumber);
+    setActivePage("editOrder");
+  };
+
+  // Opens the read-only customer profile for a specific customer.
+  const viewCustomer = (id) => {
+    setViewingCustomerId(id);
+    setActivePage("customerProfile");
+  };
+
+  // Opens the dedicated customer edit form for a specific customer.
+  const editCustomer = (id) => {
+    setEditingCustomerId(id);
+    setActivePage("editCustomer");
   };
 
   // ── Check auth on mount ──
@@ -100,13 +137,45 @@ export default function AdminApp() {
           />
         );
       case "orders":
-        return <AdminOrders setActivePage={setActivePage} />;
+        return <AdminOrders onView={viewOrder} onEdit={editOrder} />;
       case "orderDetails":
-        return <AdminOrderDetails />;
+        return (
+          <AdminOrderDetails
+            orderNumber={viewingOrderNumber}
+            onEdit={editOrder}
+            onBack={() => navigate("orders")}
+          />
+        );
+      case "editOrder":
+        return (
+          <AdminOrderEdit
+            orderNumber={editingOrderNumber}
+            onSaved={() => viewOrder(editingOrderNumber)}
+            onCancel={() => navigate("orders")}
+          />
+        );
+      case "deliveryAreas":
+        return <AdminDeliveryAreas />;
       case "customers":
-        return <AdminCustomers setActivePage={setActivePage} />;
+        return <AdminCustomers onView={viewCustomer} onEdit={editCustomer} />;
       case "customerProfile":
-        return <AdminCustomerProfile />;
+        return (
+          <AdminCustomerProfile
+            customerId={viewingCustomerId}
+            onEdit={editCustomer}
+            onBack={() => navigate("customers")}
+          />
+        );
+      case "editCustomer":
+        return (
+          <AdminCustomerEdit
+            customerId={editingCustomerId}
+            onSaved={() => viewCustomer(editingCustomerId)}
+            onCancel={() => navigate("customers")}
+          />
+        );
+      case "customerTypes":
+        return <AdminCustomerTypes />;
       case "users":
         return <AdminUsers />;
       case "reports":
@@ -131,6 +200,7 @@ export default function AdminApp() {
         setActivePage={navigate}
         admin={admin}
         onLogout={handleLogout}
+        onExit={onExit}
       >
         {renderPage()}
       </AdminLayout>

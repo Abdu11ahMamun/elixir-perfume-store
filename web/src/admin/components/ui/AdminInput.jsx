@@ -46,13 +46,14 @@ export function AdminTextArea({ label, value, onChange, placeholder, rows = 4, e
   );
 }
 
-export function AdminSelectField({ label, value, onChange, options, error, required }) {
+export function AdminSelectField({ label, value, onChange, options, error, required, disabled }) {
   return (
     <FieldWrap label={label} required={required} error={error}>
       <select
         value={value}
         onChange={onChange}
-        className={`${fieldBase} ${error ? "border-red-300" : "border-gray-300"}`}
+        disabled={disabled}
+        className={`${fieldBase} ${error ? "border-red-300" : "border-gray-300"} ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
       >
         {options.map((o) => (typeof o === "object" ? <option key={o.value} value={o.value}>{o.label}</option> : <option key={o}>{o}</option>))}
       </select>

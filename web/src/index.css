@@ -180,6 +180,14 @@ body {
   transition: transform 1.1s var(--ease-luxury);
 }
 .collection-card:hover img { transform: scale(1.08); }
+.collection-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+.product-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
 
 /* ─── Buttons ─── */
 .btn-primary {
@@ -525,4 +533,27 @@ body {
 .admin-area,
 .admin-area * {
   cursor: auto !important;
+}
+
+/* Admin "Print Report" support — scoped strictly under .admin-area so the
+   public storefront's printing is unaffected. */
+@media print {
+  .admin-area aside,
+  .admin-area header {
+    display: none !important;
+  }
+  .admin-area .lg\:pl-64 {
+    padding-left: 0 !important;
+  }
+  .admin-area main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  .admin-area .report-print-hide {
+    display: none !important;
+  }
+  .admin-area section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }

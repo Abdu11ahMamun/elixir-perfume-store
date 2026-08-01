@@ -34,6 +34,7 @@ export default function AdminActionMenu({ items = [] }) {
               key={i}
               type="button"
               disabled={item.disabled}
+              title={item.title}
               onClick={() => { setOpen(false); item.onClick(); }}
               className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition disabled:opacity-40 ${
                 item.danger ? "text-red-600 hover:bg-red-50" : "text-gray-700 hover:bg-gray-50"

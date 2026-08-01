@@ -18,10 +18,14 @@ import {
   toggleUserStatus,
   deleteUser,
 } from "../../services/adminService";
+import { getAdminUser } from "../../services/authService";
 import { formatDate } from "../utils/adminFormat";
 
 const ROLES    = ["All", "ADMIN", "CUSTOMER"];
-const STATUSES = ["All", "ACTIVE", "BLOCKED", "DELETED"];
+// "DELETED" deliberately omitted — the backend never returns deleted users
+// (GET /admin/users always excludes them), so that filter option could
+// never match anything and would just look broken.
+const STATUSES = ["All", "ACTIVE", "BLOCKED"];
 const COLUMNS  = "1.6fr 1fr 0.8fr 0.9fr 1fr auto";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -47,6 +51,12 @@ function getErrorMessage(err) {
 const emptyCreateForm = { name: "", email: "", phone: "", password: "", role: "CUSTOMER" };
 
 export default function AdminUsers() {
+  // The backend already fully enforces self-block/self-delete/self-role-
+  // downgrade and last-active-admin protection (see UserServiceImpl) — this
+  // just lets the UI disable those actions proactively instead of letting
+  // the admin confirm a destructive action and then hit a 400.
+  const currentUserId = getAdminUser()?.id;
+
   const [users,      setUsers]      = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [loadError,  setLoadError]  = useState("");
@@ -208,6 +218,7 @@ export default function AdminUsers() {
                 <UserRow
                   key={user.id}
                   user={user}
+                  isSelf={user.id === currentUserId}
                   toggling={togglingId === user.id}
                   deleting={deletingId === user.id}
                   onEdit={() => openEdit(user)}
@@ -228,6 +239,7 @@ export default function AdminUsers() {
         <UserFormModal
           mode={modalMode}
           user={editingUser}
+          isSelf={modalMode === "edit" && editingUser?.id === currentUserId}
           onClose={closeModal}
           onSaved={handleSaved}
         />
@@ -236,9 +248,10 @@ export default function AdminUsers() {
   );
 }
 
-function UserRow({ user, toggling, deleting, onEdit, onToggleStatus, onDelete }) {
+function UserRow({ user, isSelf, toggling, deleting, onEdit, onToggleStatus, onDelete }) {
   const initials = (user.name || "?").split(" ").map((p) => p[0]).slice(0, 2).join("");
   const isDeleted = user.status === "DELETED";
+  const selfReason = "Not available for your own account";
 
   return (
     <AdminTableRow columns={COLUMNS}>
@@ -248,7 +261,14 @@ function UserRow({ user, toggling, deleting, onEdit, onToggleStatus, onDelete })
           {initials}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
+            {isSelf && (
+              <span className="shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-500">
+                You
+              </span>
+            )}
+          </div>
           <p className="mt-0.5 truncate text-xs text-gray-500">{user.email || "—"}</p>
         </div>
       </div>
@@ -272,8 +292,19 @@ function UserRow({ user, toggling, deleting, onEdit, onToggleStatus, onDelete })
         </AdminButton>
         <AdminActionMenu
           items={[
-            { label: toggling ? "Working…" : user.status === "ACTIVE" ? "Block" : "Unblock", onClick: onToggleStatus, disabled: toggling || isDeleted },
-            { label: deleting ? "Working…" : "Delete", onClick: onDelete, disabled: deleting || isDeleted, danger: true },
+            {
+              label: toggling ? "Working…" : user.status === "ACTIVE" ? "Block" : "Unblock",
+              onClick: onToggleStatus,
+              disabled: toggling || isDeleted || isSelf,
+              title: isSelf ? selfReason : undefined,
+            },
+            {
+              label: deleting ? "Working…" : "Delete",
+              onClick: onDelete,
+              disabled: deleting || isDeleted || isSelf,
+              danger: true,
+              title: isSelf ? selfReason : undefined,
+            },
           ]}
         />
       </div>
@@ -283,7 +314,7 @@ function UserRow({ user, toggling, deleting, onEdit, onToggleStatus, onDelete })
 
 /* ─── Create / Edit modal ──────────────────────────────── */
 
-function UserFormModal({ mode, user, onClose, onSaved }) {
+function UserFormModal({ mode, user, isSelf, onClose, onSaved }) {
   const isEdit = mode === "edit";
 
   const [form, setForm] = useState(
@@ -345,6 +376,16 @@ function UserFormModal({ mode, user, onClose, onSaved }) {
       if (data?.validationErrors) {
         setFieldErrors((prev) => ({ ...prev, ...data.validationErrors }));
         setFormError("Please fix the errors below.");
+      } else if (typeof data?.message === "string" && /phone already exists/i.test(data.message)) {
+        // Duplicate-phone/email conflicts (409) come back as a flat message,
+        // not a field-keyed validationErrors map — attach it to the right
+        // field manually so it's "displayed clearly" next to that input,
+        // not just as a generic banner.
+        setFieldErrors((prev) => ({ ...prev, phone: data.message }));
+        setFormError("Please fix the errors below.");
+      } else if (typeof data?.message === "string" && /email already exists/i.test(data.message)) {
+        setFieldErrors((prev) => ({ ...prev, email: data.message }));
+        setFormError("Please fix the errors below.");
       } else {
         setFormError(getErrorMessage(err));
       }
@@ -390,7 +431,13 @@ function UserFormModal({ mode, user, onClose, onSaved }) {
           onChange={set("role")}
           options={[{ value: "CUSTOMER", label: "CUSTOMER" }, { value: "ADMIN", label: "ADMIN" }]}
           error={fieldErrors.role}
+          disabled={isSelf}
         />
+        {isSelf && (
+          <p className="text-xs text-gray-400">
+            You can't change your own role — ask another admin to do this if needed.
+          </p>
+        )}
 
         {isEdit && (
           <p className="text-xs text-gray-400">

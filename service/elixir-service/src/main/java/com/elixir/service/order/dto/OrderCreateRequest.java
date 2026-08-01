@@ -33,6 +33,13 @@ public class OrderCreateRequest {
     @NotBlank
     private String deliveryAddress;
 
+    @NotBlank
+    @Size(max = 100)
+    private String deliveryDistrict;
+
+    @Size(max = 100)
+    private String deliveryUpazila;
+
     @NotNull
     private PaymentMethod paymentMethod;
 

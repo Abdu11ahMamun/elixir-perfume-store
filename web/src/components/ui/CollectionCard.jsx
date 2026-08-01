@@ -2,8 +2,20 @@ import Button from "./Button";
 import { FALLBACK_IMAGE } from "../../constants/brand";
 
 export default function CollectionCard({ collection, openProductsPage }) {
+  const navigate = () => openProductsPage(collection.title);
+
   return (
     <article
+      role="button"
+      tabIndex={0}
+      aria-label={`Discover ${collection.title}`}
+      onClick={navigate}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate();
+        }
+      }}
       className="
         collection-card
         relative
@@ -12,6 +24,7 @@ export default function CollectionCard({ collection, openProductsPage }) {
         min-h-[520px]
         group
       "
+      style={{ cursor: "none" }}
     >
       <img
         src={collection.image || FALLBACK_IMAGE}
@@ -66,7 +79,7 @@ export default function CollectionCard({ collection, openProductsPage }) {
 
         <Button
           variant="ghost-light"
-          onClick={() => openProductsPage(collection.title)}
+          onClick={(e) => { e.stopPropagation(); navigate(); }}
         >
           Discover
         </Button>

@@ -3,10 +3,15 @@ package com.elixir.service.order.service.impl;
 import com.elixir.service.common.exception.BusinessValidationException;
 import com.elixir.service.common.exception.InsufficientStockException;
 import com.elixir.service.common.exception.ResourceNotFoundException;
+import com.elixir.service.customer.entity.Customer;
+import com.elixir.service.customer.service.CustomerService;
+import com.elixir.service.delivery.entity.DeliveryArea;
+import com.elixir.service.delivery.repository.DeliveryAreaRepository;
 import com.elixir.service.order.dto.OrderCreateRequest;
 import com.elixir.service.order.dto.OrderItemCreateRequest;
 import com.elixir.service.order.dto.OrderItemResponse;
 import com.elixir.service.order.dto.OrderResponse;
+import com.elixir.service.order.dto.OrderUpdateRequest;
 import com.elixir.service.order.entity.Order;
 import com.elixir.service.order.entity.OrderItem;
 import com.elixir.service.order.entity.OrderStatus;
@@ -33,6 +38,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -42,9 +48,31 @@ public class OrderServiceImpl implements OrderService {
     private static final DateTimeFormatter ORDER_NUMBER_FORMAT =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
+    // Allowed next-status moves. DELIVERED is intentionally still reachable
+    // here (it stays a valid, meaningful terminal state for the data model
+    // and for the "Delivered" stats query) — the admin panel just no longer
+    // exposes it as a selectable choice in its status editor.
+    private static final Map<OrderStatus, Set<OrderStatus>> ORDER_STATUS_TRANSITIONS = Map.of(
+            OrderStatus.PENDING,    Set.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
+            OrderStatus.CONFIRMED,  Set.of(OrderStatus.PROCESSING, OrderStatus.CANCELLED),
+            OrderStatus.PROCESSING, Set.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED),
+            OrderStatus.SHIPPED,    Set.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED),
+            OrderStatus.DELIVERED,  Set.of(),
+            OrderStatus.CANCELLED,  Set.of()
+    );
+
+    private static final Map<PaymentStatus, Set<PaymentStatus>> PAYMENT_STATUS_TRANSITIONS = Map.of(
+            PaymentStatus.UNPAID,   Set.of(PaymentStatus.PAID, PaymentStatus.FAILED),
+            PaymentStatus.PAID,     Set.of(PaymentStatus.REFUNDED),
+            PaymentStatus.FAILED,   Set.of(PaymentStatus.UNPAID, PaymentStatus.PAID),
+            PaymentStatus.REFUNDED, Set.of()
+    );
+
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductSizeRepository productSizeRepository;
+    private final DeliveryAreaRepository deliveryAreaRepository;
+    private final CustomerService customerService;
 
     @Override
     @Transactional
@@ -52,6 +80,11 @@ public class OrderServiceImpl implements OrderService {
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new BusinessValidationException("Order must contain at least one item");
         }
+
+        // Resolve the delivery area (and therefore the charge) server-side,
+        // before touching stock — a frontend-submitted charge is never
+        // trusted. Fails fast if the location isn't deliverable.
+        DeliveryArea deliveryArea = resolveDeliveryArea(request.getDeliveryDistrict(), request.getDeliveryUpazila());
 
         List<OrderItem> orderItems = new ArrayList<>();
         BigDecimal subtotal = BigDecimal.ZERO;
@@ -64,6 +97,13 @@ public class OrderServiceImpl implements OrderService {
         order.setCustomerPhone(request.getCustomerPhone());
         order.setCustomerEmail(request.getCustomerEmail());
         order.setDeliveryAddress(request.getDeliveryAddress());
+        // Snapshot what the customer actually selected — not necessarily the
+        // same as deliveryArea's own upazila, which may be null if charge
+        // resolution fell back to a district-wide rate.
+        order.setDeliveryDistrict(request.getDeliveryDistrict().trim());
+        order.setDeliveryUpazila(request.getDeliveryUpazila() == null || request.getDeliveryUpazila().isBlank()
+                ? null : request.getDeliveryUpazila().trim());
+        order.setDeliveryArea(deliveryArea);
         order.setPaymentMethod(request.getPaymentMethod());
         order.setPaymentStatus(PaymentStatus.UNPAID);
         order.setOrderStatus(OrderStatus.PENDING);
@@ -122,7 +162,10 @@ public class OrderServiceImpl implements OrderService {
             orderItems.add(orderItem);
         }
 
-        BigDecimal deliveryCharge = BigDecimal.ZERO;
+        // Charge is the one resolved server-side from the delivery area
+        // above — never the client's own submission, and preserved exactly
+        // as applied even if the area's rate changes later.
+        BigDecimal deliveryCharge = deliveryArea.getCharge();
         BigDecimal discount = BigDecimal.ZERO;
         BigDecimal grandTotal = subtotal.add(deliveryCharge).subtract(discount);
 
@@ -131,6 +174,12 @@ public class OrderServiceImpl implements OrderService {
         order.setDeliveryCharge(deliveryCharge);
         order.setDiscount(discount);
         order.setGrandTotal(grandTotal);
+
+        // Find-or-create the customer this order belongs to (by phone) and
+        // link it — see CustomerServiceImpl for the upsert/concurrency
+        // handling and what "update missing/current details" means here.
+        Customer customer = customerService.recordOrder(order);
+        order.setCustomerRef(customer);
 
         Order savedOrder = orderRepository.save(order);
         List<OrderItem> savedItems = orderItemRepository.saveAll(orderItems);
@@ -148,6 +197,33 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> items = orderItemRepository.findByOrder(order);
 
         return toResponse(order, items);
+    }
+
+    /**
+     * Resolves the active delivery area for a district/upazila pair — an
+     * exact upazila match if one exists, otherwise the district-wide entry.
+     * Mirrors DeliveryAreaServiceImpl's identical resolution logic; kept as
+     * its own lookup here rather than a cross-service call, consistent with
+     * how this class already reaches into other domains' repositories
+     * directly (e.g. ProductSizeRepository) instead of through their
+     * service interfaces.
+     */
+    private DeliveryArea resolveDeliveryArea(String district, String upazila) {
+        if (district == null || district.isBlank()) {
+            throw new BusinessValidationException("Delivery district is required");
+        }
+        String trimmedDistrict = district.trim();
+        String normalizedUpazila = (upazila == null || upazila.isBlank()) ? null : upazila.trim();
+
+        if (normalizedUpazila != null) {
+            var exact = deliveryAreaRepository.findByDistrictAndUpazilaAndActiveTrueAndDeletedAtIsNull(trimmedDistrict, normalizedUpazila);
+            if (exact.isPresent()) {
+                return exact.get();
+            }
+        }
+
+        return deliveryAreaRepository.findByDistrictAndUpazilaIsNullAndActiveTrueAndDeletedAtIsNull(trimmedDistrict)
+                .orElseThrow(() -> new BusinessValidationException("Delivery is not available for the selected location"));
     }
 
     private void validateProductSizeForPublicOrder(ProductSize productSize) {
@@ -189,10 +265,13 @@ public class OrderServiceImpl implements OrderService {
         OrderResponse response = new OrderResponse();
 
         response.setOrderNumber(order.getOrderNumber());
+        response.setCreatedAt(order.getCreatedAt());
         response.setCustomerName(order.getCustomerName());
         response.setCustomerPhone(order.getCustomerPhone());
         response.setCustomerEmail(order.getCustomerEmail());
         response.setDeliveryAddress(order.getDeliveryAddress());
+        response.setDeliveryDistrict(order.getDeliveryDistrict());
+        response.setDeliveryUpazila(order.getDeliveryUpazila());
         response.setPaymentMethod(order.getPaymentMethod());
         response.setPaymentStatus(order.getPaymentStatus());
         response.setOrderStatus(order.getOrderStatus());
@@ -251,7 +330,38 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse updateOrderStatus(String orderNumber, OrderStatus status) {
         Order order = findOrderByOrderNumber(orderNumber);
+        OrderStatus current = order.getOrderStatus();
+
+        if (current != status && !ORDER_STATUS_TRANSITIONS.getOrDefault(current, Set.of()).contains(status)) {
+            throw new BusinessValidationException(
+                    "Cannot change order status from " + current + " to " + status);
+        }
+
         order.setOrderStatus(status);
+
+        Order saved = orderRepository.save(order);
+        List<OrderItem> items = orderItemRepository.findByOrder(saved);
+
+        // A status change can move a customer between active/inactive
+        // (client rule: active while any order is non-terminal) — recompute
+        // from their full order history, not just this one order.
+        customerService.refreshActivityStatus(saved);
+
+        return toResponse(saved, items);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse updatePaymentStatus(String orderNumber, PaymentStatus status) {
+        Order order = findOrderByOrderNumber(orderNumber);
+        PaymentStatus current = order.getPaymentStatus();
+
+        if (current != status && !PAYMENT_STATUS_TRANSITIONS.getOrDefault(current, Set.of()).contains(status)) {
+            throw new BusinessValidationException(
+                    "Cannot change payment status from " + current + " to " + status);
+        }
+
+        order.setPaymentStatus(status);
 
         Order saved = orderRepository.save(order);
         List<OrderItem> items = orderItemRepository.findByOrder(saved);
@@ -261,9 +371,27 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponse updatePaymentStatus(String orderNumber, PaymentStatus status) {
+    public OrderResponse updateOrderDetails(String orderNumber, OrderUpdateRequest request) {
         Order order = findOrderByOrderNumber(orderNumber);
-        order.setPaymentStatus(status);
+
+        // Only buyer/contact and delivery-address fields are editable through
+        // this endpoint. Status fields go through their own validated
+        // endpoints above, and financial fields (subtotal/deliveryCharge/
+        // discount/grandTotal/priority) are intentionally never applied here
+        // even if present on the request — they're computed at order time
+        // and out of scope for admin editing.
+        if (request.getCustomerName() != null) {
+            order.setCustomerName(request.getCustomerName());
+        }
+        if (request.getCustomerPhone() != null) {
+            order.setCustomerPhone(request.getCustomerPhone());
+        }
+        if (request.getCustomerEmail() != null) {
+            order.setCustomerEmail(request.getCustomerEmail());
+        }
+        if (request.getDeliveryAddress() != null) {
+            order.setDeliveryAddress(request.getDeliveryAddress());
+        }
 
         Order saved = orderRepository.save(order);
         List<OrderItem> items = orderItemRepository.findByOrder(saved);
