@@ -62,6 +62,25 @@ public class PublicProductController {
         );
     }
 
+    @GetMapping("/best-sellers")
+    @Operation(summary = "Get best seller products", description = "Returns paginated active public products flagged as best sellers.")
+    public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getBestSellerProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort,
+            HttpServletRequest request
+    ) {
+        Page<ProductResponse> products = productService.getBestSellerProducts(page, size, sort);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Best seller products retrieved successfully",
+                        PageResponse.fromPage(products, sort),
+                        request.getRequestURI()
+                )
+        );
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get product", description = "Returns a single active public product by id.")
     public ResponseEntity<ApiResponse<ProductResponse>> getProduct(

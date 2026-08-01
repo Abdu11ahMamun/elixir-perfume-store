@@ -17,7 +17,8 @@ import lombok.Setter;
         indexes = {
                 @Index(name = "idx_products_category", columnList = "category_id"),
                 @Index(name = "idx_products_status", columnList = "status"),
-                @Index(name = "idx_products_combo", columnList = "combo")
+                @Index(name = "idx_products_combo", columnList = "combo"),
+                @Index(name = "idx_products_best_seller", columnList = "best_seller")
         }
 )
 public class Product extends BaseEntity {
@@ -36,6 +37,9 @@ public class Product extends BaseEntity {
 
     @Column(name = "combo", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean combo = false;
+
+    @Column(name = "best_seller", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean bestSeller = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)

@@ -19,6 +19,7 @@ public class ProductUpdateRequest {
     private String description;
     private String note;
     private Boolean combo;
+    private Boolean bestSeller;
     private ProductStatus status;
     private Long categoryId;
     private Long offerTagId;

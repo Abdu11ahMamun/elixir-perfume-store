@@ -172,6 +172,7 @@ function ProductRow({ product, onEdit, toggling, deleting, onToggleStatus, onDel
           <div className="flex flex-wrap items-center gap-1.5">
             <p className="truncate text-sm font-medium text-gray-900">{product.name}</p>
             {product.combo && <AdminBadge value="COMBO" tone="gold" />}
+            {product.bestSeller && <AdminBadge value="BEST_SELLER" />}
           </div>
           <p className="mt-0.5 text-xs text-gray-400">
             #{product.id} · Added {formatDate(product.createdAt)}

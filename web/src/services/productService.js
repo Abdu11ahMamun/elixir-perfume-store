@@ -64,6 +64,16 @@ export async function getOfferProducts() {
 }
 
 /**
+ * Get paginated best-seller products
+ */
+export async function getBestSellers(params = {}) {
+  const { page = 0, size = 6, sort = "createdAt,desc" } = params;
+  const query = new URLSearchParams({ page, size, sort });
+  const res = await apiClient.get(`/api/v1/public/products/best-sellers?${query}`);
+  return res.data.data; // { content, page, size, totalElements, totalPages }
+}
+
+/**
  * Get all active categories
  */
 export async function getCategories() {

@@ -22,6 +22,7 @@ public class ProductCreateRequest {
     private String description;
     private String note;
     private Boolean combo = false;
+    private Boolean bestSeller = false;
 
     @NotNull
     private ProductStatus status;

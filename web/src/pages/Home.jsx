@@ -1,5 +1,5 @@
 import { BRAND, STATS } from "../constants/brand";
-import { useFeaturedProducts, useOfferProducts, useHomeCategories } from "../hooks/useProducts";
+import { useBestSellers, useOfferProducts, useHomeCategories } from "../hooks/useProducts";
 import { buildImageUrl } from "../services/apiClient";
 import TrustBar    from "../components/ui/TrustBar";
 import CollectionCard from "../components/ui/CollectionCard";
@@ -16,7 +16,12 @@ import Button       from "../components/ui/Button";
    - onOpen(product)             — opens ProductDetails modal
 ─────────────────────────────────────────────────────────── */
 export default function Home({ openProductsPage, openPage, onOpen }) {
-  const { products: featuredProducts, loading: featuredLoading, error: featuredError } = useFeaturedProducts();
+  const { products: bestSellerProducts, loading: bestSellersLoading, error: bestSellersError } = useBestSellers({ page: 0, size: 8 });
+  // Backend already excludes products with no active/in-stock sizes; this is a defensive display filter
+  // matching the same "suitable" convention used elsewhere in the storefront.
+  const featuredProducts = bestSellerProducts.filter((p) => p.sizes.length > 0).slice(0, 4);
+  const featuredLoading = bestSellersLoading;
+  const featuredError = bestSellersError;
   const { products: offerProducts, loading: offersLoading, error: offersError } = useOfferProducts();
   const { categories, loading: categoriesLoading, error: categoriesError } = useHomeCategories();
   return (

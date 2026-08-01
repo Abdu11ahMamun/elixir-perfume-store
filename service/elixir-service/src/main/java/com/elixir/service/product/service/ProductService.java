@@ -27,5 +27,7 @@ public interface ProductService {
 
     Page<ProductResponse> getOfferProducts(int page, int size, String sort);
 
+    Page<ProductResponse> getBestSellerProducts(int page, int size, String sort);
+
     ProductResponse toggleStatus(Long id);
 }

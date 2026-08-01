@@ -104,6 +104,23 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<ProductResponse> getBestSellerProducts(int page, int size, String sort) {
+        Pageable pageable = buildPageable(page, size, sort);
+
+        List<ProductResponse> products = productRepository.findByBestSeller(true)
+            .stream()
+            .filter(product -> product.getDeletedAt() == null)
+            .filter(product -> ProductStatus.ACTIVE.equals(product.getStatus()))
+            .sorted(resolveComparator(sort))
+            .map(this::toResponse)
+            .filter(response -> !response.getSizes().isEmpty())
+            .toList();
+
+        return toPage(products, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ProductResponse getById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -131,6 +148,7 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.getDescription());
         product.setNote(request.getNote());
         product.setCombo(request.getCombo());
+        product.setBestSeller(request.getBestSeller());
         product.setStatus(request.getStatus());
 
         Category category = categoryRepository.findById(request.getCategoryId())
@@ -173,6 +191,10 @@ public class ProductServiceImpl implements ProductService {
             existing.setCombo(request.getCombo());
         }
 
+        if (request.getBestSeller() != null) {
+            existing.setBestSeller(request.getBestSeller());
+        }
+
         if (request.getStatus() != null) {
             existing.setStatus(request.getStatus());
         }
@@ -213,6 +235,7 @@ public class ProductServiceImpl implements ProductService {
         response.setDescription(product.getDescription());
         response.setNote(product.getNote());
         response.setCombo(product.getCombo());
+        response.setBestSeller(product.getBestSeller());
         response.setStatus(product.getStatus());
 
         if (product.getCategory() != null) {

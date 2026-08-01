@@ -4,6 +4,7 @@ import {
   getProductById,
   getFeaturedProducts,
   getOfferProducts,
+  getBestSellers,
   getCategories,
   adaptProducts,
   adaptProduct,
@@ -139,6 +140,45 @@ export function useOfferProducts() {
   }, []);
 
   return { products, loading, error };
+}
+
+// ─── useBestSellers ───────────────────────────────────────
+// Real bestSeller-flagged products only — no dummy fallback on error,
+// matching useOfferProducts' pattern of degrading to an empty list plus
+// an error flag rather than substituting fabricated data. Exposes a
+// `retry` callback for a visible Retry-on-error UI.
+export function useBestSellers({ page = 0, size = 6, sort = "createdAt,desc" } = {}) {
+  const [products, setProducts]     = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal]           = useState(0);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(null);
+  const [retryTick, setRetryTick]   = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    getBestSellers({ page, size, sort })
+      .then((data) => {
+        if (cancelled) return;
+        const content = data?.content || [];
+        setProducts(adaptProducts(content));
+        setTotalPages(data?.totalPages ?? 1);
+        setTotal(data?.totalElements ?? content.length);
+        setError(null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setProducts([]);
+        setError(err.message || "Unable to load best sellers.");
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [page, size, sort, retryTick]);
+
+  return { products, totalPages, total, loading, error, retry: () => setRetryTick((t) => t + 1) };
 }
 
 // ─── useProductList ───────────────────────────────────────

@@ -25,6 +25,8 @@ public class ProductResponse {
 
     private Boolean combo;
 
+    private Boolean bestSeller;
+
     private ProductStatus status;
 
     private Long categoryId;

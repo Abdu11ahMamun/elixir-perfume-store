@@ -55,6 +55,7 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
   const [isCombo,     setIsCombo]     = useState(false);
   const [offerTagId,  setOfferTagId]  = useState("");
   const [isFeatured,  setIsFeatured]  = useState(false);
+  const [isBestSeller, setIsBestSeller] = useState(false);
 
   // ── Size entries ──
   const [sizes, setSizes] = useState(SIZE_OPTIONS.map(ml => buildSizeEntry(ml, null)));
@@ -87,6 +88,7 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
         setIsCombo(!!product.combo);
         setOfferTagId(product.offerTagId ?? "");
         setIsFeatured(!!product.isFeatured);
+        setIsBestSeller(!!product.bestSeller);
 
         const sizeByMl = Object.fromEntries((product.sizes || []).map(s => [s.ml, s]));
         setSizes(SIZE_OPTIONS.map(ml => buildSizeEntry(ml, sizeByMl[ml])));
@@ -169,6 +171,7 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
         categoryId:  Number(categoryId),
         offerTagId:  offerTagId ? Number(offerTagId) : null,
         isFeatured,
+        bestSeller:  isBestSeller,
       };
 
       // Step 1: Create or update the product itself
@@ -207,7 +210,7 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
         setSuccess(`"${product.name}" created successfully!`);
         // Reset form so the admin can add another product right away.
         setName(""); setInspiredBy(""); setCategoryId(""); setDescription("");
-        setNote(""); setIsCombo(false); setOfferTagId(""); setIsFeatured(false);
+        setNote(""); setIsCombo(false); setOfferTagId(""); setIsFeatured(false); setIsBestSeller(false);
         setSizes(SIZE_OPTIONS.map(ml => buildSizeEntry(ml, null)));
       }
     } catch (err) {
@@ -422,7 +425,10 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
           <div className="space-y-6">
 
             <AdminCard title="Publishing" description="Storefront visibility controls">
-              <AdminToggleRow label="Feature on homepage" value={isFeatured} onChange={setIsFeatured} />
+              <div className="space-y-3">
+                <AdminToggleRow label="Feature on homepage" value={isFeatured} onChange={setIsFeatured} />
+                <AdminToggleRow label="Show in Best Sellers" sub="Appears on the public Best Sellers page" value={isBestSeller} onChange={setIsBestSeller} />
+              </div>
             </AdminCard>
 
             <AdminCard title="SEO Preview">
