@@ -21,9 +21,10 @@ export default function Navbar({
   onOpen,
   cartCount,
   setIsCartOpen,
-}) {  const [search, setSearch]       = useState("");
+}) {
+  const [search, setSearch] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled]   = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   // Scroll-aware styling
   useState(() => {
@@ -70,26 +71,36 @@ export default function Navbar({
         <div className="h-20 lg:h-32 flex items-center justify-between gap-6">
 
           {/* Logo */}
-          <button onClick={() => openPage("home")} className="text-left shrink-0">
+          {/* Logo */}
+          <button onClick={() => openPage("home")} className="inline-flex flex-col items-center text-center shrink-0 gap-0">
             <img
               src={primaryLogo}
               alt={BRAND.name}
-              className="hidden lg:block w-[144px] h-auto object-contain"
+              className="hidden lg:block w-[200px] h-auto object-contain -mb-10"
             />
             <img
-              src={compactIcon}
+              src={primaryLogo}
               alt={BRAND.name}
               className="block lg:hidden h-10 w-auto object-contain"
             />
             <div className="hidden lg:block">
-              <p className="eyebrow mt-0.5" style={{ fontSize: "0.48rem", letterSpacing: "0.5em", color: "var(--mist)" }}>
+              <p
+                className="eyebrow -translate-y-1"
+                style={{
+                  fontSize: "0.48rem",
+                  letterSpacing: "0.5em",
+                  color: "var(--mist)",
+                  lineHeight: 1,
+                  margin: 0
+                }}
+              >
                 {BRAND.tagline}
               </p>
             </div>
           </button>
 
           {/* Desktop nav links */}
-          <nav className="hidden lg:flex items-center gap-10">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
             {NAV_LINKS.map((link) => (
               <button
                 key={link.page}
@@ -217,10 +228,10 @@ export default function Navbar({
               onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(14,12,10,0.12)"; e.currentTarget.querySelector("span").style.color = "var(--mist)"; }}
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style={{ color: "var(--mist)", flexShrink: 0 }}>
-                <rect x="0.5" y="0.5" width="4" height="4" stroke="currentColor" strokeWidth="1"/>
-                <rect x="6.5" y="0.5" width="4" height="4" stroke="currentColor" strokeWidth="1"/>
-                <rect x="0.5" y="6.5" width="4" height="4" stroke="currentColor" strokeWidth="1"/>
-                <rect x="6.5" y="6.5" width="4" height="4" stroke="currentColor" strokeWidth="1"/>
+                <rect x="0.5" y="0.5" width="4" height="4" stroke="currentColor" strokeWidth="1" />
+                <rect x="6.5" y="0.5" width="4" height="4" stroke="currentColor" strokeWidth="1" />
+                <rect x="0.5" y="6.5" width="4" height="4" stroke="currentColor" strokeWidth="1" />
+                <rect x="6.5" y="6.5" width="4" height="4" stroke="currentColor" strokeWidth="1" />
               </svg>
               <span style={{ fontFamily: "var(--font-body)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--mist)", transition: "color 0.3s" }}>
                 Admin
@@ -243,8 +254,8 @@ export default function Navbar({
                     background: "var(--ink)",
                     transform: mobileOpen
                       ? i === 0 ? "rotate(45deg) translateY(6px)"
-                      : i === 2 ? "rotate(-45deg) translateY(-6px)"
-                      : "none"
+                        : i === 2 ? "rotate(-45deg) translateY(-6px)"
+                          : "none"
                       : "none",
                     opacity: i === 1 && mobileOpen ? 0 : 1,
                   }}
