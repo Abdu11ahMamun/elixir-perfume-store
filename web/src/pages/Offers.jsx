@@ -1,8 +1,9 @@
-import { COMBO_PRODUCTS } from "../constants/brand";
+import { useOfferProducts } from "../hooks/useProducts";
 import ProductCard from "../components/ui/ProductCard";
 import Eyebrow from "../components/ui/Eyebrow";
 
 export default function Offers({ onOpen }) {
+  const { products: offerProducts, loading, error } = useOfferProducts();
   return (
     <main>
       {/* ── Cinematic header ── */}
@@ -75,9 +76,34 @@ export default function Offers({ onOpen }) {
         className="max-w-[1400px] mx-auto px-6 lg:px-12 py-20"
         style={{ background: "var(--cream)" }}
       >
-        {COMBO_PRODUCTS.length > 0 ? (
+        {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7">
-            {COMBO_PRODUCTS.map((product, i) => (
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="animate-pulse" style={{ aspectRatio: "3/4", background: "var(--warm)" }} />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-32">
+            <p
+              className="font-display italic"
+              style={{ fontSize: "clamp(2rem,4vw,3.5rem)", color: "var(--mist)" }}
+            >
+              Unable to Load Offers
+            </p>
+            <p
+              className="mt-4"
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "0.88rem",
+                color: "var(--mist)",
+              }}
+            >
+              Please try again shortly.
+            </p>
+          </div>
+        ) : offerProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7">
+            {offerProducts.map((product, i) => (
               <div
                 key={product.id}
                 className="animate-fade-up"

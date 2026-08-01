@@ -43,6 +43,25 @@ public class PublicProductController {
         );
     }
 
+    @GetMapping("/offers")
+    @Operation(summary = "Get offer products", description = "Returns paginated active public products flagged as combo/offer items.")
+    public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getOfferProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort,
+            HttpServletRequest request
+    ) {
+        Page<ProductResponse> products = productService.getOfferProducts(page, size, sort);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Offer products retrieved successfully",
+                        PageResponse.fromPage(products, sort),
+                        request.getRequestURI()
+                )
+        );
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get product", description = "Returns a single active public product by id.")
     public ResponseEntity<ApiResponse<ProductResponse>> getProduct(

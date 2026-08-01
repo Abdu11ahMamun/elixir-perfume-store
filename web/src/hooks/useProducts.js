@@ -8,7 +8,7 @@ import {
   adaptProducts,
   adaptProduct,
 } from "../services/productService";
-import { REGULAR_PRODUCTS, COMBO_PRODUCTS } from "../constants/brand";
+import { REGULAR_PRODUCTS } from "../constants/brand";
 
 // ─── useCategories ────────────────────────────────────────
 export function useCategories() {
@@ -112,26 +112,33 @@ export function useFeaturedProducts() {
 }
 
 // ─── useOfferProducts ─────────────────────────────────────
+// Real combo/offer products only — no dummy fallback on error, matching
+// useFeaturedProducts/useHomeCategories' pattern of degrading to an empty
+// list plus an error flag rather than substituting fabricated data.
 export function useOfferProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     getOfferProducts()
       .then((data) => {
         if (cancelled) return;
-        setProducts(adaptProducts(Array.isArray(data) ? data : data?.content || []));
+        const content = Array.isArray(data) ? data : data?.content || [];
+        setProducts(adaptProducts(content));
+        setError(null);
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
-        setProducts(COMBO_PRODUCTS);
+        setProducts([]);
+        setError(err.message || "Unable to load offers.");
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
 
-  return { products, loading };
+  return { products, loading, error };
 }
 
 // ─── useProductList ───────────────────────────────────────

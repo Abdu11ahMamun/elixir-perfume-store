@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { REGULAR_PRODUCTS, COMBO_PRODUCTS, FALLBACK_IMAGE } from "../constants/brand";
+import { REGULAR_PRODUCTS, FALLBACK_IMAGE } from "../constants/brand";
 import {
   formatPrice,
   getDefaultSize,

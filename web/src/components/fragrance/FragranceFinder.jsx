@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FINDER_OPTIONS, PRODUCTS } from "../../constants/brand";
+import { FINDER_OPTIONS, PRODUCTS, FALLBACK_IMAGE } from "../../constants/brand";
 import Button from "../ui/Button";
 import Eyebrow from "../ui/Eyebrow";
 
@@ -153,7 +153,7 @@ export default function FragranceFinder({
                     "
                   >
                     <img
-                      src={product.image}
+                      src={product.image || FALLBACK_IMAGE}
                       alt={product.name}
                       className="
                         w-28
@@ -161,6 +161,7 @@ export default function FragranceFinder({
                         object-cover
                         rounded-2xl
                       "
+                      onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
                     />
 
                     <div className="flex-1">

@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { getDefaultSize, getPrimaryImage, getStartingPrice } from "../../utils/price";
-import { FALLBACK_IMAGE } from "../../constants/brand";
 import Button from "./Button";
+import ProductImage from "./ProductImage";
 
 /* ─── ProductCard ────────────────────────────────────────
    Props:
@@ -57,13 +57,7 @@ export default function ProductCard({ product, onOpen, rank }) {
       }}
     >
       {/* ── Image area ── */}
-      <div className="relative overflow-hidden" style={{ aspectRatio: "3/4" }}>
-        <img
-          src={primaryImage || FALLBACK_IMAGE}
-          alt={product.name}
-          className="card-img w-full h-full object-cover"
-          onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
-        />
+      <ProductImage src={primaryImage} alt={product.name} imgClassName="card-img">
         <div className="card-overlay" />
 
         {/* Rank badge */}
@@ -130,7 +124,7 @@ export default function ProductCard({ product, onOpen, rank }) {
             View Details →
           </Button>
         </div>
-      </div>
+      </ProductImage>
 
       {/* ── Info area ── */}
       <div className="px-1 pt-4 pb-5">
@@ -141,7 +135,7 @@ export default function ProductCard({ product, onOpen, rank }) {
 
         {/* Name */}
         <h3
-          className="font-display text-xl font-light"
+          className="font-display text-xl font-light line-clamp-1"
           style={{ lineHeight: 1.1 }}
         >
           {product.name}
@@ -149,6 +143,7 @@ export default function ProductCard({ product, onOpen, rank }) {
 
         {/* Note */}
         <p
+          className="line-clamp-1"
           style={{
             fontFamily: "var(--font-body)",
             fontSize: "0.72rem",

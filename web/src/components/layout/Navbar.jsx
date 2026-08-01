@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { BRAND, NAV_LINKS, REGULAR_PRODUCTS } from "../../constants/brand";
+import { BRAND, NAV_LINKS, REGULAR_PRODUCTS, FALLBACK_IMAGE } from "../../constants/brand";
 import { getPrimaryImage } from "../../utils/price";
 
 /* ─── Navbar ─────────────────────────────────────────────
@@ -144,9 +144,10 @@ export default function Navbar({
                       >
                         <div className="w-12 h-14 overflow-hidden shrink-0">
                           <img
-                            src={getPrimaryImage(product)}
+                            src={getPrimaryImage(product) || FALLBACK_IMAGE}
                             alt={product.name}
                             className="w-full h-full object-cover"
+                            onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
                           />
                         </div>
                         <div>
@@ -287,7 +288,12 @@ export default function Navbar({
                         onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                       >
                         <div className="w-10 h-12 overflow-hidden shrink-0">
-                          <img src={getPrimaryImage(product)} alt={product.name} className="w-full h-full object-cover" />
+                          <img
+                            src={getPrimaryImage(product) || FALLBACK_IMAGE}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
+                          />
                         </div>
                         <div>
                           <span className="block font-display text-base font-light">{product.name}</span>

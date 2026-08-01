@@ -88,6 +88,22 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<ProductResponse> getOfferProducts(int page, int size, String sort) {
+        Pageable pageable = buildPageable(page, size, sort);
+
+        List<ProductResponse> products = productRepository.findByCombo(true)
+            .stream()
+            .filter(product -> product.getDeletedAt() == null)
+            .filter(product -> ProductStatus.ACTIVE.equals(product.getStatus()))
+            .sorted(resolveComparator(sort))
+            .map(this::toResponse)
+            .toList();
+
+        return toPage(products, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ProductResponse getById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));

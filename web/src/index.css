@@ -13,6 +13,9 @@
   --gold-dark:#a07840;
   --mist:     #8a8075;
   --cream:    #faf7f2;
+  /* Dark backdrop for "Combos & Offers"/"Philosophy" sections — matches
+     the gradient already hardcoded for the Philosophy section in Home.jsx. */
+  --plum:     #1a0a2e;
 
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-body:    'Jost', sans-serif;

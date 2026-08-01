@@ -17,7 +17,7 @@ import Button       from "../components/ui/Button";
 ─────────────────────────────────────────────────────────── */
 export default function Home({ openProductsPage, openPage, onOpen }) {
   const { products: featuredProducts, loading: featuredLoading, error: featuredError } = useFeaturedProducts();
-  const { products: offerProducts }                               = useOfferProducts();
+  const { products: offerProducts, loading: offersLoading, error: offersError } = useOfferProducts();
   const { categories, loading: categoriesLoading, error: categoriesError } = useHomeCategories();
   return (
     <>
@@ -237,30 +237,50 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
       </section>
 
       {/* ── OFFERS / COMBO SECTION ── */}
-      {offerProducts.length > 0 && (
-        <section className="py-24 lg:py-32 relative overflow-hidden" style={{ background: "var(--plum)" }}>
-          {/* Watermark */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden" aria-hidden="true">
-            <span className="font-display italic"
-              style={{ fontSize: "clamp(6rem,20vw,20rem)", fontWeight: 300, color: "rgba(245,240,232,0.025)", lineHeight: 1, whiteSpace: "nowrap" }}>
-              Offers
-            </span>
-          </div>
+      <section className="py-24 lg:py-32 relative overflow-hidden" style={{ background: "var(--plum)" }}>
+        {/* Watermark */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden" aria-hidden="true">
+          <span className="font-display italic"
+            style={{ fontSize: "clamp(6rem,20vw,20rem)", fontWeight: 300, color: "rgba(245,240,232,0.025)", lineHeight: 1, whiteSpace: "nowrap" }}>
+            Offers
+          </span>
+        </div>
 
-          <div className="relative max-w-[1400px] mx-auto px-6 lg:px-12">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-14">
-              <div>
-                <Eyebrow>Special Occasions</Eyebrow>
-                <h2 className="font-display mt-3"
-                  style={{ fontSize: "clamp(2.8rem,5.5vw,4.5rem)", fontWeight: 300, color: "var(--parchment)", lineHeight: 1.0 }}>
-                  Combos &<br /><em style={{ color: "var(--gold)", fontStyle: "italic" }}>Offers</em>
-                </h2>
-              </div>
+        <div className="relative max-w-[1400px] mx-auto px-6 lg:px-12">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-14">
+            <div>
+              <Eyebrow>Special Occasions</Eyebrow>
+              <h2 className="font-display mt-3"
+                style={{ fontSize: "clamp(2.8rem,5.5vw,4.5rem)", fontWeight: 300, color: "var(--parchment)", lineHeight: 1.0 }}>
+                Combos &<br /><em style={{ color: "var(--gold)", fontStyle: "italic" }}>Offers</em>
+              </h2>
+            </div>
+            {offerProducts.length > 0 && (
               <Button variant="ghost-light" onClick={() => openPage("offers")}>
                 View All Offers
               </Button>
-            </div>
+            )}
+          </div>
 
+          {offersLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="animate-pulse" style={{ aspectRatio: "3/4", background: "rgba(245,240,232,0.1)" }} />
+              ))}
+            </div>
+          ) : offersError ? (
+            <div className="text-center py-16" style={{ border: "1px solid rgba(245,240,232,0.15)" }}>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem", color: "rgba(245,240,232,0.6)" }}>
+                Offers couldn't be loaded right now. Please try again shortly.
+              </p>
+            </div>
+          ) : offerProducts.length === 0 ? (
+            <div className="text-center py-16" style={{ border: "1px solid rgba(245,240,232,0.15)" }}>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem", color: "rgba(245,240,232,0.6)" }}>
+                No combo offers available right now — check back soon.
+              </p>
+            </div>
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
               {offerProducts.map((product) => (
                 <div key={product.id} className="animate-fade-up">
@@ -268,9 +288,9 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          )}
+        </div>
+      </section>
 
       {/* ── PHILOSOPHY ── */}
       <section className="grid lg:grid-cols-2">

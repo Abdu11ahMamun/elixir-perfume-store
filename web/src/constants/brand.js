@@ -312,9 +312,6 @@ export const PRODUCTS = [
 // Regular products (non-combo) — for main shop
 export const REGULAR_PRODUCTS = PRODUCTS.filter(p => !p.isCombo);
 
-// Combo / Offer products
-export const COMBO_PRODUCTS = PRODUCTS.filter(p => p.isCombo);
-
 // Featured — first 4 regular products
 export const FEATURED = REGULAR_PRODUCTS.slice(0, 4);
 
