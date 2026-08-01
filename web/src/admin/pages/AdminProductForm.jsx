@@ -52,6 +52,10 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
   const [status,      setStatus]      = useState("ACTIVE");
   const [description, setDescription] = useState("");
   const [note,        setNote]        = useState("");
+  const [marketingTitle, setMarketingTitle] = useState("");
+  const [tagline,     setTagline]     = useState("");
+  const [keywords,    setKeywords]    = useState("");
+  const [lasting,     setLasting]     = useState("");
   const [isCombo,     setIsCombo]     = useState(false);
   const [offerTagId,  setOfferTagId]  = useState("");
   const [isFeatured,  setIsFeatured]  = useState(false);
@@ -85,6 +89,10 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
         setStatus(product.status || "ACTIVE");
         setDescription(product.description || "");
         setNote(product.note || "");
+        setMarketingTitle(product.marketingTitle || "");
+        setTagline(product.tagline || "");
+        setKeywords(product.keywords || "");
+        setLasting(product.lasting || "");
         setIsCombo(!!product.combo);
         setOfferTagId(product.offerTagId ?? "");
         setIsFeatured(!!product.isFeatured);
@@ -166,6 +174,10 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
         inspiredBy,
         description,
         note,
+        marketingTitle,
+        tagline,
+        keywords,
+        lasting,
         combo:       isCombo,
         status,
         categoryId:  Number(categoryId),
@@ -210,7 +222,8 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
         setSuccess(`"${product.name}" created successfully!`);
         // Reset form so the admin can add another product right away.
         setName(""); setInspiredBy(""); setCategoryId(""); setDescription("");
-        setNote(""); setIsCombo(false); setOfferTagId(""); setIsFeatured(false); setIsBestSeller(false);
+        setNote(""); setMarketingTitle(""); setTagline(""); setKeywords(""); setLasting("");
+        setIsCombo(false); setOfferTagId(""); setIsFeatured(false); setIsBestSeller(false);
         setSizes(SIZE_OPTIONS.map(ml => buildSizeEntry(ml, null)));
       }
     } catch (err) {
@@ -307,6 +320,21 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
               <div className="mt-4">
                 <AdminTextArea label="Description" value={description} onChange={e => setDescription(e.target.value)}
                   placeholder="A commanding woody-smoky signature..." />
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <AdminField label="Marketing Title" value={marketingTitle} onChange={e => setMarketingTitle(e.target.value)}
+                  placeholder='"Carolina Herrera" Perfume for Men' />
+                <AdminField label="Tagline" value={tagline} onChange={e => setTagline(e.target.value)}
+                  placeholder="Where Darkness Meets Desire" />
+              </div>
+              <div className="mt-4">
+                <AdminTextArea label="Keywords" value={keywords} onChange={e => setKeywords(e.target.value)}
+                  placeholder={"1. White Pepper-Cedarwood-Tonka Bean\n2. Sophisticated & Classy"} />
+              </div>
+              <div className="mt-4">
+                <AdminField label="Lasting" value={lasting} onChange={e => setLasting(e.target.value)}
+                  placeholder="8 hrs +" />
               </div>
 
               {/* Combo toggle */}

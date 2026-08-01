@@ -147,6 +147,10 @@ public class ProductServiceImpl implements ProductService {
         product.setInspiredBy(request.getInspiredBy());
         product.setDescription(request.getDescription());
         product.setNote(request.getNote());
+        product.setMarketingTitle(request.getMarketingTitle());
+        product.setTagline(request.getTagline());
+        product.setKeywords(request.getKeywords());
+        product.setLasting(request.getLasting());
         product.setCombo(request.getCombo());
         product.setBestSeller(request.getBestSeller());
         product.setStatus(request.getStatus());
@@ -185,6 +189,22 @@ public class ProductServiceImpl implements ProductService {
 
         if (request.getNote() != null) {
             existing.setNote(request.getNote());
+        }
+
+        if (request.getMarketingTitle() != null) {
+            existing.setMarketingTitle(request.getMarketingTitle());
+        }
+
+        if (request.getTagline() != null) {
+            existing.setTagline(request.getTagline());
+        }
+
+        if (request.getKeywords() != null) {
+            existing.setKeywords(request.getKeywords());
+        }
+
+        if (request.getLasting() != null) {
+            existing.setLasting(request.getLasting());
         }
 
         if (request.getCombo() != null) {
@@ -234,6 +254,10 @@ public class ProductServiceImpl implements ProductService {
         response.setInspiredBy(product.getInspiredBy());
         response.setDescription(product.getDescription());
         response.setNote(product.getNote());
+        response.setMarketingTitle(product.getMarketingTitle());
+        response.setTagline(product.getTagline());
+        response.setKeywords(product.getKeywords());
+        response.setLasting(product.getLasting());
         response.setCombo(product.getCombo());
         response.setBestSeller(product.getBestSeller());
         response.setStatus(product.getStatus());

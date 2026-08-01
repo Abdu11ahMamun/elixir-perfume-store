@@ -21,6 +21,18 @@ public class ProductCreateRequest {
 
     private String description;
     private String note;
+
+    @Size(max = 255)
+    private String marketingTitle;
+
+    @Size(max = 255)
+    private String tagline;
+
+    private String keywords;
+
+    @Size(max = 100)
+    private String lasting;
+
     private Boolean combo = false;
     private Boolean bestSeller = false;
 

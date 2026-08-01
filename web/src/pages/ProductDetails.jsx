@@ -201,6 +201,13 @@ export default function ProductDetails({ product, addToCart, onClose }) {
             {product.name}
           </h1>
 
+          {/* Tagline */}
+          {product.tagline && (
+            <p className="mb-3 italic" style={{ fontFamily: "var(--font-body)", fontSize: "0.95rem", color: "var(--gold-dark)" }}>
+              {product.tagline}
+            </p>
+          )}
+
           {/* Inspired by */}
           <p className="mb-5" style={{ fontFamily: "var(--font-body)", fontSize: "0.92rem", color: "var(--mist)" }}>
             Inspired by:{" "}
@@ -219,6 +226,11 @@ export default function ProductDetails({ product, addToCart, onClose }) {
           <div className="mb-6 pb-6" style={{ borderBottom: "1px solid var(--warm)" }}>
             <Eyebrow style={{ fontSize: "0.52rem" }}>Scent Profile</Eyebrow>
             <p className="mt-2" style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem" }}>{product.note}</p>
+            {product.lasting && (
+              <p className="mt-2" style={{ fontFamily: "var(--font-body)", fontSize: "0.78rem", color: "var(--mist)" }}>
+                Lasting: <span style={{ color: "var(--ink)" }}>{product.lasting}</span>
+              </p>
+            )}
           </div>
 
           {/* ── Size selector ── */}

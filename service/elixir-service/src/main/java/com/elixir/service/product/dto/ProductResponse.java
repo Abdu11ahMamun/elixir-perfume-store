@@ -23,6 +23,14 @@ public class ProductResponse {
 
     private String note;
 
+    private String marketingTitle;
+
+    private String tagline;
+
+    private String keywords;
+
+    private String lasting;
+
     private Boolean combo;
 
     private Boolean bestSeller;

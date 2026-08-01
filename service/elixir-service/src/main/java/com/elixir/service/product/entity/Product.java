@@ -35,6 +35,18 @@ public class Product extends BaseEntity {
     @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
+    @Column(name = "marketing_title", length = 255)
+    private String marketingTitle;
+
+    @Column(name = "tagline", length = 255)
+    private String tagline;
+
+    @Column(name = "keywords", columnDefinition = "TEXT")
+    private String keywords;
+
+    @Column(name = "lasting", length = 100)
+    private String lasting;
+
     @Column(name = "combo", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean combo = false;
 
