@@ -80,7 +80,7 @@ export default function Navbar({
             <img
               src={primaryLogo}
               alt={BRAND.name}
-              className="block lg:hidden h-10 w-auto object-contain"
+              className="block lg:hidden h-12 w-auto object-contain"
             />
             <div className="hidden lg:block">
               <p

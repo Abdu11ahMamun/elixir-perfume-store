@@ -148,7 +148,6 @@ export default function CartDrawer({
       errors.customerEmail = "Enter a valid email address";
     }
 
-    if (!form.deliveryDistrict) errors.deliveryDistrict = "Please select a district";
     if (upazilas.length > 0 && !form.deliveryUpazila) errors.deliveryUpazila = "Please select an upazila";
 
     if (!form.deliveryAddress.trim()) errors.deliveryAddress = "Delivery address is required";
@@ -156,10 +155,9 @@ export default function CartDrawer({
 
     if (!form.paymentMethod) errors.paymentMethod = "Please select a payment method";
 
-    if (form.deliveryDistrict && !chargeResolved && !errors.deliveryDistrict && !errors.deliveryUpazila) {
-      errors.deliveryDistrict = "Delivery isn't available for this location yet";
-    }
-
+    // District is optional — an unresolved charge for a selected district is
+    // surfaced informationally via chargeError (rendered near the field),
+    // never blocks submission.
     return errors;
   };
 
@@ -389,7 +387,7 @@ export default function CartDrawer({
                           className="cart-input"
                           style={fieldErrors.deliveryDistrict ? { border: "1px solid #b91c1c" } : undefined}
                         >
-                          <option value="">Select District</option>
+                          <option value="">Select District (optional)</option>
                           {districts.map((d) => (
                             <option key={d} value={d}>{d}</option>
                           ))}
@@ -551,7 +549,7 @@ function OrderReviewModal({ form, cart, subtotal, deliveryFee, total, loading, o
               <Row label="Name" value={form.customerName} />
               <Row label="Phone" value={form.customerPhone} />
               {form.customerEmail && <Row label="Email" value={form.customerEmail} />}
-              <Row label="District" value={form.deliveryDistrict} />
+              {form.deliveryDistrict && <Row label="District" value={form.deliveryDistrict} />}
               {form.deliveryUpazila && <Row label="Upazila" value={form.deliveryUpazila} />}
               <Row label="Address" value={form.deliveryAddress} />
             </div>

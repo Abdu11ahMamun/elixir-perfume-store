@@ -99,8 +99,10 @@ public class OrderServiceImpl implements OrderService {
         order.setDeliveryAddress(request.getDeliveryAddress());
         // Snapshot what the customer actually selected — not necessarily the
         // same as deliveryArea's own upazila, which may be null if charge
-        // resolution fell back to a district-wide rate.
-        order.setDeliveryDistrict(request.getDeliveryDistrict().trim());
+        // resolution fell back to a district-wide rate. District is optional,
+        // so this may be null.
+        order.setDeliveryDistrict(request.getDeliveryDistrict() == null || request.getDeliveryDistrict().isBlank()
+                ? null : request.getDeliveryDistrict().trim());
         order.setDeliveryUpazila(request.getDeliveryUpazila() == null || request.getDeliveryUpazila().isBlank()
                 ? null : request.getDeliveryUpazila().trim());
         order.setDeliveryArea(deliveryArea);
@@ -164,8 +166,10 @@ public class OrderServiceImpl implements OrderService {
 
         // Charge is the one resolved server-side from the delivery area
         // above — never the client's own submission, and preserved exactly
-        // as applied even if the area's rate changes later.
-        BigDecimal deliveryCharge = deliveryArea.getCharge();
+        // as applied even if the area's rate changes later. No matching
+        // delivery area (district skipped, or unresolvable) means zero
+        // charge rather than blocking the order.
+        BigDecimal deliveryCharge = deliveryArea != null ? deliveryArea.getCharge() : BigDecimal.ZERO;
         BigDecimal discount = BigDecimal.ZERO;
         BigDecimal grandTotal = subtotal.add(deliveryCharge).subtract(discount);
 
@@ -202,15 +206,20 @@ public class OrderServiceImpl implements OrderService {
     /**
      * Resolves the active delivery area for a district/upazila pair — an
      * exact upazila match if one exists, otherwise the district-wide entry.
-     * Mirrors DeliveryAreaServiceImpl's identical resolution logic; kept as
-     * its own lookup here rather than a cross-service call, consistent with
-     * how this class already reaches into other domains' repositories
-     * directly (e.g. ProductSizeRepository) instead of through their
-     * service interfaces.
+     * District is optional: a blank district, or one with no matching active
+     * delivery area (e.g. deactivated by an admin), returns null rather than
+     * failing the order — delivery charge falls back to zero and the district
+     * can be confirmed/priced manually. Mirrors DeliveryAreaServiceImpl's
+     * resolution logic (which still throws — it backs the "quote me a price"
+     * endpoint, where an explicit district lookup failing is real signal);
+     * kept as its own lookup here rather than a cross-service call, consistent
+     * with how this class already reaches into other domains' repositories
+     * directly (e.g. ProductSizeRepository) instead of through their service
+     * interfaces.
      */
     private DeliveryArea resolveDeliveryArea(String district, String upazila) {
         if (district == null || district.isBlank()) {
-            throw new BusinessValidationException("Delivery district is required");
+            return null;
         }
         String trimmedDistrict = district.trim();
         String normalizedUpazila = (upazila == null || upazila.isBlank()) ? null : upazila.trim();
@@ -223,7 +232,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return deliveryAreaRepository.findByDistrictAndUpazilaIsNullAndActiveTrueAndDeletedAtIsNull(trimmedDistrict)
-                .orElseThrow(() -> new BusinessValidationException("Delivery is not available for the selected location"));
+                .orElse(null);
     }
 
     private void validateProductSizeForPublicOrder(ProductSize productSize) {
