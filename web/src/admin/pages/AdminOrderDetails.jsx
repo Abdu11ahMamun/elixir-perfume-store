@@ -135,6 +135,7 @@ export default function AdminOrderDetails({ orderNumber, onEdit, onBack }) {
                     className="flex items-center gap-4 rounded-lg border border-gray-100 bg-gray-50/60 p-3.5">
                     {item.imageUrl && (
                       <img src={buildImageUrl(item.imageUrl)} alt={item.productNameSnapshot}
+                        loading="lazy" decoding="async"
                         className="h-16 w-16 rounded-lg object-cover" />
                     )}
                     <div className="flex-1">

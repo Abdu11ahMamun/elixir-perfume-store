@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { BRAND, NAV_LINKS, REGULAR_PRODUCTS, FALLBACK_IMAGE } from "../../constants/brand";
+import { BRAND, NAV_LINKS, REGULAR_PRODUCTS } from "../../constants/brand";
 import { getPrimaryImage } from "../../utils/price";
 import primaryLogo from "../../assets/branding/aurvior-primary-logo.png";
-import compactIcon from "../../assets/branding/aurvior-compact-icon.png";
+import ProductImage from "../ui/ProductImage";
 
 /* ─── Navbar ─────────────────────────────────────────────
    Props:
@@ -163,14 +163,13 @@ export default function Navbar({
                         onMouseEnter={(e) => { e.currentTarget.style.background = "var(--warm)"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                       >
-                        <div className="w-12 h-14 overflow-hidden shrink-0">
-                          <img
-                            src={getPrimaryImage(product) || FALLBACK_IMAGE}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
-                          />
-                        </div>
+                        <ProductImage
+                          src={getPrimaryImage(product)}
+                          alt={product.name}
+                          aspectRatio="6 / 7"
+                          loading="lazy"
+                          className="w-12 h-14 shrink-0"
+                        />
                         <div>
                           <span className="block font-display text-lg font-light">{product.name}</span>
                           <span className="block" style={{ fontFamily: "var(--font-body)", fontSize: "0.7rem", color: "var(--mist)", marginTop: "2px" }}>
@@ -308,14 +307,13 @@ export default function Navbar({
                         onMouseEnter={(e) => { e.currentTarget.style.background = "var(--warm)"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                       >
-                        <div className="w-10 h-12 overflow-hidden shrink-0">
-                          <img
-                            src={getPrimaryImage(product) || FALLBACK_IMAGE}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
-                          />
-                        </div>
+                        <ProductImage
+                          src={getPrimaryImage(product)}
+                          alt={product.name}
+                          aspectRatio="5 / 6"
+                          loading="lazy"
+                          className="w-10 h-12 shrink-0"
+                        />
                         <div>
                           <span className="block font-display text-base font-light">{product.name}</span>
                           <span className="block" style={{ fontFamily: "var(--font-body)", fontSize: "0.68rem", color: "var(--mist)" }}>{product.note}</span>

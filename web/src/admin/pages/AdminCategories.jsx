@@ -242,6 +242,8 @@ function CategoryRow({ category, toggling, deleting, onEdit, onToggleStatus, onD
         <img
           src={buildImageUrl(category.imageUrl)}
           alt={category.name}
+          loading="lazy"
+          decoding="async"
           className="h-11 w-11 shrink-0 rounded-lg bg-gray-100 object-cover"
           onError={(e) => { e.target.src = ""; e.target.style.background = "#f3f4f6"; }}
         />

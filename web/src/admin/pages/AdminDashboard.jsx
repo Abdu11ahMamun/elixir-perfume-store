@@ -163,6 +163,8 @@ export default function AdminDashboard() {
                     className="flex items-center gap-4 rounded-lg border border-gray-100 bg-gray-50/60 p-3.5 transition hover:border-gray-200">
                     <img src={getProductThumbnail(product)}
                       alt={product.name}
+                      loading="lazy"
+                      decoding="async"
                       className="h-12 w-12 rounded-lg object-cover bg-gray-100"
                       onError={(e) => { e.target.src = ""; e.target.style.background = "#f3f4f6"; }} />
                     <div className="flex-1">

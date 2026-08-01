@@ -165,6 +165,8 @@ function ProductRow({ product, onEdit, toggling, deleting, onToggleStatus, onDel
         <img
           src={primaryImg(product)}
           alt={product.name}
+          loading="lazy"
+          decoding="async"
           className="h-12 w-12 shrink-0 rounded-lg bg-gray-100 object-cover"
           onError={e => { e.target.src = ""; e.target.style.background = "#f3f4f6"; }}
         />

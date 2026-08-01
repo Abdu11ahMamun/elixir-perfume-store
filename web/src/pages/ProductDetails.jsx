@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { REGULAR_PRODUCTS, FALLBACK_IMAGE } from "../constants/brand";
+import ProductImage from "../components/ui/ProductImage";
 import {
   formatPrice,
   getDefaultSize,
@@ -34,6 +35,8 @@ function ImageSlider({ images, alt }) {
           key={idx}
           src={images[idx] || FALLBACK_IMAGE}
           alt={`${alt} ${idx + 1}`}
+          loading="eager"
+          decoding="async"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -100,11 +103,12 @@ function ImageSlider({ images, alt }) {
                   cursor: "none",
                 }}
               >
-                <img
-                  src={img || FALLBACK_IMAGE}
+                <ProductImage
+                  src={img}
                   alt=""
-                  className="w-full h-full object-cover"
-                  onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE; }}
+                  aspectRatio="1 / 1"
+                  loading="lazy"
+                  className="w-full h-full"
                 />
               </button>
             ))}
