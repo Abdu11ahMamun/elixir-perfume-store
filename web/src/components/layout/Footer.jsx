@@ -1,4 +1,5 @@
 import { BRAND, CATEGORIES } from "../../constants/brand";
+import secondaryLockup from "../../assets/branding/aurvior-secondary-lockup.png";
 
 export default function Footer({ openPage, openProductsPage }) {
   const year = new Date().getFullYear();
@@ -16,13 +17,7 @@ export default function Footer({ openPage, openProductsPage }) {
       <div className="relative max-w-7xl mx-auto px-6 py-20">
         <div className="grid lg:grid-cols-[1.5fr_1fr_1fr_1fr] gap-12">
           <div>
-            <h2 className="font-display text-4xl tracking-[0.28em] font-light mb-3">
-              {BRAND.name}
-            </h2>
-
-            <p className="text-[10px] uppercase tracking-[0.35em] text-[var(--gold)] mb-6">
-              {BRAND.tagline}
-            </p>
+            <img src={secondaryLockup} alt={`${BRAND.name} — ${BRAND.tagline}`} className="w-[220px] h-auto object-contain mb-6" />
 
             <p className="text-[var(--mist)] leading-8 max-w-sm">
               {BRAND.description}

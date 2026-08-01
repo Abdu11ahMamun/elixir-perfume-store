@@ -312,7 +312,7 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
             <p className="font-display italic leading-relaxed" style={{ fontSize: "1rem", color: "var(--parchment)" }}>
               "Scent is the closest thing to memory."
             </p>
-            <p className="eyebrow mt-3" style={{ fontSize: "0.48rem", color: "var(--gold)" }}>— ÉLIXIR</p>
+            <p className="eyebrow mt-3" style={{ fontSize: "0.48rem", color: "var(--gold)" }}>— AURVIOR</p>
           </div>
         </div>
 
@@ -347,7 +347,7 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
             We believe a fragrance is more than a scent — it is a mood, a memory, an invisible signature you leave on the world.
           </p>
           <p style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "0.95rem", lineHeight: 1.9, color: "rgba(245,240,232,0.55)", marginBottom: "2rem" }}>
-            ÉLIXIR combines the elegance of luxury perfume houses with the clarity of modern commerce.
+            AURVIOR combines the elegance of luxury perfume houses with the clarity of modern commerce.
           </p>
 
           {/* Stats — 2 col always, readable */}

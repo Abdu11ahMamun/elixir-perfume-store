@@ -428,9 +428,9 @@ export default function AdminProductForm({ productId, onSaved, onCancel }) {
             <AdminCard title="SEO Preview">
               <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-4">
                 <p className="text-xs text-[var(--gold-dark)]">
-                  elixir.com/perfume/{name.toLowerCase().replace(/\s+/g, "-") || "product-name"}
+                  aurvior.com/perfume/{name.toLowerCase().replace(/\s+/g, "-") || "product-name"}
                 </p>
-                <h3 className="mt-2 text-lg font-semibold text-gray-900">{name || "Product Name"} — ÉLIXIR</h3>
+                <h3 className="mt-2 text-lg font-semibold text-gray-900">{name || "Product Name"} — AURVIOR</h3>
                 <p className="mt-2 text-sm leading-6 text-gray-500">
                   {description || "Product description will appear here."}
                 </p>

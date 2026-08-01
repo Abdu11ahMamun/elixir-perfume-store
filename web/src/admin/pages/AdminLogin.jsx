@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { adminLogin } from "../../services/authService";
+import primaryLogo from "../../assets/branding/aurvior-primary-logo.png";
 
 export default function AdminLogin({ onLoginSuccess }) {
   const [email, setEmail]       = useState("");
@@ -28,10 +29,8 @@ export default function AdminLogin({ onLoginSuccess }) {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--ink)] text-lg font-semibold text-[var(--gold)]">
-            É
-          </div>
-          <h1 className="text-lg font-semibold tracking-tight text-gray-900">ÉLIXIR Admin</h1>
+          <img src={primaryLogo} alt="AURVIOR" className="mx-auto mb-4 h-auto w-[180px] object-contain" />
+          <h1 className="text-lg font-semibold tracking-tight text-gray-900">AURVIOR Admin</h1>
           <p className="mt-1 text-sm text-gray-400">Sign in to manage your store</p>
         </div>
 
@@ -92,7 +91,7 @@ export default function AdminLogin({ onLoginSuccess }) {
         </div>
 
         <p className="mt-6 text-center text-xs text-gray-400">
-          ÉLIXIR Admin · Restricted Access
+          AURVIOR Admin · Restricted Access
         </p>
       </div>
     </div>

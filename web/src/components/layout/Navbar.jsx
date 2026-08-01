@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BRAND, NAV_LINKS, REGULAR_PRODUCTS, FALLBACK_IMAGE } from "../../constants/brand";
 import { getPrimaryImage } from "../../utils/price";
+import primaryLogo from "../../assets/branding/aurvior-primary-logo.png";
+import compactIcon from "../../assets/branding/aurvior-compact-icon.png";
 
 /* ─── Navbar ─────────────────────────────────────────────
    Props:
@@ -65,16 +67,25 @@ export default function Navbar({
       }}
     >
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
-        <div className="h-20 flex items-center justify-between gap-6">
+        <div className="h-20 lg:h-32 flex items-center justify-between gap-6">
 
           {/* Logo */}
           <button onClick={() => openPage("home")} className="text-left shrink-0">
-            <h1 className="font-display tracking-[0.35em] font-light" style={{ fontSize: "1.6rem", color: "var(--ink)" }}>
-              {BRAND.name}
-            </h1>
-            <p className="eyebrow mt-0.5" style={{ fontSize: "0.48rem", letterSpacing: "0.5em", color: "var(--mist)" }}>
-              {BRAND.tagline}
-            </p>
+            <img
+              src={primaryLogo}
+              alt={BRAND.name}
+              className="hidden lg:block w-[144px] h-auto object-contain"
+            />
+            <img
+              src={compactIcon}
+              alt={BRAND.name}
+              className="block lg:hidden h-10 w-auto object-contain"
+            />
+            <div className="hidden lg:block">
+              <p className="eyebrow mt-0.5" style={{ fontSize: "0.48rem", letterSpacing: "0.5em", color: "var(--mist)" }}>
+                {BRAND.tagline}
+              </p>
+            </div>
           </button>
 
           {/* Desktop nav links */}

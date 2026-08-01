@@ -1,3 +1,5 @@
+import compactIcon from "../../../assets/branding/aurvior-compact-icon.png";
+
 // ─── Minimal line icons (inline SVG, no dependency) ─────────
 const icons = {
   dashboard: (
@@ -100,11 +102,11 @@ export default function AdminSidebar({
           onClick={() => handleClick("dashboard")}
           className="flex h-16 w-full items-center gap-3 border-b border-gray-100 px-5 text-left transition-colors hover:bg-gray-50"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ink)] text-sm font-semibold text-[var(--gold)]">
-            É
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--ink)]">
+            <img src={compactIcon} alt="AURVIOR" className="h-full w-full object-contain" />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold text-gray-900">ÉLIXIR</p>
+            <p className="text-sm font-semibold text-gray-900">AURVIOR</p>
             <p className="text-[11px] text-gray-400">Admin</p>
           </div>
         </button>

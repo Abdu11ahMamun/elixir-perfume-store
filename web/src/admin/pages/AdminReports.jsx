@@ -120,7 +120,7 @@ function downloadCsv(data) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `elixir-sales-report-${data.period.startDate}-to-${data.period.endDate}.csv`;
+  a.download = `aurvior-sales-report-${data.period.startDate}-to-${data.period.endDate}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

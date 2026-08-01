@@ -415,7 +415,7 @@ function UserFormModal({ mode, user, isSelf, onClose, onSaved }) {
           type="email"
           value={form.email}
           onChange={set("email")}
-          placeholder="jane@elixir.com"
+          placeholder="jane@aurvior.com"
           error={fieldErrors.email}
         />
 

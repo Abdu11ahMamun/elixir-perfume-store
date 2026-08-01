@@ -44,7 +44,7 @@ export default function About() {
               text-white/65
             "
           >
-            ÉLIXIR is built around a simple idea:
+            AURVIOR is built around a simple idea:
             fragrance should feel personal, memorable,
             and luxurious. Every scent is selected to
             create emotion, confidence, and identity.

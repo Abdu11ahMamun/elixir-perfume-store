@@ -1,7 +1,7 @@
 // ─── BRAND ───────────────────────────────────────────────
 export const BRAND = {
-  name: "ÉLIXIR",
-  tagline: "Signature Fragrances",
+  name: "AURVIOR",
+  tagline: "Wear Your Signature",
   description: "A premium perfume-only ecommerce concept focused on luxury, aesthetics, and elegant shopping experiences.",
 };
 
