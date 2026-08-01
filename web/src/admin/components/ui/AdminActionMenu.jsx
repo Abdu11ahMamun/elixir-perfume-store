@@ -17,7 +17,7 @@ export default function AdminActionMenu({ items = [] }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition duration-150 hover:bg-gray-100 hover:text-gray-700"
         aria-label="More actions"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -36,7 +36,7 @@ export default function AdminActionMenu({ items = [] }) {
               disabled={item.disabled}
               title={item.title}
               onClick={() => { setOpen(false); item.onClick(); }}
-              className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition disabled:opacity-40 ${
+              className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition duration-150 disabled:opacity-40 ${
                 item.danger ? "text-red-600 hover:bg-red-50" : "text-gray-700 hover:bg-gray-50"
               }`}
             >

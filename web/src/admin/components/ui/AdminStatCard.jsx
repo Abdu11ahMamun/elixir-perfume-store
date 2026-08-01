@@ -31,7 +31,7 @@ export default function AdminStatCard({
               {trend && (
                 <span
                   className={`inline-flex items-center gap-0.5 text-xs font-medium ${
-                    trend.direction === "down" ? "text-red-600" : "text-green-600"
+                    trend.direction === "down" ? "text-red-600" : "text-green-700"
                   }`}
                 >
                   {trend.direction === "down" ? "↓" : "↑"} {trend.label}

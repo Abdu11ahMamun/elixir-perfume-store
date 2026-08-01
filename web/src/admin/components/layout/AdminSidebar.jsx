@@ -6,13 +6,13 @@ const icons = {
     <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="2.5" width="6.5" height="6.5" rx="1.5" stroke="currentColor" strokeWidth="1.5" /><rect x="11" y="2.5" width="6.5" height="6.5" rx="1.5" stroke="currentColor" strokeWidth="1.5" /><rect x="2.5" y="11" width="6.5" height="6.5" rx="1.5" stroke="currentColor" strokeWidth="1.5" /><rect x="11" y="11" width="6.5" height="6.5" rx="1.5" stroke="currentColor" strokeWidth="1.5" /></svg>
   ),
   reports: (
-    <svg viewBox="0 0 20 20" fill="none"><path d="M3 17V9M10 17V3M17 17v-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+    <svg viewBox="0 0 20 20" fill="none"><path d="M3 17V9M10 17V3M17 17v-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
   ),
   products: (
     <svg viewBox="0 0 20 20" fill="none"><path d="M3 6.5l7-3.5 7 3.5-7 3.5-7-3.5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><path d="M3 6.5V14l7 3.5 7-3.5V6.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>
   ),
   addProduct: (
-    <svg viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
+    <svg viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
   ),
   categories: (
     <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="4" width="15" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" /><path d="M2.5 8h15" stroke="currentColor" strokeWidth="1.5" /></svg>
@@ -21,7 +21,7 @@ const icons = {
     <svg viewBox="0 0 20 20" fill="none"><path d="M5 3h10l-.7 12.2a1 1 0 01-1 .8H6.7a1 1 0 01-1-.8L5 3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><path d="M7.5 3a2.5 2.5 0 015 0" stroke="currentColor" strokeWidth="1.5" /></svg>
   ),
   customers: (
-    <svg viewBox="0 0 20 20" fill="none"><circle cx="7.5" cy="6.5" r="3" stroke="currentColor" strokeWidth="1.5" /><path d="M2 17c.5-3.3 2.7-5 5.5-5s5 1.7 5.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="14.5" cy="7.5" r="2.3" stroke="currentColor" strokeWidth="1.4" /><path d="M13 17c.3-2.6 1.8-4.2 3.5-4.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+    <svg viewBox="0 0 20 20" fill="none"><circle cx="7.5" cy="6.5" r="3" stroke="currentColor" strokeWidth="1.5" /><path d="M2 17c.5-3.3 2.7-5 5.5-5s5 1.7 5.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="14.5" cy="7.5" r="2.3" stroke="currentColor" strokeWidth="1.5" /><path d="M13 17c.3-2.6 1.8-4.2 3.5-4.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
   ),
   users: (
     <svg viewBox="0 0 20 20" fill="none"><rect x="4" y="8.5" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" /><path d="M6.5 8.5V6a3.5 3.5 0 017 0v2.5" stroke="currentColor" strokeWidth="1.5" /></svg>
@@ -33,7 +33,7 @@ const icons = {
     <svg viewBox="0 0 20 20" fill="none"><path d="M3 15.5V8.2a1 1 0 01.45-.83l6-4a1 1 0 011.1 0l6 4a1 1 0 01.45.83v7.3" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><path d="M2 15.5h16M7.5 15.5V11h5v4.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>
   ),
   customerTypes: (
-    <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3" width="15" height="4.5" rx="1.2" stroke="currentColor" strokeWidth="1.5" /><rect x="2.5" y="9.5" width="15" height="4.5" rx="1.2" stroke="currentColor" strokeWidth="1.5" /><path d="M6 5.25h.01M6 11.75h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+    <svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3" width="15" height="4.5" rx="1.2" stroke="currentColor" strokeWidth="1.5" /><rect x="2.5" y="9.5" width="15" height="4.5" rx="1.2" stroke="currentColor" strokeWidth="1.5" /><path d="M6 5.25h.01M6 11.75h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
   ),
   settings: (
     <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.6" stroke="currentColor" strokeWidth="1.5" /><path d="M10 3v1.6M10 15.4V17M17 10h-1.6M4.6 10H3M14.8 5.2l-1.1 1.1M6.3 13.7l-1.1 1.1M14.8 14.8l-1.1-1.1M6.3 6.3L5.2 5.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>

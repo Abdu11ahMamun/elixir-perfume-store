@@ -319,7 +319,7 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
         {/* Text — full width on mobile */}
         <div
           className="flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-16 lg:py-24"
-          style={{ background: "linear-gradient(145deg, #1a0a2e 0%, #0d051f 100%)" }}
+          style={{ background: "linear-gradient(145deg, var(--plum) 0%, #0d051f 100%)" }}
         >
           {/* Mobile only: small image strip */}
           <div className="lg:hidden w-full h-52 overflow-hidden mb-8 relative">
@@ -329,7 +329,7 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
               className="w-full h-full object-cover object-top"
               style={{ filter: "saturate(0.8)" }}
             />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 50%, #1a0a2e 100%)" }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 50%, var(--plum) 100%)" }} />
           </div>
 
           <Eyebrow>Our Philosophy</Eyebrow>
@@ -337,7 +337,7 @@ export default function Home({ openProductsPage, openPage, onOpen }) {
 
           <h2
             className="font-display mb-6"
-            style={{ fontSize: "clamp(2rem, 6vw, 3.5rem)", fontWeight: 300, color: "#f5f0e8", lineHeight: 1.1 }}
+            style={{ fontSize: "clamp(2rem, 6vw, 3.5rem)", fontWeight: 300, color: "var(--parchment)", lineHeight: 1.1 }}
           >
             Crafted For<br />
             <em style={{ color: "var(--gold)", fontStyle: "italic" }}>Perfume Lovers</em>

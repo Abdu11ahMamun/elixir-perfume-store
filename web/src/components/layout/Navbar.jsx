@@ -71,7 +71,6 @@ export default function Navbar({
         <div className="h-20 lg:h-32 flex items-center justify-between gap-6">
 
           {/* Logo */}
-          {/* Logo */}
           <button onClick={() => openPage("home")} className="inline-flex flex-col items-center text-center shrink-0 gap-0">
             <img
               src={primaryLogo}

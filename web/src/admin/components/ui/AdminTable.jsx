@@ -30,7 +30,7 @@ export function AdminTableBody({ children }) {
 export function AdminTableRow({ columns, children, className = "" }) {
   return (
     <div
-      className={`grid items-center gap-4 px-6 py-4 transition-colors hover:bg-gray-50 ${className}`}
+      className={`grid items-center gap-4 px-6 py-5 transition-colors duration-150 hover:bg-[#c9a96e]/5 ${className}`}
       style={{ gridTemplateColumns: columns }}
     >
       {children}

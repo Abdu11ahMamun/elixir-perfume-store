@@ -7,7 +7,7 @@ export default function Footer({ openPage, openProductsPage }) {
   const shopLinks = CATEGORIES.filter((category) => category !== "All");
 
   return (
-    <footer className="relative overflow-hidden bg-[#080604] text-[var(--parchment)]">
+    <footer className="relative overflow-hidden bg-[var(--ink)] text-[var(--parchment)]">
       <div className="absolute inset-0 pointer-events-none select-none flex items-center justify-center">
         <span className="font-display text-[18vw] tracking-[0.2em] text-white/[0.025] leading-none">
           {BRAND.name}

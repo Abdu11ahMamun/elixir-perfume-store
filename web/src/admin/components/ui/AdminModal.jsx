@@ -3,7 +3,7 @@ export default function AdminModal({ title, description, onClose, closeDisabled,
     <div className="fixed inset-0 z-[200] flex items-center justify-center px-4 py-8">
       <div className="absolute inset-0 bg-gray-900/40" onClick={closeDisabled ? undefined : onClose} />
 
-      <div className={`relative w-full ${maxWidth} max-h-[90vh] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl`}>
+      <div className={`relative w-full ${maxWidth} max-h-[90vh] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg`}>
         {(title || description) && (
           <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
             <div>
@@ -13,7 +13,7 @@ export default function AdminModal({ title, description, onClose, closeDisabled,
             <button
               type="button"
               onClick={closeDisabled ? undefined : onClose}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition duration-150 hover:bg-gray-100 hover:text-gray-600"
             >
               ×
             </button>

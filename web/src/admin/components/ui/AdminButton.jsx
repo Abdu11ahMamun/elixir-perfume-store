@@ -13,7 +13,7 @@ const variants = {
   primary:
     "bg-[var(--gold)] text-[#1a1408] hover:brightness-95 shadow-sm focus-visible:ring-[#c9a96e]/40",
   secondary:
-    "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus-visible:ring-gray-300",
+    "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-[#c9a96e]/50 hover:text-[var(--gold-dark)] focus-visible:ring-gray-300",
   danger:
     "bg-white text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-300 focus-visible:ring-red-300",
   "danger-solid":
@@ -21,7 +21,7 @@ const variants = {
   ghost:
     "bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-gray-300",
   outline:
-    "bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:text-gray-900 focus-visible:ring-gray-300",
+    "bg-white text-gray-600 border border-gray-200 hover:border-[#c9a96e]/50 hover:text-[var(--gold-dark)] focus-visible:ring-gray-300",
 };
 
 export default function AdminButton({

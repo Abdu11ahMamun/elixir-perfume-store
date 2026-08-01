@@ -160,7 +160,7 @@ export default function AdminOrderDetails({ orderNumber, onEdit, onBack }) {
                 <div key={event.title} className="relative flex gap-4">
                   <div className="flex flex-col items-center">
                     <span className={`flex h-8 w-8 items-center justify-center rounded-full border text-xs transition-colors ${
-                      event.cancelled ? "border-red-300 bg-red-50 text-red-500"
+                      event.cancelled ? "border-red-300 bg-red-50 text-red-600"
                       : event.active  ? "border-[var(--gold)] bg-[var(--gold)] text-[#1a1408]"
                       : event.done    ? "border-[#c9a96e]/50 bg-[#c9a96e]/10 text-[var(--gold-dark)]"
                       : "border-gray-200 bg-white text-gray-400"

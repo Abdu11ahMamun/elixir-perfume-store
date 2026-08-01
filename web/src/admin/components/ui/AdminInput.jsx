@@ -1,5 +1,5 @@
 const fieldBase =
-  "w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition " +
+  "w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition duration-150 " +
   "placeholder:text-gray-400 focus:border-[var(--gold)] focus:ring-2 focus:ring-[#c9a96e]/20";
 
 function FieldWrap({ label, required, error, children }) {
@@ -67,7 +67,7 @@ export function AdminSelect({ value, onChange, options, className = "" }) {
     <select
       value={value}
       onChange={onChange}
-      className={`rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-700 outline-none transition focus:border-[var(--gold)] focus:ring-2 focus:ring-[#c9a96e]/20 ${className}`}
+      className={`${fieldBase} border-gray-300 ${className}`}
     >
       {options.map((o) => (typeof o === "object" ? <option key={o.value} value={o.value}>{o.label}</option> : <option key={o}>{o}</option>))}
     </select>

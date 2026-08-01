@@ -66,7 +66,7 @@ export function getStartingPrice(product) {
  */
 export function getStockLabel(stock) {
   if (stock === 0)  return { text: "Sold Out",           color: "var(--mist)" };
-  if (stock <= 5)   return { text: `Only ${stock} left`, color: "#c97b4e" };
+  if (stock <= 5)   return { text: `Only ${stock} left`, color: "var(--ink)" };
   return               { text: `${stock} units`,         color: "var(--gold-dark)" };
 }
 
